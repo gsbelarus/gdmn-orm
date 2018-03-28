@@ -4,11 +4,13 @@
 
 import { DBStructure } from 'gdmn-db';
 
+type LName = string;
+
 export class Attribute {
   readonly name: string;
-  readonly lName: string;
+  readonly lName: LName;
 
-  constructor(name: string, lName: string) {
+  constructor(name: string, lName: LName) {
     this.name = name;
     this.lName = lName;
   }
@@ -19,7 +21,7 @@ export class Field extends Attribute {
   readonly notNull: boolean;
   readonly position: number;
 
-  constructor(name: string, lName: string, fieldName: string, notNull: boolean) {
+  constructor(name: string, lName: LName, fieldName: string, notNull: boolean) {
     super(name, lName);
     this.fieldName = fieldName;
     this.notNull = notNull;
@@ -61,12 +63,14 @@ interface Attributes {
 
 export class Entity {
   readonly parent?: Entity;
-  readonly relName: string;
-  readonly lName: string;
+  readonly name: string;
+  readonly relName: LName;
+  readonly lName: LName;
   readonly attributes: Attributes;
 
-  constructor(parent: Entity | undefined, relName: string, lName: string) {
+  constructor(parent: Entity | undefined, name: string, relName: LName, lName: LName) {
     this.parent = parent;
+    this.name = name;
     this.relName = relName;
     this.lName = lName;
     this.attributes = {};
@@ -78,9 +82,15 @@ interface Entities {
 }
 
 export class ERModel {
-  entities: Entities = {};
+  private entities: Entities = {};
 
-  load (dbStruct: DBStructure) {
+  entity(name: string) {
+    return this.entities[name];
+  }
 
+  add(name: string, relName: LName, lName: LName) {
+    const entity = new Entity(undefined, name, relName, lName);
+    this.entities[name] = entity;
+    return entity;
   }
 }
