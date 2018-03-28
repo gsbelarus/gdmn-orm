@@ -4,7 +4,7 @@
 
 import { DBStructure } from 'gdmn-db';
 
-type LName = string;
+export type LName = string;
 
 export class Attribute {
   readonly name: string;
@@ -57,7 +57,7 @@ export class WeakAtribute extends Attribute {
   readonly weakEntity: Entity;
 }
 
-interface Attributes {
+export interface Attributes {
   [name: string]: Attribute
 }
 
@@ -77,7 +77,7 @@ export class Entity {
   }
 }
 
-interface Entities {
+export interface Entities {
   [name: string]: Entity
 }
 

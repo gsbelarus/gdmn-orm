@@ -2,7 +2,8 @@
   "name": "gdmn-orm",
   "version": "1.0.0",
   "description": "",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
+  "types": "./dist/definitions/index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -19,5 +20,8 @@
   "homepage": "https://github.com/gsbelarus/gdmn-orm#readme",
   "dependencies": {
     "gdmn-db": "git://github.com/gsbelarus/gdmn-db.git"
+  },
+  "devDependencies": {
+    "@types/node": "^9.6.0"
   }
 }
