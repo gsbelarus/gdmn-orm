@@ -75,6 +75,15 @@ export class Entity {
     this.lName = lName;
     this.attributes = {};
   }
+
+  attribute(name: string) {
+    return this.attributes[name];
+  }
+
+  add(attribute: Attribute) {
+    this.attributes[attribute.name] = attribute;
+    return attribute;
+  }
 }
 
 export interface Entities {
@@ -88,9 +97,8 @@ export class ERModel {
     return this.entities[name];
   }
 
-  add(name: string, relName: LName, lName: LName) {
-    const entity = new Entity(undefined, name, relName, lName);
-    this.entities[name] = entity;
+  add(entity: Entity) {
+    this.entities[entity.name] = entity;
     return entity;
   }
 }

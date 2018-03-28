@@ -36,8 +36,6 @@ build/Release
 node_modules/
 jspm_packages/
 
-./dist/*.map
-
 # Typescript v1 declaration files
 typings/
 
@@ -59,3 +57,4 @@ typings/
 # dotenv environment variables file
 .env
 
+dist/index.js.map

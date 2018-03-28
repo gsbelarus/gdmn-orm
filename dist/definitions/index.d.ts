@@ -41,6 +41,8 @@ export declare class Entity {
     readonly lName: LName;
     readonly attributes: Attributes;
     constructor(parent: Entity | undefined, name: string, relName: LName, lName: LName);
+    attribute(name: string): Attribute;
+    add(attribute: Attribute): Attribute;
 }
 export interface Entities {
     [name: string]: Entity;
@@ -48,5 +50,5 @@ export interface Entities {
 export declare class ERModel {
     private entities;
     entity(name: string): Entity;
-    add(name: string, relName: LName, lName: LName): Entity;
+    add(entity: Entity): Entity;
 }

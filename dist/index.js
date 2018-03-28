@@ -50,6 +50,13 @@ class Entity {
         this.lName = lName;
         this.attributes = {};
     }
+    attribute(name) {
+        return this.attributes[name];
+    }
+    add(attribute) {
+        this.attributes[attribute.name] = attribute;
+        return attribute;
+    }
 }
 exports.Entity = Entity;
 class ERModel {
@@ -59,9 +66,8 @@ class ERModel {
     entity(name) {
         return this.entities[name];
     }
-    add(name, relName, lName) {
-        const entity = new Entity(undefined, name, relName, lName);
-        this.entities[name] = entity;
+    add(entity) {
+        this.entities[entity.name] = entity;
         return entity;
     }
 }
