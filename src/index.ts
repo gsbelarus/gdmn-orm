@@ -93,11 +93,22 @@ export interface Entities {
 export class ERModel {
   private entities: Entities = {};
 
-  entity(name: string) {
+  findEntity(name:string) {
     return this.entities[name];
   }
 
+  entity(name: string) {
+    const found = this.findEntity(name);
+    if (!found) {
+      throw new Error(`Unknown entity ${name}`);
+    }
+    return found;
+  }
+
   add(entity: Entity) {
+    if (this.findEntity(entity.name)) {
+      throw new Error(`Entity ${entity.name} already exists`);
+    }
     this.entities[entity.name] = entity;
     return entity;
   }
