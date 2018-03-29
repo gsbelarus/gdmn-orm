@@ -8,29 +8,64 @@ export type LName = string;
 
 export class Attribute {
   readonly name: string;
-  readonly lName: LName;
+  readonly lName?: LName;
 
-  constructor(name: string, lName: LName) {
+  constructor(name: string, lName?: LName) {
     this.name = name;
     this.lName = lName;
   }
 }
 
-export class Field extends Attribute {
-  readonly fieldName: string;
-  readonly notNull: boolean;
-  readonly position: number;
+export interface Attributes {
+  [name: string]: Attribute
+}
 
-  constructor(name: string, lName: LName, fieldName: string, notNull: boolean) {
-    super(name, lName);
-    this.fieldName = fieldName;
-    this.notNull = notNull;
+export class Field extends Attribute {
+  private _notNull: boolean = false;
+  private _position: number = 0;
+
+  get notNull() {
+    return this._notNull;
+  }
+
+  set notNull(value) {
+    this._notNull = value;
+  }
+
+  get position() {
+    return this._position;
+  }
+
+  set position(value) {
+    this._position = value;
   }
 }
 
+export interface Fields {
+  [name: string]: Field
+}
+
 export class Constraint extends Attribute {
-  readonly constraintName: string;
-  readonly attributes: Field[];
+  readonly fields: Fields;
+
+  findField(name: string) {
+    return this.fields[name];
+  }
+
+  field(name: string) {
+    const found = this.findField(name);
+    if (!found) {
+      throw new Error(`Unknown field ${name}`);
+    }
+    return found;
+  }
+
+  add(field: Field) {
+    if (this.findField(field.name)) {
+      throw new Error(`Field ${field.name} already exists`);
+    }
+    return this.fields[field.name] = field;
+  }
 }
 
 export class PrimaryKey extends Constraint {
@@ -49,6 +84,9 @@ export class StringField extends Field {
 export class NumericField extends Field {
 }
 
+export class IntegerField extends NumericField {
+}
+
 export class SetAttribute extends Attribute {
   readonly associativeEntity: Entity;
 }
@@ -57,32 +95,37 @@ export class WeakAtribute extends Attribute {
   readonly weakEntity: Entity;
 }
 
-export interface Attributes {
-  [name: string]: Attribute
-}
-
 export class Entity {
   readonly parent?: Entity;
   readonly name: string;
-  readonly relName: LName;
-  readonly lName: LName;
-  readonly attributes: Attributes;
+  readonly relName: string;
+  readonly lName?: LName;
+  private _attributes: Attributes = {};
 
-  constructor(parent: Entity | undefined, name: string, relName: LName, lName: LName) {
+  constructor(parent: Entity | undefined, name: string, relName: string, lName?: LName) {
     this.parent = parent;
     this.name = name;
     this.relName = relName;
     this.lName = lName;
-    this.attributes = {};
+  }
+
+  findAttribute(name: string) {
+    return this._attributes[name];
   }
 
   attribute(name: string) {
-    return this.attributes[name];
+    const found = this.findAttribute(name);
+    if (!found) {
+      throw new Error(`Unknown attribute ${name}`);
+    }
+    return found;
   }
 
   add(attribute: Attribute) {
-    this.attributes[attribute.name] = attribute;
-    return attribute;
+    if (this.findAttribute(attribute.name)) {
+      throw new Error(`Attribute ${attribute.name} already exists`);
+    }
+    return this._attributes[attribute.name] = attribute;
   }
 }
 
@@ -109,7 +152,6 @@ export class ERModel {
     if (this.findEntity(entity.name)) {
       throw new Error(`Entity ${entity.name} already exists`);
     }
-    this.entities[entity.name] = entity;
-    return entity;
+    return this.entities[entity.name] = entity;
   }
 }
