@@ -4,4 +4,5 @@ function __export(m) {
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./ermodel"));
+__export(require("./erexport"));
 //# sourceMappingURL=index.js.map
