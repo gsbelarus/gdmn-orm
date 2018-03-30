@@ -1,9 +1,7 @@
 import { DBStructure } from 'gdmn-db';
 import { ERModel, Entity } from './ermodel';
 
-export function erExport(dbs: DBStructure) {
-
-  const erModel = new ERModel();
+export function erExport(dbs: DBStructure, erModel: ERModel) {
 
   for (const r in dbs.relations) {
     const relation = dbs.relations[r];
