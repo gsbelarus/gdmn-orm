@@ -12,6 +12,7 @@ function isFieldRef(fieldName, fk) {
 ;
 function erExport(dbs, erModel) {
     function createEntity(relation) {
+        console.log(relation.name);
         if (erModel.entities[relation.name]) {
             return erModel.entities[relation.name];
         }

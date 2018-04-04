@@ -13,6 +13,8 @@ function isFieldRef(fieldName: string, fk: IRefConstraints) {
 export function erExport(dbs: DBStructure, erModel: ERModel) {
 
   function createEntity(relation) {
+    console.log(relation.name);
+
     if (erModel.entities[relation.name]) {
       return erModel.entities[relation.name];
     }
