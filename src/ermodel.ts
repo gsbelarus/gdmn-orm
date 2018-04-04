@@ -132,14 +132,14 @@ export interface Entities {
 }
 
 export class ERModel {
-  private entities: Entities = {};
+  private _entities: Entities = {};
 
-  findEntity(name:string) {
-    return this.entities[name];
+  get entities() {
+    return this._entities;
   }
 
   entity(name: string) {
-    const found = this.findEntity(name);
+    const found = this._entities[name];
     if (!found) {
       throw new Error(`Unknown entity ${name}`);
     }
@@ -147,9 +147,9 @@ export class ERModel {
   }
 
   add(entity: Entity) {
-    if (this.findEntity(entity.name)) {
+    if (this._entities[entity.name]) {
       throw new Error(`Entity ${entity.name} already exists`);
     }
-    return this.entities[entity.name] = entity;
+    return this._entities[entity.name] = entity;
   }
 }

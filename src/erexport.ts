@@ -1,28 +1,38 @@
-import { DBStructure, IRefConstraints } from 'gdmn-db';
+import { DBStructure, IRefConstraints, FKConstraint } from 'gdmn-db';
 import { ERModel, Entity } from './ermodel';
+
+function isFieldRef(fieldName: string, fk: IRefConstraints) {
+  for (const cName in fk) {
+    if (fk[cName].fields.find( f => f === fieldName )) {
+      return true;
+    }
+  }
+  return false;
+};
 
 export function erExport(dbs: DBStructure, erModel: ERModel) {
 
-  const fieldRef = (fieldName: string, fk: IRefConstraints) => {
-    for (const cName in fk) {
-      if (fk[cName].fields.find( f => f === fieldName )) {
-        return true;
+  function createEntity(relation) {
+    if (erModel.entities[relation.name]) {
+      return erModel.entities[relation.name];
+    }
+
+    const pkFields = relation.primaryKey.fields.join();
+
+    for (const fkName in relation.foreignKeys) {
+      const fk = relation.foreignKeys[fkName];
+      if (fk.fields.join() === pkFields) {
+        return erModel.add(new Entity(createEntity(dbs.relationByUqConstraint(fk.constNameUq)), relation.name, relation.name));
       }
     }
-    return false;
+
+    return erModel.add(new Entity(undefined, relation.name, relation.name));
   };
 
-  for (const relationName in dbs.relations) {
-    const r = dbs.relations[relationName];
-
-    if (r.primaryKey
-      && r.primaryKey.fields.length === 1
-      && r.primaryKey.fields[0] === 'ID'
-      && !fieldRef('ID', r.foreignKeys))
-    {
-      erModel.add(new Entity(undefined, relationName, relationName));
-    }
-  };
+  dbs.forEachRelation( r => {
+    if (!r.primaryKey) return;
+    createEntity(r);
+  });
 
   return erModel;
 }

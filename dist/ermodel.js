@@ -101,23 +101,23 @@ class Entity {
 exports.Entity = Entity;
 class ERModel {
     constructor() {
-        this.entities = {};
+        this._entities = {};
     }
-    findEntity(name) {
-        return this.entities[name];
+    get entities() {
+        return this._entities;
     }
     entity(name) {
-        const found = this.findEntity(name);
+        const found = this._entities[name];
         if (!found) {
             throw new Error(`Unknown entity ${name}`);
         }
         return found;
     }
     add(entity) {
-        if (this.findEntity(entity.name)) {
+        if (this._entities[entity.name]) {
             throw new Error(`Entity ${entity.name} already exists`);
         }
-        return this.entities[entity.name] = entity;
+        return this._entities[entity.name] = entity;
     }
 }
 exports.ERModel = ERModel;

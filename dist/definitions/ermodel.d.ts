@@ -59,8 +59,8 @@ export interface Entities {
     [name: string]: Entity;
 }
 export declare class ERModel {
-    private entities;
-    findEntity(name: string): Entity;
+    private _entities;
+    readonly entities: Entities;
     entity(name: string): Entity;
     add(entity: Entity): Entity;
 }
