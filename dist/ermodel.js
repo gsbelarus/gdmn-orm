@@ -13,14 +13,14 @@ exports.Attribute = Attribute;
 class Field extends Attribute {
     constructor() {
         super(...arguments);
-        this._notNull = false;
+        this._required = false;
         this._position = 0;
     }
-    get notNull() {
-        return this._notNull;
+    get required() {
+        return this._required;
     }
-    set notNull(value) {
-        this._notNull = value;
+    set required(value) {
+        this._required = value;
     }
     get position() {
         return this._position;
@@ -31,21 +31,25 @@ class Field extends Attribute {
 }
 exports.Field = Field;
 class Constraint extends Attribute {
-    findField(name) {
-        return this.fields[name];
+    constructor() {
+        super(...arguments);
+        this._fields = [];
+    }
+    get fields() {
+        return this._fields;
     }
     field(name) {
-        const found = this.findField(name);
+        const found = this._fields.find(f => f.name === name);
         if (!found) {
             throw new Error(`Unknown field ${name}`);
         }
         return found;
     }
     add(field) {
-        if (this.findField(field.name)) {
+        if (this._fields.find(f => f.name === field.name)) {
             throw new Error(`Field ${field.name} already exists`);
         }
-        return this.fields[field.name] = field;
+        return this.fields.push(field);
     }
 }
 exports.Constraint = Constraint;
@@ -74,25 +78,26 @@ class WeakAtribute extends Attribute {
 }
 exports.WeakAtribute = WeakAtribute;
 class Entity {
-    constructor(parent, name, relName, lName) {
+    constructor(parent, name, relName, isAbstract, lName) {
         this._attributes = {};
         this.parent = parent;
         this.name = name;
         this.relName = relName;
         this.lName = lName;
+        this.isAbstract = isAbstract;
     }
-    findAttribute(name) {
-        return this._attributes[name];
+    get attributes() {
+        return this._attributes;
     }
     attribute(name) {
-        const found = this.findAttribute(name);
+        const found = this._attributes[name];
         if (!found) {
             throw new Error(`Unknown attribute ${name}`);
         }
         return found;
     }
     add(attribute) {
-        if (this.findAttribute(attribute.name)) {
+        if (this._attributes[attribute.name]) {
             throw new Error(`Attribute ${attribute.name} already exists`);
         }
         return this._attributes[attribute.name] = attribute;

@@ -11,19 +11,19 @@ export interface Attributes {
     [name: string]: Attribute;
 }
 export declare class Field extends Attribute {
-    private _notNull;
+    private _required;
     private _position;
-    notNull: boolean;
+    required: boolean;
     position: number;
 }
 export interface Fields {
     [name: string]: Field;
 }
 export declare class Constraint extends Attribute {
-    readonly fields: Fields;
-    findField(name: string): Field;
+    private _fields;
+    readonly fields: Field[];
     field(name: string): Field;
-    add(field: Field): Field;
+    add(field: Field): number;
 }
 export declare class PrimaryKey extends Constraint {
 }
@@ -49,9 +49,10 @@ export declare class Entity {
     readonly name: string;
     readonly relName: string;
     readonly lName?: LName;
+    readonly isAbstract: boolean;
     private _attributes;
-    constructor(parent: Entity | undefined, name: string, relName: string, lName?: LName);
-    findAttribute(name: string): Attribute;
+    constructor(parent: Entity | undefined, name: string, relName: string, isAbstract: boolean, lName?: LName);
+    readonly attributes: Attributes;
     attribute(name: string): Attribute;
     add(attribute: Attribute): Attribute;
 }

@@ -2,15 +2,39 @@
  *
  */
 
-export type LName = string;
+import { LName, EntityAdapter, AttributeAdapter } from './types';
+
+export class Domain {
+}
 
 export class Attribute {
-  readonly name: string;
-  readonly lName?: LName;
+  private _name: string;
+  private _lName: LName;
+  private _required: boolean;
+  private _calculated: boolean = false;
+  readonly adapter?: AttributeAdapter;
 
-  constructor(name: string, lName?: LName) {
-    this.name = name;
-    this.lName = lName;
+  constructor(name: string, lName: LName, required: boolean, adapter?: AttributeAdapter) {
+    this._name = name;
+    this._lName = lName;
+    this._required = required;
+    this.adapter = adapter;
+  }
+
+  get name() {
+    return this._name;
+  }
+
+  get lName() {
+    return this._lName;
+  }
+
+  get required() {
+    return this._required;
+  }
+
+  get calculated() {
+    return this._calculated;
   }
 }
 
@@ -18,101 +42,113 @@ export interface Attributes {
   [name: string]: Attribute
 }
 
-export class Field extends Attribute {
-  private _notNull: boolean = false;
-  private _position: number = 0;
+export class ScalarAttribute extends Attribute { }
 
-  get notNull() {
-    return this._notNull;
-  }
-
-  set notNull(value) {
-    this._notNull = value;
-  }
-
-  get position() {
-    return this._position;
-  }
-
-  set position(value) {
-    this._position = value;
-  }
+export class StringAttribute extends ScalarAttribute {
+  private _minLength?: number;
+  private _maxLength?: number;
+  private _default?: string;
+  private _mask?: RegExp;
 }
 
-export interface Fields {
-  [name: string]: Field
-}
+export class NumberAttribute extends ScalarAttribute {
+  private _minValue?: number;
+  private _maxValue?: number;
+  private _default?: number;
 
-export class Constraint extends Attribute {
-  readonly fields: Fields;
-
-  findField(name: string) {
-    return this.fields[name];
+  get minValue() {
+    return this._minValue;
   }
 
-  field(name: string) {
-    const found = this.findField(name);
-    if (!found) {
-      throw new Error(`Unknown field ${name}`);
-    }
-    return found;
+  set minValue(value) {
+    this._minValue = value;
   }
 
-  add(field: Field) {
-    if (this.findField(field.name)) {
-      throw new Error(`Field ${field.name} already exists`);
-    }
-    return this.fields[field.name] = field;
+  get maxValue() {
+    return this._maxValue;
+  }
+
+  set maxValue(value) {
+    this._maxValue = value;
+  }
+
+  get default() {
+    return this._default;
+  }
+
+  set default(value) {
+    this._default = value;
   }
 }
 
-export class PrimaryKey extends Constraint {
+export class IntegerAttribute extends NumberAttribute { }
+
+export class FloatAttribute extends NumberAttribute { }
+
+export class NumericAttribute extends NumberAttribute { }
+
+export class DateAttribute extends ScalarAttribute { }
+
+export class TimeAttribute extends ScalarAttribute { }
+
+export class TimeStampAttribute extends ScalarAttribute { }
+
+export class BooleanAttribute extends ScalarAttribute { }
+
+export class EnumAttribute extends ScalarAttribute { }
+
+export class TimeIntervalAttribute extends ScalarAttribute { }
+
+export class EntityAttribute extends Attribute {
+  private _entity: Entity[];
+
+  constructor(name: string, lName: LName, required: boolean, entity: Entity[], adapter?: AttributeAdapter) {
+    super(name, lName, required, adapter);
+    this._entity = entity;
+  }
 }
 
-export class ForeignKey extends Constraint {
-  readonly references: Entity;
+export class ParentAttribute extends EntityAttribute {
+  constructor(name: string, lName: LName, entity: Entity[], adapter?: AttributeAdapter) {
+    super(name, lName, false, entity, adapter);
+  }
 }
 
-export class UniqueKey extends Constraint {
-}
+export class DetailAttribute extends EntityAttribute { }
 
-export class StringField extends Field {
-}
-
-export class NumericField extends Field {
-}
-
-export class IntegerField extends NumericField {
-}
-
-export class SetAttribute extends Attribute {
-  readonly associativeEntity: Entity;
-}
-
-export class WeakAtribute extends Attribute {
-  readonly weakEntity: Entity;
+export class SetAttribute extends EntityAttribute {
+  private _fields: Attributes;
 }
 
 export class Entity {
   readonly parent?: Entity;
   readonly name: string;
-  readonly relName: string;
-  readonly lName?: LName;
+  readonly lName: LName;
+  readonly isAbstract: boolean;
+  readonly adapter: EntityAdapter;
+  private _pk: Attribute;
   private _attributes: Attributes = {};
 
-  constructor(parent: Entity | undefined, name: string, relName: string, lName?: LName) {
+  constructor(parent: Entity | undefined, name: string, lName: LName,
+    isAbstract: boolean, adapter: EntityAdapter)
+  {
     this.parent = parent;
     this.name = name;
-    this.relName = relName;
     this.lName = lName;
+    this.isAbstract = isAbstract;
+    this.adapter = adapter;
   }
 
-  findAttribute(name: string) {
-    return this._attributes[name];
+  get pk() {
+    return this._pk;
+  }
+
+  get attributes() {
+    return this._attributes;
   }
 
   attribute(name: string) {
-    const found = this.findAttribute(name);
+    const found = this._attributes[name];
     if (!found) {
       throw new Error(`Unknown attribute ${name}`);
     }
@@ -120,9 +156,14 @@ export class Entity {
   }
 
   add(attribute: Attribute) {
-    if (this.findAttribute(attribute.name)) {
+    if (this._attributes[attribute.name]) {
       throw new Error(`Attribute ${attribute.name} already exists`);
     }
+
+    if (!this._pk) {
+      this._pk = attribute;
+    }
+
     return this._attributes[attribute.name] = attribute;
   }
 }
