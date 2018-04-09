@@ -2,9 +2,36 @@
  *
  */
 
-import { LName, EntityAdapter, AttributeAdapter } from './types';
+import { LName, EntityAdapter, AttributeAdapter, DomainAdapter } from './types';
 
 export class Domain {
+  private _name: string;
+  private _lName: LName;
+  private _required: boolean;
+  readonly adapter?: DomainAdapter;
+
+  constructor(name: string, lName: LName, required: boolean, adapter?: DomainAdapter) {
+    this._name = name;
+    this._lName = lName;
+    this._required = required;
+    this.adapter = adapter;
+  }
+
+  get name() {
+    return this._name;
+  }
+
+  get lName() {
+    return this._lName;
+  }
+
+  get required() {
+    return this._required;
+  }
+}
+
+export interface Domains {
+  [name: string]: Domain;
 }
 
 export class Attribute {
@@ -14,7 +41,8 @@ export class Attribute {
   private _calculated: boolean = false;
   readonly adapter?: AttributeAdapter;
 
-  constructor(name: string, lName: LName, required: boolean, adapter?: AttributeAdapter) {
+  constructor(name: string, lName: LName, required: boolean, adapter?: AttributeAdapter)
+  {
     this._name = name;
     this._lName = lName;
     this._required = required;

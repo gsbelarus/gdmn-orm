@@ -1,5 +1,9 @@
 
-import { EntityAdapter, AttributeAdapter } from './types';
+import { EntityAdapter, AttributeAdapter, DomainAdapter } from './types';
+
+export interface Domain2DomainMap extends DomainAdapter {
+  domain: string;
+}
 
 export type RelationStructure = 'PLAIN' | 'TREE' | 'LBRB';
 
