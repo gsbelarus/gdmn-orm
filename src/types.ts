@@ -9,8 +9,6 @@ export interface LName {
   en?: TName;
 }
 
-export interface DomainAdapter { }
-
 export interface AttributeAdapter { }
 
 export interface EntityAdapter { }

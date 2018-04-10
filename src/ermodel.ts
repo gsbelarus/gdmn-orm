@@ -2,37 +2,8 @@
  *
  */
 
-import { LName, EntityAdapter, AttributeAdapter, DomainAdapter } from './types';
-
-export class Domain {
-  private _name: string;
-  private _lName: LName;
-  private _required: boolean;
-  readonly adapter?: DomainAdapter;
-
-  constructor(name: string, lName: LName, required: boolean, adapter?: DomainAdapter) {
-    this._name = name;
-    this._lName = lName;
-    this._required = required;
-    this.adapter = adapter;
-  }
-
-  get name() {
-    return this._name;
-  }
-
-  get lName() {
-    return this._lName;
-  }
-
-  get required() {
-    return this._required;
-  }
-}
-
-export interface Domains {
-  [name: string]: Domain;
-}
+import { LName, EntityAdapter, AttributeAdapter } from './types';
+import { Sequence2SequenceMap } from './rdbadapter';
 
 export class Attribute {
   private _name: string;
@@ -82,7 +53,17 @@ export class StringAttribute extends ScalarAttribute {
 export class NumberAttribute extends ScalarAttribute {
   private _minValue?: number;
   private _maxValue?: number;
-  private _default?: number;
+  private _defaultValue?: number;
+
+  constructor(name: string, lName: LName, required: boolean,
+    minValue: number | undefined, maxValue: number | undefined,
+    defaultValue: number | undefined, adapter?: AttributeAdapter)
+  {
+    super(name, lName, required, adapter);
+    this._minValue = minValue;
+    this._maxValue = maxValue;
+    this._defaultValue = defaultValue;
+  }
 
   get minValue() {
     return this._minValue;
@@ -100,12 +81,12 @@ export class NumberAttribute extends ScalarAttribute {
     this._maxValue = value;
   }
 
-  get default() {
-    return this._default;
+  get defaultValue() {
+    return this._defaultValue;
   }
 
-  set default(value) {
-    this._default = value;
+  set defaultValue(value) {
+    this._defaultValue = value;
   }
 }
 
@@ -153,12 +134,13 @@ export class Entity {
   readonly name: string;
   readonly lName: LName;
   readonly isAbstract: boolean;
-  readonly adapter: EntityAdapter;
-  private _pk: Attribute;
+  readonly adapter?: EntityAdapter;
+  private _pk: Attribute[] = [];
   private _attributes: Attributes = {};
+  private _generator
 
   constructor(parent: Entity | undefined, name: string, lName: LName,
-    isAbstract: boolean, adapter: EntityAdapter)
+    isAbstract: boolean, sequence: Sequence | undefined, adapter?: EntityAdapter)
   {
     this.parent = parent;
     this.name = name;
@@ -188,8 +170,8 @@ export class Entity {
       throw new Error(`Attribute ${attribute.name} already exists`);
     }
 
-    if (!this._pk) {
-      this._pk = attribute;
+    if (!this._pk.length) {
+      this._pk.push(attribute);
     }
 
     return this._attributes[attribute.name] = attribute;
@@ -200,8 +182,31 @@ export interface Entities {
   [name: string]: Entity
 }
 
+export class Sequence {
+  private _name: string;
+  private _adapter?: Sequence2SequenceMap;
+
+  constructor (name: string, adapter?: Sequence2SequenceMap) {
+    this._name = name;
+    this._adapter = adapter;
+  }
+
+  get name() {
+    return this._name;
+  }
+
+  set name(value) {
+    this._name = value;
+  }
+}
+
+export interface Sequencies {
+  [name: string]: Sequence;
+}
+
 export class ERModel {
   private _entities: Entities = {};
+  private _sequencies: Sequencies = {};
 
   get entities() {
     return this._entities;
@@ -220,5 +225,12 @@ export class ERModel {
       throw new Error(`Entity ${entity.name} already exists`);
     }
     return this._entities[entity.name] = entity;
+  }
+
+  addSequence(sequence: Sequence) {
+    if (this._sequencies[sequence.name]) {
+      throw new Error(`Sequence ${sequence.name} already exists`);
+    }
+    return this._sequencies[sequence.name] = sequence;
   }
 }

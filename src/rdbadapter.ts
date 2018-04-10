@@ -1,8 +1,10 @@
 
-import { EntityAdapter, AttributeAdapter, DomainAdapter } from './types';
+import { EntityAdapter, AttributeAdapter } from './types';
 
-export interface Domain2DomainMap extends DomainAdapter {
-  domain: string;
+export const MAX_32BIT_INT = 2147483647;
+
+export interface Sequence2SequenceMap {
+  sequence: string;
 }
 
 export type RelationStructure = 'PLAIN' | 'TREE' | 'LBRB';
@@ -18,6 +20,7 @@ export interface Entity2TableMap extends EntityAdapter {
   weakRelation?: string;
   structure: RelationStructure;
   selector?: EntitySelector;
+  refresh?: boolean;
 }
 
 export interface Attribute2FieldMap extends AttributeAdapter {

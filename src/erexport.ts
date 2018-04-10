@@ -1,5 +1,6 @@
 import { DBStructure, IRefConstraints, FKConstraint } from 'gdmn-db';
 import * as erm from './ermodel';
+import { MAX_32BIT_INT } from './rdbadapter';
 
 function isFieldRef(fieldName: string, fk: IRefConstraints) {
   for (const cName in fk) {
@@ -38,6 +39,29 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
   });
   */
 
+  /**
+   * Если имя генератора совпадает с именем объекта в БД, то адаптер можем не указывать.
+   */
+
+  const GDGUnique = erModel.addSequence(new erm.Sequence('GD_G_UNIQUE'));
+  const GDGOffset = erModel.addSequence(new erm.Sequence('Offset', { sequence: 'GD_G_OFFSET' }));
+
+  /**
+   * Простейший случай таблицы. Никаких ссылок.
+   * -- Если имя Entity совпадает с именем таблицы и ее структура PLAIN, то можем не указывать адаптер.
+   * -- Первое добавляемое поле в Entity автоматом становится PK.
+   * -- Если имя атрибута совпадает с именем поля, то в адаптере имя поля можно не указывать.
+   */
+
+  const Holiday = erModel.add(
+    new erm.Entity(undefined, 'WG_HOLIDAY', {ru: {name: 'Государственный праздник'}}, false, GDGUnique)
+  );
+  Holiday.add(
+    new erm.IntegerAttribute('ID', {ru: {name: 'Идентификатор'}}, true, 1, MAX_32BIT_INT, undefined)
+  );
+  Holiday.add(
+    new erm.DateAttribute('HOLIDAYDATE', {ru: {name: 'Дата праздника'}}, true, '2000-01-01', '2100-12-31', undefined)
+  );
 
   const Folder = erModel.add(new erm.Entity(undefined, 'Folder', {ru: {name: 'Папка'}},
     false,
