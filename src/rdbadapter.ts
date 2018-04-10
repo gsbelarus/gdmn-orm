@@ -1,29 +1,32 @@
 
-import { EntityAdapter, AttributeAdapter } from './types';
+import { EntityAdapter, AttributeAdapter, SequenceAdapter } from './types';
 
 export const MAX_32BIT_INT = 2147483647;
 
-export interface Sequence2SequenceMap {
+export interface Sequence2SequenceMap extends SequenceAdapter {
   sequence: string;
 }
 
 export type RelationStructure = 'PLAIN' | 'TREE' | 'LBRB';
 
 export interface EntitySelector {
-  relation?: string;
   field: string;
   value: number | string;
 }
 
-export interface Entity2TableMap extends EntityAdapter {
-  relation: string | string[];
-  weakRelation?: string;
-  structure: RelationStructure;
+export interface Relation {
+  relation: string,
+  structure?: RelationStructure;
+  weak?: boolean;
   selector?: EntitySelector;
+}
+
+export interface Entity2RelationMap extends EntityAdapter {
+  relation: Relation | Relation[];
   refresh?: boolean;
 }
 
 export interface Attribute2FieldMap extends AttributeAdapter {
   relation?: string;
-  field: string;
+  field?: string;
 }

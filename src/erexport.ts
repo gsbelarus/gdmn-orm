@@ -54,54 +54,116 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
    */
 
   const Holiday = erModel.add(
-    new erm.Entity(undefined, 'WG_HOLIDAY', {ru: {name: 'Государственный праздник'}}, false, GDGUnique)
+    new erm.Entity(undefined, 'WG_HOLIDAY', {ru: {name: 'Государственный праздник'}}, false)
   );
   Holiday.add(
-    new erm.IntegerAttribute('ID', {ru: {name: 'Идентификатор'}}, true, 1, MAX_32BIT_INT, undefined)
+    new erm.SequenceAttribute('ID', {ru: {name: 'Идентификатор'}}, GDGUnique)
+  );
+  Holiday.addUnique([
+    Holiday.add(
+      new erm.DateAttribute('HOLIDAYDATE', {ru: {name: 'Дата праздника'}}, true, new Date('2000-01-01'), new Date('2100-12-31'), undefined)
+    )
+  ]);
+  Holiday.add(
+    new erm.StringAttribute('NAME', {ru: {name: 'Наименование'}}, true, undefined, 60, undefined, /^[\S].*[\S]$/)
   );
   Holiday.add(
-    new erm.DateAttribute('HOLIDAYDATE', {ru: {name: 'Дата праздника'}}, true, '2000-01-01', '2100-12-31', undefined)
+    new erm.TimeStampAttribute('EDITIONDATE', {ru: {name: 'Изменено'}}, true, new Date('2000-01-01'), new Date('2100-12-31'), undefined)
+  );
+  Holiday.add(
+    new erm.BooleanAttribute('DISABLED', {ru: {name: 'Отключено'}}, true, false)
   );
 
+  /**
+   * Папка из справочника контактов.
+   * Основывается на таблице GD_CONTACT, но использует только несколько полей из нее.
+   * Записи имеют признак CONTACTTYPE = 0.
+   * Имеет древовидную структуру.
+   */
   const Folder = erModel.add(new erm.Entity(undefined, 'Folder', {ru: {name: 'Папка'}},
     false,
     {
-      relation: 'GD_CONTACT',
-      structure: 'LBRB',
-      selector: {
-        field: 'CONTACTTYPE',
-        value: 0
+      relation: {
+        relation: 'GD_CONTACT',
+        structure: 'LBRB',
+        selector: {
+          field: 'CONTACTTYPE',
+          value: 0
+        }
       }
     }
   ));
-  Folder.add(new erm.IntegerAttribute('ID', {ru: {name: 'Идентификатор'}}, true));
-  Folder.add(new erm.ParentAttribute('PARENT', {ru: {name: 'Входит в папку'}}, [Folder]));
-  Folder.add(new erm.StringAttribute('NAME', {ru: {name: 'Наименование'}}, true));
+  Folder.add(
+    new erm.SequenceAttribute('ID', {ru: {name: 'Идентификатор'}}, GDGUnique)
+  );
+  Folder.add(
+    new erm.ParentAttribute('PARENT', {ru: {name: 'Входит в папку'}}, [Folder])
+  );
+  Folder.add(
+    new erm.StringAttribute('NAME', {ru: {name: 'Наименование'}}, true, undefined, 60, undefined, /^[\S].*[\S]$/)
+  );
+  Folder.add(
+    new erm.TimeStampAttribute('EDITIONDATE', {ru: {name: 'Изменено'}}, true, new Date('2000-01-01'), new Date('2100-12-31'), undefined)
+  );
+  Folder.add(
+    new erm.BooleanAttribute('DISABLED', {ru: {name: 'Отключено'}}, true, false)
+  );
 
+  /**
+   * Компания хранится в трех таблицах.
+   * Две обязательные GD_CONTACT - GD_COMPANY. В адаптере они указываются
+   * в массиве relation и соединяются в запросе оператором JOIN.
+   * Первой указывается главная таблица. Первичный ключ дополнительной таблицы
+   * должен одновременно являть внешним ключем на главную.
+   * Третья -- GD_COMPANYCODE -- необязательная. Подключается через LEFT JOIN.
+   * Для атрибутов из главной таблицы можно не указывать адаптер, если их имя
+   * совпадает с именем поля.
+   */
   const Company = erModel.add(new erm.Entity(undefined, 'Company', {ru: {name: 'Организация'}},
     false,
     {
-      relation: ['GD_CONTACT', 'GD_COMPANY'],
-      weakRelation: 'GD_COMPANYCODE',
-      structure: 'LBRB'
+      relation: [
+        {
+          relation: 'GD_CONTACT',
+          structure: 'LBRB'
+        },
+        {
+          relation: 'GD_COMPANY'
+        }
+      ],
+      weakRelation: {
+        relation: 'GD_COMPANYCODE'
+      },
+      structure: 'LBRB',
+      refresh: true
     }
   ));
-  Company.add(new erm.IntegerAttribute('ID', {ru: {name: 'Идентификатор'}}, true));
-  Company.add(new erm.ParentAttribute('PARENT', {ru: {name: 'Входит в папку'}}, [Folder]));
-  Company.add(new erm.StringAttribute('NAME', {ru: {name: 'Краткое наименование'}}, true));
-  Company.add(new erm.StringAttribute('PHONE', {ru: {name: 'Телефон'}}, false));
-  Company.add(new erm.StringAttribute('FULLNAME', {ru: {name: 'Полное наименование'}}, true,
+  Company.add(
+    new erm.SequenceAttribute('ID', {ru: {name: 'Идентификатор'}}, GDGUnique)
+  );
+  Company.add(
+    new erm.ParentAttribute('PARENT', {ru: {name: 'Входит в папку'}}, [Folder])
+  );
+  Company.add(
+    new erm.StringAttribute('NAME', {ru: {name: 'Краткое наименование'}}, true, undefined, 60, undefined, /^[\S].*[\S]$/)
+  );
+  Company.add(
+    new erm.StringAttribute('PHONE', {ru: {name: 'Номер телефона'}}, true, undefined, 40, undefined, /^[\d+-,]{7,40}$/)
+  );
+  Company.add(
+    new erm.StringAttribute('FULLNAME', {ru: {name: 'Полное наименование'}}, true, undefined, 180, undefined, /^[\S].*[\S]$/,
     {
-      relation: 'GD_COMPANY',
-      field: 'FULLNAME'
+      relation: 'GD_COMPANY'
     }
   ));
-  Company.add(new erm.StringAttribute('TAXID', {ru: {name: 'УНП'}}, false,
+  Company.add(
+    new erm.StringAttribute('TAXID', {ru: {name: 'УНП'}}, true, undefined, 9, undefined, /^[\d]{9}$/,
     {
-      relation: 'GD_COMPANYCODE',
-      field: 'TAXID'
+      relation: 'GD_COMPANYCODE'
     }
   ));
+
+  /*
 
   const Group = erModel.add(new erm.Entity(undefined, 'Group', {ru: {name: 'Группа'}},
     false,
@@ -118,6 +180,8 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
   Group.add(new erm.ParentAttribute('PARENT', {ru: {name: 'Входит в папку'}}, [Folder]));
   Group.add(new erm.StringAttribute('NAME', {ru: {name: 'Наименование'}}, true));
   Group.add(new erm.SetAttribute('CONTACTLIST', {ru: {name: 'Контакты'}}, false, []));
+
+  */
 
   return erModel;
 }

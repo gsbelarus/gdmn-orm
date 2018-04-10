@@ -2,8 +2,8 @@
  *
  */
 
-import { LName, EntityAdapter, AttributeAdapter } from './types';
-import { Sequence2SequenceMap } from './rdbadapter';
+import { LName, EntityAdapter, AttributeAdapter, SequenceAdapter } from './types';
+import { MAX_32BIT_INT } from './rdbadapter';
 
 export class Attribute {
   private _name: string;
@@ -46,18 +46,40 @@ export class ScalarAttribute extends Attribute { }
 export class StringAttribute extends ScalarAttribute {
   private _minLength?: number;
   private _maxLength?: number;
-  private _default?: string;
+  private _defaultValue?: string;
   private _mask?: RegExp;
-}
-
-export class NumberAttribute extends ScalarAttribute {
-  private _minValue?: number;
-  private _maxValue?: number;
-  private _defaultValue?: number;
+  private _autoTrim: boolean = true;
 
   constructor(name: string, lName: LName, required: boolean,
-    minValue: number | undefined, maxValue: number | undefined,
-    defaultValue: number | undefined, adapter?: AttributeAdapter)
+    minLength: number | undefined, maxLength: number | undefined,
+    defaultValue: string | undefined, mask: RegExp | undefined,
+    adapter?: AttributeAdapter)
+  {
+    super(name, lName, required, adapter);
+    this._minLength = minLength;
+    this._maxLength = maxLength;
+    this._defaultValue = defaultValue;
+    this._mask = mask;
+  }
+}
+
+export class SequenceAttribute extends ScalarAttribute {
+  private _sequence: Sequence;
+
+  constructor(name: string, lName: LName, sequence: Sequence, adapter?: AttributeAdapter) {
+    super(name, lName, true, adapter);
+    this._sequence = sequence;
+  }
+}
+
+export class NumberAttribute<T> extends ScalarAttribute {
+  private _minValue?: T;
+  private _maxValue?: T;
+  private _defaultValue?: T;
+
+  constructor(name: string, lName: LName, required: boolean,
+    minValue: T | undefined, maxValue: T | undefined,
+    defaultValue: T | undefined, adapter?: AttributeAdapter)
   {
     super(name, lName, required, adapter);
     this._minValue = minValue;
@@ -90,19 +112,28 @@ export class NumberAttribute extends ScalarAttribute {
   }
 }
 
-export class IntegerAttribute extends NumberAttribute { }
+export class IntegerAttribute extends NumberAttribute<number> { }
 
-export class FloatAttribute extends NumberAttribute { }
+export class FloatAttribute extends NumberAttribute<number> { }
 
-export class NumericAttribute extends NumberAttribute { }
+export class NumericAttribute extends NumberAttribute<number> { }
 
-export class DateAttribute extends ScalarAttribute { }
+export class DateAttribute extends NumberAttribute<Date> { }
 
-export class TimeAttribute extends ScalarAttribute { }
+export class TimeAttribute extends NumberAttribute<Date> { }
 
-export class TimeStampAttribute extends ScalarAttribute { }
+export class TimeStampAttribute extends NumberAttribute<Date> { }
 
-export class BooleanAttribute extends ScalarAttribute { }
+export class BooleanAttribute extends ScalarAttribute {
+  private _defaultValue: boolean;
+
+  constructor(name: string, lName: LName, required: boolean,
+    defaultValue: boolean, adapter?: AttributeAdapter)
+  {
+    super(name, lName, required, adapter);
+    this._defaultValue = defaultValue;
+  }
+}
 
 export class EnumAttribute extends ScalarAttribute { }
 
@@ -137,10 +168,10 @@ export class Entity {
   readonly adapter?: EntityAdapter;
   private _pk: Attribute[] = [];
   private _attributes: Attributes = {};
-  private _generator
+  private _unique: Attribute[][] = [];
 
   constructor(parent: Entity | undefined, name: string, lName: LName,
-    isAbstract: boolean, sequence: Sequence | undefined, adapter?: EntityAdapter)
+    isAbstract: boolean, adapter?: EntityAdapter)
   {
     this.parent = parent;
     this.name = name;
@@ -155,6 +186,14 @@ export class Entity {
 
   get attributes() {
     return this._attributes;
+  }
+
+  get unique() {
+    return this._unique;
+  }
+
+  addUnique(value) {
+    this._unique.push(value);
   }
 
   attribute(name: string) {
@@ -184,9 +223,9 @@ export interface Entities {
 
 export class Sequence {
   private _name: string;
-  private _adapter?: Sequence2SequenceMap;
+  private _adapter?: SequenceAdapter;
 
-  constructor (name: string, adapter?: Sequence2SequenceMap) {
+  constructor (name: string, adapter?: SequenceAdapter) {
     this._name = name;
     this._adapter = adapter;
   }
