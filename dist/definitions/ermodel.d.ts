@@ -2,6 +2,7 @@
  *
  */
 import { LName, EntityAdapter, AttributeAdapter, SequenceAdapter } from './types';
+import { IEntity } from './interfaces';
 export declare class Attribute {
     private _name;
     private _lName;
@@ -63,6 +64,7 @@ export declare class TimeIntervalAttribute extends ScalarAttribute {
 export declare class EntityAttribute extends Attribute {
     private _entity;
     constructor(name: string, lName: LName, required: boolean, entity: Entity[], adapter?: AttributeAdapter);
+    readonly entity: Entity[];
 }
 export declare class ParentAttribute extends EntityAttribute {
     constructor(name: string, lName: LName, entity: Entity[], adapter?: AttributeAdapter);
@@ -108,4 +110,7 @@ export declare class ERModel {
     entity(name: string): Entity;
     add(entity: Entity): Entity;
     addSequence(sequence: Sequence): Sequence;
+    serialize(): {
+        entities: IEntity[];
+    };
 }

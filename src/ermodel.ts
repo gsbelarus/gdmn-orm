@@ -4,6 +4,7 @@
 
 import { LName, EntityAdapter, AttributeAdapter, SequenceAdapter } from './types';
 import { MAX_32BIT_INT } from './rdbadapter';
+import { IEntity, IAttribute } from './interfaces';
 
 export class Attribute {
   private _name: string;
@@ -146,6 +147,10 @@ export class EntityAttribute extends Attribute {
     super(name, lName, required, adapter);
     this._entity = entity;
   }
+
+  get entity() {
+    return this._entity;
+  }
 }
 
 export class ParentAttribute extends EntityAttribute {
@@ -271,5 +276,24 @@ export class ERModel {
       throw new Error(`Sequence ${sequence.name} already exists`);
     }
     return this._sequencies[sequence.name] = sequence;
+  }
+
+  serialize() {
+    const entities: IEntity[] = [];
+
+    Object.entries(this._entities).forEach( e => {
+      const attributes: IAttribute[] = [];
+      Object.entries(e[1].attributes).forEach( a => {
+        const attr: IAttribute = { name: a[0], type: a[1].constructor.name };
+        if (a[1] instanceof EntityAttribute) {
+          attributes.push({ ...attr, references: (a[1] as EntityAttribute).entity.map( ent => ent.name ) });
+        } else {
+          attributes.push(attr);
+        }
+      });
+      entities.push({ name: e[0], attributes });
+    });
+
+    return { entities };
   }
 }

@@ -109,6 +109,9 @@ class EntityAttribute extends Attribute {
         super(name, lName, required, adapter);
         this._entity = entity;
     }
+    get entity() {
+        return this._entity;
+    }
 }
 exports.EntityAttribute = EntityAttribute;
 class ParentAttribute extends EntityAttribute {
@@ -203,6 +206,23 @@ class ERModel {
             throw new Error(`Sequence ${sequence.name} already exists`);
         }
         return this._sequencies[sequence.name] = sequence;
+    }
+    serialize() {
+        const entities = [];
+        Object.entries(this._entities).forEach(e => {
+            const attributes = [];
+            Object.entries(e[1].attributes).forEach(a => {
+                const attr = { name: a[0], type: a[1].constructor.name };
+                if (a[1] instanceof EntityAttribute) {
+                    attributes.push(Object.assign({}, attr, { references: a[1].entity.map(ent => ent.name) }));
+                }
+                else {
+                    attributes.push(attr);
+                }
+            });
+            entities.push({ name: e[0], attributes });
+        });
+        return { entities };
     }
 }
 exports.ERModel = ERModel;
