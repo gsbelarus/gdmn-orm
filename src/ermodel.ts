@@ -6,6 +6,8 @@ import { LName, EntityAdapter, AttributeAdapter, SequenceAdapter } from './types
 import { MAX_32BIT_INT } from './rdbadapter';
 import { IEntity, IAttribute } from './interfaces';
 
+export type ContextVariables = 'CURRENT_TIMESTAMP' | 'CURRENT_DATE' | 'CURRENT_TIME';
+
 export class Attribute {
   private _name: string;
   private _lName: LName;
@@ -53,13 +55,14 @@ export class StringAttribute extends ScalarAttribute {
 
   constructor(name: string, lName: LName, required: boolean,
     minLength: number | undefined, maxLength: number | undefined,
-    defaultValue: string | undefined, mask: RegExp | undefined,
-    adapter?: AttributeAdapter)
+    defaultValue: string | undefined, autoTrim: boolean,
+    mask: RegExp | undefined, adapter?: AttributeAdapter)
   {
     super(name, lName, required, adapter);
     this._minLength = minLength;
     this._maxLength = maxLength;
     this._defaultValue = defaultValue;
+    this._autoTrim = autoTrim;
     this._mask = mask;
   }
 }
@@ -73,14 +76,14 @@ export class SequenceAttribute extends ScalarAttribute {
   }
 }
 
-export class NumberAttribute<T> extends ScalarAttribute {
+export class NumberAttribute<T, DF = undefined> extends ScalarAttribute {
   private _minValue?: T;
   private _maxValue?: T;
-  private _defaultValue?: T;
+  private _defaultValue?: T | DF;
 
   constructor(name: string, lName: LName, required: boolean,
     minValue: T | undefined, maxValue: T | undefined,
-    defaultValue: T | undefined, adapter?: AttributeAdapter)
+    defaultValue: T | undefined | DF, adapter?: AttributeAdapter)
   {
     super(name, lName, required, adapter);
     this._minValue = minValue;
@@ -123,7 +126,7 @@ export class DateAttribute extends NumberAttribute<Date> { }
 
 export class TimeAttribute extends NumberAttribute<Date> { }
 
-export class TimeStampAttribute extends NumberAttribute<Date> { }
+export class TimeStampAttribute extends NumberAttribute<Date, ContextVariables> { }
 
 export class BooleanAttribute extends ScalarAttribute {
   private _defaultValue: boolean;

@@ -29,12 +29,13 @@ class ScalarAttribute extends Attribute {
 }
 exports.ScalarAttribute = ScalarAttribute;
 class StringAttribute extends ScalarAttribute {
-    constructor(name, lName, required, minLength, maxLength, defaultValue, mask, adapter) {
+    constructor(name, lName, required, minLength, maxLength, defaultValue, autoTrim, mask, adapter) {
         super(name, lName, required, adapter);
         this._autoTrim = true;
         this._minLength = minLength;
         this._maxLength = maxLength;
         this._defaultValue = defaultValue;
+        this._autoTrim = autoTrim;
         this._mask = mask;
     }
 }

@@ -3,6 +3,7 @@
  */
 import { LName, EntityAdapter, AttributeAdapter, SequenceAdapter } from './types';
 import { IEntity } from './interfaces';
+export declare type ContextVariables = 'CURRENT_TIMESTAMP' | 'CURRENT_DATE' | 'CURRENT_TIME';
 export declare class Attribute {
     private _name;
     private _lName;
@@ -26,20 +27,20 @@ export declare class StringAttribute extends ScalarAttribute {
     private _defaultValue?;
     private _mask?;
     private _autoTrim;
-    constructor(name: string, lName: LName, required: boolean, minLength: number | undefined, maxLength: number | undefined, defaultValue: string | undefined, mask: RegExp | undefined, adapter?: AttributeAdapter);
+    constructor(name: string, lName: LName, required: boolean, minLength: number | undefined, maxLength: number | undefined, defaultValue: string | undefined, autoTrim: boolean, mask: RegExp | undefined, adapter?: AttributeAdapter);
 }
 export declare class SequenceAttribute extends ScalarAttribute {
     private _sequence;
     constructor(name: string, lName: LName, sequence: Sequence, adapter?: AttributeAdapter);
 }
-export declare class NumberAttribute<T> extends ScalarAttribute {
+export declare class NumberAttribute<T, DF = undefined> extends ScalarAttribute {
     private _minValue?;
     private _maxValue?;
     private _defaultValue?;
-    constructor(name: string, lName: LName, required: boolean, minValue: T | undefined, maxValue: T | undefined, defaultValue: T | undefined, adapter?: AttributeAdapter);
+    constructor(name: string, lName: LName, required: boolean, minValue: T | undefined, maxValue: T | undefined, defaultValue: T | undefined | DF, adapter?: AttributeAdapter);
     minValue: T;
     maxValue: T;
-    defaultValue: T;
+    defaultValue: T | DF;
 }
 export declare class IntegerAttribute extends NumberAttribute<number> {
 }
@@ -51,7 +52,7 @@ export declare class DateAttribute extends NumberAttribute<Date> {
 }
 export declare class TimeAttribute extends NumberAttribute<Date> {
 }
-export declare class TimeStampAttribute extends NumberAttribute<Date> {
+export declare class TimeStampAttribute extends NumberAttribute<Date, ContextVariables> {
 }
 export declare class BooleanAttribute extends ScalarAttribute {
     private _defaultValue;

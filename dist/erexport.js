@@ -59,8 +59,8 @@ function erExport(dbs, erModel) {
     Holiday.addUnique([
         Holiday.add(new erm.DateAttribute('HOLIDAYDATE', { ru: { name: 'Дата праздника' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), undefined))
     ]);
-    Holiday.add(new erm.StringAttribute('NAME', { ru: { name: 'Наименование' } }, true, undefined, 60, undefined, /^[\S].*[\S]$/));
-    Holiday.add(new erm.TimeStampAttribute('EDITIONDATE', { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), undefined));
+    Holiday.add(new erm.StringAttribute('NAME', { ru: { name: 'Наименование' } }, true, undefined, 60, undefined, true, undefined));
+    Holiday.add(new erm.TimeStampAttribute('EDITIONDATE', { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP'));
     Holiday.add(new erm.BooleanAttribute('DISABLED', { ru: { name: 'Отключено' } }, true, false));
     /**
      * Папка из справочника контактов.
@@ -80,44 +80,81 @@ function erExport(dbs, erModel) {
     }));
     Folder.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
     Folder.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в папку' } }, [Folder]));
-    Folder.add(new erm.StringAttribute('NAME', { ru: { name: 'Наименование' } }, true, undefined, 60, undefined, /^[\S].*[\S]$/));
-    Folder.add(new erm.TimeStampAttribute('EDITIONDATE', { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), undefined));
+    Folder.add(new erm.StringAttribute('NAME', { ru: { name: 'Наименование' } }, true, undefined, 60, undefined, true, undefined));
+    Folder.add(new erm.TimeStampAttribute('EDITIONDATE', { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP'));
     Folder.add(new erm.BooleanAttribute('DISABLED', { ru: { name: 'Отключено' } }, true, false));
     /**
      * Компания хранится в трех таблицах.
      * Две обязательные GD_CONTACT - GD_COMPANY. В адаптере они указываются
      * в массиве relation и соединяются в запросе оператором JOIN.
-     * Первой указывается главная таблица. Первичный ключ дополнительной таблицы
-     * должен одновременно являть внешним ключем на главную.
+     * Первой указывается главная таблица. Остальные таблицы называются
+     * дополнительными. Первичный ключ дополнительной таблицы
+     * должен одновременно являться внешним ключем на главную.
      * Третья -- GD_COMPANYCODE -- необязательная. Подключается через LEFT JOIN.
      * Для атрибутов из главной таблицы можно не указывать адаптер, если их имя
      * совпадает с именем поля.
+     * Флаг refresh означает, что после вставки/изменения записи ее надо перечитать.
      */
     const Company = erModel.add(new erm.Entity(undefined, 'Company', { ru: { name: 'Организация' } }, false, {
         relation: [
             {
                 relation: 'GD_CONTACT',
-                structure: 'LBRB'
+                structure: 'LBRB',
+                selector: {
+                    field: 'CONTACTTYPE',
+                    value: 3
+                }
             },
             {
                 relation: 'GD_COMPANY'
+            },
+            {
+                relation: 'GD_COMPANYCODE',
+                weak: true
             }
         ],
-        weakRelation: {
-            relation: 'GD_COMPANYCODE'
-        },
-        structure: 'LBRB',
         refresh: true
     }));
     Company.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
     Company.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в папку' } }, [Folder]));
-    Company.add(new erm.StringAttribute('NAME', { ru: { name: 'Краткое наименование' } }, true, undefined, 60, undefined, /^[\S].*[\S]$/));
-    Company.add(new erm.StringAttribute('PHONE', { ru: { name: 'Номер телефона' } }, true, undefined, 40, undefined, /^[\d+-,]{7,40}$/));
-    Company.add(new erm.StringAttribute('FULLNAME', { ru: { name: 'Полное наименование' } }, true, undefined, 180, undefined, /^[\S].*[\S]$/, {
+    Company.add(new erm.StringAttribute('NAME', { ru: { name: 'Краткое наименование' } }, true, undefined, 60, undefined, true, undefined));
+    Company.add(new erm.StringAttribute('PHONE', { ru: { name: 'Номер телефона' } }, true, undefined, 40, undefined, true, /^[\d+-,]{7,40}$/));
+    Company.add(new erm.StringAttribute('FULLNAME', { ru: { name: 'Полное наименование' } }, true, undefined, 180, undefined, true, undefined, {
         relation: 'GD_COMPANY'
     }));
-    Company.add(new erm.StringAttribute('TAXID', { ru: { name: 'УНП' } }, true, undefined, 9, undefined, /^[\d]{9}$/, {
+    Company.add(new erm.StringAttribute('TAXID', { ru: { name: 'УНП' } }, false, undefined, 9, undefined, true, /^[\d]{9}$/, {
         relation: 'GD_COMPANYCODE'
+    }));
+    /**
+     * Банк является частным случаем компании (наследуется от компании).
+     * Все поля компании являются и полями банка и не нуждаются в повторном
+     * определении.
+     */
+    const Bank = erModel.add(new erm.Entity(Company, 'Bank', { ru: { name: 'Банк' } }, false, {
+        relation: [
+            {
+                relation: 'GD_CONTACT',
+                structure: 'LBRB',
+                selector: {
+                    field: 'CONTACTTYPE',
+                    value: 4
+                }
+            },
+            {
+                relation: 'GD_COMPANY'
+            },
+            {
+                relation: 'GD_BANK'
+            },
+            {
+                relation: 'GD_COMPANYCODE',
+                weak: true
+            }
+        ],
+        refresh: true
+    }));
+    Bank.add(new erm.StringAttribute('BANKCODE', { ru: { name: 'Код банка' } }, true, undefined, 20, undefined, true, undefined, {
+        relation: 'GD_BANK'
     }));
     /*
   
