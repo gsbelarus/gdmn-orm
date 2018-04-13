@@ -179,7 +179,7 @@ export class ParentAttribute extends EntityAttribute {
 export class DetailAttribute extends EntityAttribute { }
 
 export class SetAttribute extends EntityAttribute {
-  private _attributes: Attributes;
+  private _attributes: Attributes = {};
 
   attribute(name: string) {
     const found = this._attributes[name];

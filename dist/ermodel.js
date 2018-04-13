@@ -134,6 +134,10 @@ class DetailAttribute extends EntityAttribute {
 }
 exports.DetailAttribute = DetailAttribute;
 class SetAttribute extends EntityAttribute {
+    constructor() {
+        super(...arguments);
+        this._attributes = {};
+    }
     attribute(name) {
         const found = this._attributes[name];
         if (!found) {
