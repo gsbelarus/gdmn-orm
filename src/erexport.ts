@@ -370,5 +370,27 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
     new erm.TimeStampAttribute('EDITIONDATE', {ru: {name: 'Изменено'}}, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP')
   );
 
+  /**
+   * Документ.
+   */
+  const Document = erModel.add(new erm.Entity(undefined, 'Document', {ru: {name: 'Документ'}},
+    true,
+    {
+      relation: {
+        relation: 'GD_DOCUMENT',
+        structure: 'PARENT'
+      }
+    }
+  ));
+  Document.add(
+    new erm.SequenceAttribute('ID', {ru: {name: 'Идентификатор'}}, GDGUnique)
+  );
+  Document.add(
+    new erm.ParentAttribute('PARENT', {ru: {name: 'Входит в'}}, [Document])
+  );
+  Document.add(
+    new erm.TimeStampAttribute('EDITIONDATE', {ru: {name: 'Изменено'}}, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP')
+  );
+
   return erModel;
 }
