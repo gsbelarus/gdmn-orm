@@ -230,7 +230,7 @@ export class Entity {
   }
 
   get attributes() {
-    if (parent) {
+    if (this.parent) {
       return {...this._attributes, ...this.parent.attributes};
     } else {
       return this._attributes;

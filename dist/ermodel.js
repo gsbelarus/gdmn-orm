@@ -167,7 +167,7 @@ class Entity {
         return this._pk;
     }
     get attributes() {
-        if (parent) {
+        if (this.parent) {
             return Object.assign({}, this._attributes, this.parent.attributes);
         }
         else {
