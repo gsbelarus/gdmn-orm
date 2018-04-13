@@ -22,3 +22,6 @@ export interface Attribute2FieldMap extends AttributeAdapter {
     relation?: string;
     field?: string;
 }
+export interface SetAttribute2CrossMap extends AttributeAdapter {
+    crossRelation: string;
+}

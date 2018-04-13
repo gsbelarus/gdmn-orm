@@ -19,7 +19,9 @@
   },
   "homepage": "https://github.com/gsbelarus/gdmn-orm#readme",
   "dependencies": {
-    "gdmn-db": "git://github.com/gsbelarus/gdmn-db.git"
+    "@types/lodash": "^4.14.106",
+    "gdmn-db": "git://github.com/gsbelarus/gdmn-db.git",
+    "lodash": "^4.17.5"
   },
   "devDependencies": {
     "@types/node": "^9.6.1"

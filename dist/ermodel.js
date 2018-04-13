@@ -23,6 +23,12 @@ class Attribute {
     get calculated() {
         return this._calculated;
     }
+    serialize() {
+        return {
+            name: this.name,
+            type: this.constructor.name
+        };
+    }
 }
 exports.Attribute = Attribute;
 class ScalarAttribute extends Attribute {
@@ -113,6 +119,9 @@ class EntityAttribute extends Attribute {
     get entity() {
         return this._entity;
     }
+    serialize() {
+        return Object.assign({}, super.serialize(), { references: this.entity.map(ent => ent.name) });
+    }
 }
 exports.EntityAttribute = EntityAttribute;
 class ParentAttribute extends EntityAttribute {
@@ -125,6 +134,22 @@ class DetailAttribute extends EntityAttribute {
 }
 exports.DetailAttribute = DetailAttribute;
 class SetAttribute extends EntityAttribute {
+    attribute(name) {
+        const found = this._attributes[name];
+        if (!found) {
+            throw new Error(`Unknown attribute ${name}`);
+        }
+        return found;
+    }
+    add(attribute) {
+        if (this.attribute(attribute.name)) {
+            throw new Error(`Attribute ${attribute.name} already exists`);
+        }
+        return this._attributes[attribute.name] = attribute;
+    }
+    serialize() {
+        return Object.assign({}, super.serialize(), { attributes: Object.entries(this._attributes).map(a => a[1].serialize()) });
+    }
 }
 exports.SetAttribute = SetAttribute;
 class Entity {
@@ -142,7 +167,12 @@ class Entity {
         return this._pk;
     }
     get attributes() {
-        return this._attributes;
+        if (parent) {
+            return Object.assign({}, this._attributes, this.parent.attributes);
+        }
+        else {
+            return this._attributes;
+        }
     }
     get unique() {
         return this._unique;
@@ -151,20 +181,27 @@ class Entity {
         this._unique.push(value);
     }
     attribute(name) {
-        const found = this._attributes[name];
+        const found = this.attributes[name];
         if (!found) {
             throw new Error(`Unknown attribute ${name}`);
         }
         return found;
     }
     add(attribute) {
-        if (this._attributes[attribute.name]) {
+        if (this.attribute(attribute.name)) {
             throw new Error(`Attribute ${attribute.name} already exists`);
         }
         if (!this._pk.length) {
             this._pk.push(attribute);
         }
         return this._attributes[attribute.name] = attribute;
+    }
+    serialize() {
+        return {
+            parent: this.parent ? this.parent.name : undefined,
+            name: this.name,
+            attributes: Object.entries(this._attributes).map(a => a[1].serialize())
+        };
     }
 }
 exports.Entity = Entity;
@@ -209,21 +246,7 @@ class ERModel {
         return this._sequencies[sequence.name] = sequence;
     }
     serialize() {
-        const entities = [];
-        Object.entries(this._entities).forEach(e => {
-            const attributes = [];
-            Object.entries(e[1].attributes).forEach(a => {
-                const attr = { name: a[0], type: a[1].constructor.name };
-                if (a[1] instanceof EntityAttribute) {
-                    attributes.push(Object.assign({}, attr, { references: a[1].entity.map(ent => ent.name) }));
-                }
-                else {
-                    attributes.push(attr);
-                }
-            });
-            entities.push({ name: e[0], attributes });
-        });
-        return { entities };
+        return { entities: Object.entries(this._entities).map(e => e[1].serialize()) };
     }
 }
 exports.ERModel = ERModel;

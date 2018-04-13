@@ -4,7 +4,7 @@
 
 import { LName, EntityAdapter, AttributeAdapter, SequenceAdapter } from './types';
 import { MAX_32BIT_INT } from './rdbadapter';
-import { IEntity, IAttribute } from './interfaces';
+import { IEntity, IAttribute, IERModel } from './interfaces';
 
 export type ContextVariables = 'CURRENT_TIMESTAMP' | 'CURRENT_DATE' | 'CURRENT_TIME';
 
@@ -37,6 +37,13 @@ export class Attribute {
 
   get calculated() {
     return this._calculated;
+  }
+
+  serialize(): IAttribute {
+    return {
+      name: this.name,
+      type: this.constructor.name
+    }
   }
 }
 
@@ -154,6 +161,13 @@ export class EntityAttribute extends Attribute {
   get entity() {
     return this._entity;
   }
+
+  serialize(): IAttribute {
+    return {
+      ...super.serialize(),
+      references: this.entity.map( ent => ent.name )
+    }
+  }
 }
 
 export class ParentAttribute extends EntityAttribute {
@@ -165,7 +179,30 @@ export class ParentAttribute extends EntityAttribute {
 export class DetailAttribute extends EntityAttribute { }
 
 export class SetAttribute extends EntityAttribute {
-  private _fields: Attributes;
+  private _attributes: Attributes;
+
+  attribute(name: string) {
+    const found = this._attributes[name];
+    if (!found) {
+      throw new Error(`Unknown attribute ${name}`);
+    }
+    return found;
+  }
+
+  add(attribute: Attribute) {
+    if (this.attribute(attribute.name)) {
+      throw new Error(`Attribute ${attribute.name} already exists`);
+    }
+
+    return this._attributes[attribute.name] = attribute;
+  }
+
+  serialize(): IAttribute {
+    return {
+      ...super.serialize(),
+      attributes: Object.entries(this._attributes).map( a => a[1].serialize() )
+    }
+  }
 }
 
 export class Entity {
@@ -193,7 +230,11 @@ export class Entity {
   }
 
   get attributes() {
-    return this._attributes;
+    if (parent) {
+      return {...this._attributes, ...this.parent.attributes};
+    } else {
+      return this._attributes;
+    }
   }
 
   get unique() {
@@ -205,7 +246,7 @@ export class Entity {
   }
 
   attribute(name: string) {
-    const found = this._attributes[name];
+    const found = this.attributes[name];
     if (!found) {
       throw new Error(`Unknown attribute ${name}`);
     }
@@ -213,7 +254,7 @@ export class Entity {
   }
 
   add(attribute: Attribute) {
-    if (this._attributes[attribute.name]) {
+    if (this.attribute(attribute.name)) {
       throw new Error(`Attribute ${attribute.name} already exists`);
     }
 
@@ -222,6 +263,14 @@ export class Entity {
     }
 
     return this._attributes[attribute.name] = attribute;
+  }
+
+  serialize(): IEntity {
+    return {
+      parent: this.parent ? this.parent.name : undefined,
+      name: this.name,
+      attributes: Object.entries(this._attributes).map( a => a[1].serialize() )
+    };
   }
 }
 
@@ -281,22 +330,7 @@ export class ERModel {
     return this._sequencies[sequence.name] = sequence;
   }
 
-  serialize() {
-    const entities: IEntity[] = [];
-
-    Object.entries(this._entities).forEach( e => {
-      const attributes: IAttribute[] = [];
-      Object.entries(e[1].attributes).forEach( a => {
-        const attr: IAttribute = { name: a[0], type: a[1].constructor.name };
-        if (a[1] instanceof EntityAttribute) {
-          attributes.push({ ...attr, references: (a[1] as EntityAttribute).entity.map( ent => ent.name ) });
-        } else {
-          attributes.push(attr);
-        }
-      });
-      entities.push({ name: e[0], attributes });
-    });
-
-    return { entities };
+  serialize(): IERModel {
+    return { entities: Object.entries(this._entities).map( e => e[1].serialize() ) };
   }
 }

@@ -127,28 +127,24 @@ function erExport(dbs, erModel) {
     }));
     /**
      * Банк является частным случаем компании (наследуется от компании).
-     * Все поля компании являются и полями банка и не нуждаются в повторном
-     * определении.
+     * В адаптере мы указываем только те таблицы (значения), которые
+     * отличаются от родителя. Результирующий адаптер получается слиянием
+     * родительского адаптера и текущего.
+     * Все атрибуты компании являются и атрибутами банка и не нуждаются
+     * в повторном определении, за тем исключением, если мы хотим что-то
+     * поменять в параметрах атрибута.
      */
     const Bank = erModel.add(new erm.Entity(Company, 'Bank', { ru: { name: 'Банк' } }, false, {
         relation: [
             {
                 relation: 'GD_CONTACT',
-                structure: 'LBRB',
                 selector: {
                     field: 'CONTACTTYPE',
-                    value: 4
+                    value: 5
                 }
             },
             {
-                relation: 'GD_COMPANY'
-            },
-            {
                 relation: 'GD_BANK'
-            },
-            {
-                relation: 'GD_COMPANYCODE',
-                weak: true
             }
         ],
         refresh: true
@@ -156,25 +152,80 @@ function erExport(dbs, erModel) {
     Bank.add(new erm.StringAttribute('BANKCODE', { ru: { name: 'Код банка' } }, true, undefined, 20, undefined, true, undefined, {
         relation: 'GD_BANK'
     }));
-    /*
-  
-    const Group = erModel.add(new erm.Entity(undefined, 'Group', {ru: {name: 'Группа'}},
-      false,
-      {
+    /**
+     * Подразделение организации может входить (через поле Parent) в
+     * организацию (компания, банк) или в другое подразделение.
+     */
+    const Department = erModel.add(new erm.Entity(undefined, 'Department', { ru: { name: 'Подразделение' } }, false, {
+        relation: {
+            relation: 'GD_CONTACT',
+            structure: 'LBRB',
+            selector: {
+                field: 'CONTACTTYPE',
+                value: 4
+            }
+        }
+    }));
+    Department.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
+    Department.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в организацию (подразделение)' } }, [Company, Department]));
+    Department.add(new erm.StringAttribute('NAME', { ru: { name: 'Наименование' } }, true, undefined, 60, undefined, true, undefined));
+    Department.add(new erm.TimeStampAttribute('EDITIONDATE', { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP'));
+    Department.add(new erm.BooleanAttribute('DISABLED', { ru: { name: 'Отключено' } }, true, false));
+    /**
+     * Физическое лицо хранится в двух таблицах GD_CONTACT - GD_PEOPLE.
+     */
+    const Person = erModel.add(new erm.Entity(undefined, 'Person', { ru: { name: 'Физическое лицо' } }, false, {
+        relation: [
+            {
+                relation: 'GD_CONTACT',
+                structure: 'LBRB',
+                selector: {
+                    field: 'CONTACTTYPE',
+                    value: 2
+                }
+            },
+            {
+                relation: 'GD_PEOPLE'
+            }
+        ],
+        refresh: true
+    }));
+    Person.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
+    Person.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в папку' } }, [Folder]));
+    Person.add(new erm.StringAttribute('NAME', { ru: { name: 'ФИО' } }, true, undefined, 60, undefined, true, undefined));
+    Person.add(new erm.StringAttribute('PHONE', { ru: { name: 'Номер телефона' } }, true, undefined, 40, undefined, true, /^[\d+-,]{7,40}$/));
+    Person.add(new erm.StringAttribute('SURNAME', { ru: { name: 'Фамилия' } }, true, undefined, 20, undefined, true, undefined, {
+        relation: 'GD_PEOPLE'
+    }));
+    /**
+     * Сотрудник, частный случай физического лица.
+     * Добавляется таблица GD_EMPLOYEE.
+     */
+    const Employee = erModel.add(new erm.Entity(Person, 'Employee', { ru: { name: 'Физическое лицо' } }, false, {
+        relation: {
+            relation: 'GD_EMPLOYEE'
+        }
+    }));
+    Employee.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Организация или подразделение' } }, [Company, Department]));
+    /**
+     * Группа контактов.
+     * CONTACTLIST -- множество, которое хранится в кросс-таблице.
+     */
+    const Group = erModel.add(new erm.Entity(undefined, 'Group', { ru: { name: 'Группа' } }, false, {
         relation: 'GD_CONTACT',
         structure: 'LBRB',
         selector: {
-          field: 'CONTACTTYPE',
-          value: 1
+            field: 'CONTACTTYPE',
+            value: 1
         }
-      }
-    ));
-    Group.add(new erm.IntegerAttribute('ID', {ru: {name: 'Идентификатор'}}, true));
-    Group.add(new erm.ParentAttribute('PARENT', {ru: {name: 'Входит в папку'}}, [Folder]));
-    Group.add(new erm.StringAttribute('NAME', {ru: {name: 'Наименование'}}, true));
-    Group.add(new erm.SetAttribute('CONTACTLIST', {ru: {name: 'Контакты'}}, false, []));
-  
-    */
+    }));
+    Group.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
+    Group.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в папку' } }, [Folder]));
+    Group.add(new erm.StringAttribute('NAME', { ru: { name: 'Наименование' } }, true, undefined, 60, undefined, true, undefined));
+    const ContactList = Group.add(new erm.SetAttribute('CONTACTLIST', { ru: { name: 'Контакты' } }, false, [Company, Person], {
+        crossRelation: 'GD_CONTACTLIST'
+    }));
+    ContactList.add(new erm.IntegerAttribute('RESERVED', { ru: { name: 'Зарезервировано' } }, false, undefined, undefined, undefined));
     return erModel;
 }
 exports.erExport = erExport;

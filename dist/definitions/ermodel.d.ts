@@ -2,7 +2,7 @@
  *
  */
 import { LName, EntityAdapter, AttributeAdapter, SequenceAdapter } from './types';
-import { IEntity } from './interfaces';
+import { IEntity, IAttribute, IERModel } from './interfaces';
 export declare type ContextVariables = 'CURRENT_TIMESTAMP' | 'CURRENT_DATE' | 'CURRENT_TIME';
 export declare class Attribute {
     private _name;
@@ -15,6 +15,7 @@ export declare class Attribute {
     readonly lName: LName;
     readonly required: boolean;
     readonly calculated: boolean;
+    serialize(): IAttribute;
 }
 export interface Attributes {
     [name: string]: Attribute;
@@ -66,6 +67,7 @@ export declare class EntityAttribute extends Attribute {
     private _entity;
     constructor(name: string, lName: LName, required: boolean, entity: Entity[], adapter?: AttributeAdapter);
     readonly entity: Entity[];
+    serialize(): IAttribute;
 }
 export declare class ParentAttribute extends EntityAttribute {
     constructor(name: string, lName: LName, entity: Entity[], adapter?: AttributeAdapter);
@@ -73,7 +75,10 @@ export declare class ParentAttribute extends EntityAttribute {
 export declare class DetailAttribute extends EntityAttribute {
 }
 export declare class SetAttribute extends EntityAttribute {
-    private _fields;
+    private _attributes;
+    attribute(name: string): Attribute;
+    add(attribute: Attribute): Attribute;
+    serialize(): IAttribute;
 }
 export declare class Entity {
     readonly parent?: Entity;
@@ -86,11 +91,12 @@ export declare class Entity {
     private _unique;
     constructor(parent: Entity | undefined, name: string, lName: LName, isAbstract: boolean, adapter?: EntityAdapter);
     readonly pk: Attribute[];
-    readonly attributes: Attributes;
+    readonly attributes: any;
     readonly unique: Attribute[][];
     addUnique(value: any): void;
-    attribute(name: string): Attribute;
+    attribute(name: string): any;
     add(attribute: Attribute): Attribute;
+    serialize(): IEntity;
 }
 export interface Entities {
     [name: string]: Entity;
@@ -111,7 +117,5 @@ export declare class ERModel {
     entity(name: string): Entity;
     add(entity: Entity): Entity;
     addSequence(sequence: Sequence): Sequence;
-    serialize(): {
-        entities: IEntity[];
-    };
+    serialize(): IERModel;
 }
