@@ -331,5 +331,44 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
     new erm.IntegerAttribute('RESERVED', {ru: {name: 'Зарезервировано'}}, false, undefined, undefined, undefined)
   );
 
+  /**
+   * Административно-территориальная единица.
+   * Тут исключительно для иллюстрации типа данных Перечисление.
+   */
+  const Place = erModel.add(new erm.Entity(undefined, 'Place', {ru: {name: 'Папка'}},
+    false,
+    {
+      relation: {
+        relation: 'GD_PLACE',
+        structure: 'LBRB'
+      }
+    }
+  ));
+  Place.add(
+    new erm.SequenceAttribute('ID', {ru: {name: 'Идентификатор'}}, GDGUnique)
+  );
+  Place.add(
+    new erm.ParentAttribute('PARENT', {ru: {name: 'Входит в'}}, [Place])
+  );
+  Place.add(
+    new erm.StringAttribute('NAME', {ru: {name: 'Наименование'}}, true, undefined, 60, undefined, true, undefined)
+  );
+  Place.add(
+    new erm.EnumAttribute('PLACETYPE', {ru: {name: 'Тип'}}, true,
+      [
+        {
+          value: 'Область'
+        },
+        {
+          value: 'Район'
+        },
+      ],
+      'Область'
+    )
+  );
+  Place.add(
+    new erm.TimeStampAttribute('EDITIONDATE', {ru: {name: 'Изменено'}}, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP')
+  );
+
   return erModel;
 }

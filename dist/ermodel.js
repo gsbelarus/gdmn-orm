@@ -106,6 +106,11 @@ class BooleanAttribute extends ScalarAttribute {
 }
 exports.BooleanAttribute = BooleanAttribute;
 class EnumAttribute extends ScalarAttribute {
+    constructor(name, lName, required, values, defaultValue, adapter) {
+        super(name, lName, required, adapter);
+        this._values = values;
+        this._defaultValue = defaultValue;
+    }
 }
 exports.EnumAttribute = EnumAttribute;
 class TimeIntervalAttribute extends ScalarAttribute {

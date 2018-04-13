@@ -59,7 +59,14 @@ export declare class BooleanAttribute extends ScalarAttribute {
     private _defaultValue;
     constructor(name: string, lName: LName, required: boolean, defaultValue: boolean, adapter?: AttributeAdapter);
 }
+export interface EnumValue {
+    value: string | number;
+    lName?: LName;
+}
 export declare class EnumAttribute extends ScalarAttribute {
+    private _values;
+    private _defaultValue;
+    constructor(name: string, lName: LName, required: boolean, values: EnumValue[], defaultValue: string | number | undefined, adapter?: AttributeAdapter);
 }
 export declare class TimeIntervalAttribute extends ScalarAttribute {
 }
