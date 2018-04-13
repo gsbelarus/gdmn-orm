@@ -231,7 +231,7 @@ export class Entity {
 
   get attributes() {
     if (this.parent) {
-      return {...this._attributes, ...this.parent.attributes};
+      return {...this.parent.attributes, ...this._attributes};
     } else {
       return this._attributes;
     }
@@ -254,7 +254,7 @@ export class Entity {
   }
 
   add(attribute: Attribute) {
-    if (this.attributes[attribute.name]) {
+    if (this._attributes[attribute.name]) {
       throw new Error(`Attribute ${attribute.name} already exists`);
     }
 

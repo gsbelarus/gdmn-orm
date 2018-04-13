@@ -168,7 +168,7 @@ class Entity {
     }
     get attributes() {
         if (this.parent) {
-            return Object.assign({}, this._attributes, this.parent.attributes);
+            return Object.assign({}, this.parent.attributes, this._attributes);
         }
         else {
             return this._attributes;
@@ -188,7 +188,7 @@ class Entity {
         return found;
     }
     add(attribute) {
-        if (this.attributes[attribute.name]) {
+        if (this._attributes[attribute.name]) {
             throw new Error(`Attribute ${attribute.name} already exists`);
         }
         if (!this._pk.length) {
