@@ -142,7 +142,7 @@ class SetAttribute extends EntityAttribute {
         return found;
     }
     add(attribute) {
-        if (this.attribute(attribute.name)) {
+        if (this._attributes[attribute.name]) {
             throw new Error(`Attribute ${attribute.name} already exists`);
         }
         return this._attributes[attribute.name] = attribute;
@@ -188,7 +188,7 @@ class Entity {
         return found;
     }
     add(attribute) {
-        if (this.attribute(attribute.name)) {
+        if (this.attributes[attribute.name]) {
             throw new Error(`Attribute ${attribute.name} already exists`);
         }
         if (!this._pk.length) {

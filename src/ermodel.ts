@@ -190,7 +190,7 @@ export class SetAttribute extends EntityAttribute {
   }
 
   add(attribute: Attribute) {
-    if (this.attribute(attribute.name)) {
+    if (this._attributes[attribute.name]) {
       throw new Error(`Attribute ${attribute.name} already exists`);
     }
 
@@ -254,7 +254,7 @@ export class Entity {
   }
 
   add(attribute: Attribute) {
-    if (this.attribute(attribute.name)) {
+    if (this.attributes[attribute.name]) {
       throw new Error(`Attribute ${attribute.name} already exists`);
     }
 
