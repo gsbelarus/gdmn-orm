@@ -91,10 +91,10 @@ export declare class Entity {
     private _unique;
     constructor(parent: Entity | undefined, name: string, lName: LName, isAbstract: boolean, adapter?: EntityAdapter);
     readonly pk: Attribute[];
-    readonly attributes: any;
+    readonly attributes: Attributes;
     readonly unique: Attribute[][];
     addUnique(value: any): void;
-    attribute(name: string): any;
+    attribute(name: string): Attribute;
     add(attribute: Attribute): Attribute;
     serialize(): IEntity;
 }

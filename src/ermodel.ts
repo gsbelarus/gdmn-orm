@@ -229,7 +229,7 @@ export class Entity {
     return this._pk;
   }
 
-  get attributes() {
+  get attributes(): Attributes {
     if (this.parent) {
       return {...this.parent.attributes, ...this._attributes};
     } else {
@@ -269,7 +269,7 @@ export class Entity {
     return {
       parent: this.parent ? this.parent.name : undefined,
       name: this.name,
-      attributes: Object.entries(this._attributes).map( a => a[1].serialize() )
+      attributes: Object.entries(this.attributes).map( a => a[1].serialize() )
     };
   }
 }
