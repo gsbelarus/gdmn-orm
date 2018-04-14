@@ -33,4 +33,5 @@ export interface Attribute2FieldMap extends AttributeAdapter {
 
 export interface SetAttribute2CrossMap extends AttributeAdapter {
   crossRelation: string;
+  presentationField?: string;
 }

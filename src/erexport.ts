@@ -1,4 +1,4 @@
-import { DBStructure, IRefConstraints, FKConstraint } from 'gdmn-db';
+import { DBStructure, IRefConstraints, FKConstraint, Relation } from 'gdmn-db';
 import * as erm from './ermodel';
 import { MAX_32BIT_INT } from './rdbadapter';
 
@@ -12,32 +12,6 @@ function isFieldRef(fieldName: string, fk: IRefConstraints) {
 };
 
 export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
-
-  /*
-  function createEntity(relation) {
-    console.log(relation.name);
-
-    if (erModel.entities[relation.name]) {
-      return erModel.entities[relation.name];
-    }
-
-    const pkFields = relation.primaryKey.fields.join();
-
-    for (const fkName in relation.foreignKeys) {
-      const fk = relation.foreignKeys[fkName];
-      if (fk.fields.join() === pkFields) {
-        return erModel.add(new Entity(createEntity(dbs.relationByUqConstraint(fk.constNameUq)), relation.name, relation.name));
-      }
-    }
-
-    return erModel.add(new Entity(undefined, relation.name, relation.name));
-  };
-
-  dbs.forEachRelation( r => {
-    if (!r.primaryKey) return;
-    createEntity(r);
-  });
-  */
 
   /**
    * Если имя генератора совпадает с именем объекта в БД, то адаптер можем не указывать.
@@ -391,6 +365,37 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
   Document.add(
     new erm.TimeStampAttribute('EDITIONDATE', {ru: {name: 'Изменено'}}, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP')
   );
+
+  function createEntity(relation: Relation) {
+    if (erModel.entities[relation.name]) {
+      return erModel.entities[relation.name];
+    }
+
+    const pkFields = relation.primaryKey.fields.join();
+
+    Object.entries(relation.foreignKeys).forEach( fk => {
+      if (fk[1].fields.join() === pkFields) {
+        return erModel.add(new erm.Entity(
+          createEntity(dbs.relationByUqConstraint(fk[1].constNameUq)),
+          relation.name,
+          {en: {name: relation.name}},
+          false
+        ));
+      }
+    });
+
+    return erModel.add(new erm.Entity(
+      undefined, relation.name,
+      {en: {name: relation.name}},
+      false
+    ));
+  };
+
+  dbs.forEachRelation( r => {
+    if (r.primaryKey && r.primaryKey.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)) {
+      createEntity(r);
+    }
+  });
 
   return erModel;
 }
