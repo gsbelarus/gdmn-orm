@@ -236,6 +236,8 @@ function erExport(dbs, erModel) {
     Document.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в' } }, [Document]));
     Document.add(new erm.TimeStampAttribute('EDITIONDATE', { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP'));
     function createEntity(relation) {
+        console.log(relation.name);
+        console.log(erModel.entities[relation.name]);
         if (erModel.entities[relation.name]) {
             return erModel.entities[relation.name];
         }

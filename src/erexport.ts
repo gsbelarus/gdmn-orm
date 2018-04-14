@@ -367,6 +367,9 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
   );
 
   function createEntity(relation: Relation) {
+    console.log(relation.name);
+    console.log(erModel.entities[relation.name]);
+
     if (erModel.entities[relation.name]) {
       return erModel.entities[relation.name];
     }
