@@ -236,10 +236,23 @@ function erExport(dbs, erModel) {
     Document.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в' } }, [Document]));
     Document.add(new erm.TimeStampAttribute('EDITIONDATE', { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP'));
     function createEntity(relation) {
-        console.log(relation.name);
-        console.log(erModel.entities[relation.name]);
-        if (erModel.entities[relation.name]) {
-            return erModel.entities[relation.name];
+        const found = Object.entries(erModel.entities).find(e => {
+            if (e[1].adapter && e[1].adapter['relation']) {
+                let adapterRelations;
+                if (Array.isArray(e[1].adapter['relation'])) {
+                    adapterRelations = e[1].adapter['relation'];
+                }
+                else {
+                    adapterRelations = [e[1].adapter['relation']];
+                }
+                return !!adapterRelations.find(r => r.relation === relation.name && !r.weak);
+            }
+            else {
+                return e[0] === relation.name;
+            }
+        });
+        if (found) {
+            return found[1];
         }
         const pkFields = relation.primaryKey.fields.join();
         Object.entries(relation.foreignKeys).forEach(fk => {

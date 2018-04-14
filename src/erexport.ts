@@ -1,6 +1,6 @@
 import { DBStructure, IRefConstraints, FKConstraint, Relation } from 'gdmn-db';
 import * as erm from './ermodel';
-import { MAX_32BIT_INT } from './rdbadapter';
+import * as rdbadapter from './rdbadapter';
 
 function isFieldRef(fieldName: string, fk: IRefConstraints) {
   for (const cName in fk) {
@@ -366,12 +366,24 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
     new erm.TimeStampAttribute('EDITIONDATE', {ru: {name: 'Изменено'}}, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP')
   );
 
-  function createEntity(relation: Relation) {
-    console.log(relation.name);
-    console.log(erModel.entities[relation.name]);
+  function createEntity(relation: Relation): erm.Entity {
 
-    if (erModel.entities[relation.name]) {
-      return erModel.entities[relation.name];
+    const found = Object.entries(erModel.entities).find( e => {
+      if (e[1].adapter && e[1].adapter['relation']) {
+        let adapterRelations: rdbadapter.Relation[];
+        if (Array.isArray(e[1].adapter['relation'])) {
+          adapterRelations = e[1].adapter['relation'];
+        } else {
+          adapterRelations = [e[1].adapter['relation']];
+        }
+        return !!adapterRelations.find( r => r.relation === relation.name && !r.weak);
+      } else {
+        return e[0] === relation.name;
+      }
+    });
+
+    if (found) {
+      return found[1];
     }
 
     const pkFields = relation.primaryKey.fields.join();

@@ -3,7 +3,6 @@
  */
 
 import { LName, EntityAdapter, AttributeAdapter, SequenceAdapter } from './types';
-import { MAX_32BIT_INT } from './rdbadapter';
 import { IEntity, IAttribute, IERModel } from './interfaces';
 
 export type ContextVariables = 'CURRENT_TIMESTAMP' | 'CURRENT_DATE' | 'CURRENT_TIME';
