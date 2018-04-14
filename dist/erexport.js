@@ -252,16 +252,18 @@ function erExport(dbs, erModel) {
             }
         });
         if (found) {
+            console.log('found -- ' + relation.name);
             return found[1];
         }
         const pkFields = relation.primaryKey.fields.join();
         Object.entries(relation.foreignKeys).forEach(fk => {
             if (fk[1].fields.join() === pkFields) {
-                console.log(relation.name);
-                console.log(dbs.relationByUqConstraint(fk[1].constNameUq));
+                console.log('inherited -- ' + relation.name);
+                console.log('parent -- ' + dbs.relationByUqConstraint(fk[1].constNameUq));
                 return erModel.add(new erm.Entity(createEntity(dbs.relationByUqConstraint(fk[1].constNameUq)), relation.name, { en: { name: relation.name } }, false));
             }
         });
+        console.log('create -- ' + relation.name);
         return erModel.add(new erm.Entity(undefined, relation.name, { en: { name: relation.name } }, false));
     }
     ;

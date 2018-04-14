@@ -383,6 +383,7 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
     });
 
     if (found) {
+      console.log('found -- ' + relation.name);
       return found[1];
     }
 
@@ -390,8 +391,8 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
 
     Object.entries(relation.foreignKeys).forEach( fk => {
       if (fk[1].fields.join() === pkFields) {
-        console.log(relation.name);
-        console.log(dbs.relationByUqConstraint(fk[1].constNameUq));
+        console.log('inherited -- ' + relation.name);
+        console.log('parent -- ' + dbs.relationByUqConstraint(fk[1].constNameUq));
         return erModel.add(new erm.Entity(
           createEntity(dbs.relationByUqConstraint(fk[1].constNameUq)),
           relation.name,
@@ -401,8 +402,10 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
       }
     });
 
+    console.log('create -- ' + relation.name);
     return erModel.add(new erm.Entity(
-      undefined, relation.name,
+      undefined,
+      relation.name,
       {en: {name: relation.name}},
       false
     ));
