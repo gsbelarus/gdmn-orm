@@ -243,7 +243,6 @@ class ERModel {
         return found;
     }
     add(entity) {
-        console.log('entity add -- ' + entity.name);
         if (this._entities[entity.name]) {
             throw new Error(`Entity ${entity.name} already exists`);
         }
