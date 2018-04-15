@@ -1,5 +1,7 @@
 import { EntityAdapter, AttributeAdapter, SequenceAdapter } from './types';
 export declare const MAX_32BIT_INT = 2147483647;
+export declare const MIN_16BIT_INT = -32768;
+export declare const MAX_16BIT_INT = 32767;
 export interface Sequence2SequenceMap extends SequenceAdapter {
     sequence: string;
 }

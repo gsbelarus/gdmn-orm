@@ -1,15 +1,6 @@
-import { DBStructure, IRefConstraints, FKConstraint, Relation } from 'gdmn-db';
+import { DBStructure, IRefConstraints, FKConstraint, Relation, FieldType } from 'gdmn-db';
 import * as erm from './ermodel';
 import * as rdbadapter from './rdbadapter';
-
-function isFieldRef(fieldName: string, fk: IRefConstraints) {
-  for (const cName in fk) {
-    if (fk[cName].fields.find( f => f === fieldName )) {
-      return true;
-    }
-  }
-  return false;
-};
 
 export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
 
@@ -366,16 +357,26 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
     new erm.TimeStampAttribute('EDITIONDATE', {ru: {name: 'Изменено'}}, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP')
   );
 
+  function isFieldRef(fieldName: string, fk: IRefConstraints) {
+    for (const cName in fk) {
+      if (fk[cName].fields.find( f => f === fieldName )) {
+        return true;
+      }
+    }
+    return false;
+  };
+
   function createEntity(relation: Relation): erm.Entity {
 
     const found = Object.entries(erModel.entities).find( e => {
       if (e[1].adapter && e[1].adapter['relation']) {
-        let adapterRelations: rdbadapter.Relation[];
-        if (Array.isArray(e[1].adapter['relation'])) {
-          adapterRelations = e[1].adapter['relation'];
-        } else {
-          adapterRelations = [e[1].adapter['relation']];
-        }
+        const adapterRelations = (() => {
+          if (Array.isArray(e[1].adapter['relation'])) {
+            return e[1].adapter['relation'];
+          } else {
+            return [e[1].adapter['relation']];
+          }
+        })();
         return !!adapterRelations.find( r => r.relation === relation.name && !r.weak);
       } else {
         return e[0] === relation.name;
@@ -407,9 +408,48 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
     ));
   };
 
+  /**
+   * @todo Parse fields CHECK constraint and extract min and max allowed values.
+   */
+
   dbs.forEachRelation( r => {
     if (r.primaryKey && r.primaryKey.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)) {
-      createEntity(r);
+      const entity = createEntity(r);
+
+      Object.entries(r.relationFields).map( rf => {
+        const fieldSource = dbs.fields[rf[1].fieldSource];
+        const lName = {en: {name: rf[0]}};
+        const required = rf[1].notNull || fieldSource.notNull;
+        const defaultValue = rf[1].defaultValue || fieldSource.defaultValue;
+
+        switch (fieldSource.fieldType) {
+          case FieldType.SMALL_INTEGER:
+            return new erm.IntegerAttribute(rf[0], lName, required,
+                rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT,
+                Number.isInteger(Number(defaultValue)) ? Number(defaultValue) : undefined,
+                {relation: r.name});
+
+          case FieldType.INTEGER:
+            if (isFieldRef(rf[0], r.foreignKeys)) {
+              return new erm.IntegerAttribute(rf[0], lName, required,
+                rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT,
+                Number.isInteger(Number(defaultValue)) ? Number(defaultValue) : undefined,
+                {relation: r.name}
+              );
+            } else {
+              return new erm.IntegerAttribute(rf[0], lName, required,
+                rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT,
+                Number.isInteger(Number(defaultValue)) ? Number(defaultValue) : undefined,
+                {relation: r.name}
+              );
+            }
+
+          default:
+            return undefined;
+            // throw new Error('Unknown data type for field ' + r.name + '.' + rf[0]);
+        }
+      })
+      .forEach( attr => { if (attr) entity.add(attr); } );
     }
   });
 
