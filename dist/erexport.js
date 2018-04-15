@@ -275,29 +275,31 @@ function erExport(dbs, erModel) {
     dbs.forEachRelation(r => {
         if (r.primaryKey && r.primaryKey.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)) {
             const entity = createEntity(r);
-            Object.entries(r.relationFields).map(rf => {
+            Object.entries(r.relationFields).forEach(rf => {
                 const fieldSource = dbs.fields[rf[1].fieldSource];
                 const lName = { en: { name: rf[0] } };
                 const required = rf[1].notNull || fieldSource.notNull;
                 const defaultValue = rf[1].defaultValue || fieldSource.defaultValue;
-                switch (fieldSource.fieldType) {
-                    case gdmn_db_1.FieldType.SMALL_INTEGER:
-                        return new erm.IntegerAttribute(rf[0], lName, required, rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT, Number.isInteger(Number(defaultValue)) ? Number(defaultValue) : undefined, { relation: r.name });
-                    case gdmn_db_1.FieldType.INTEGER:
-                        if (isFieldRef(rf[0], r.foreignKeys)) {
+                const attr = (() => {
+                    switch (fieldSource.fieldType) {
+                        case gdmn_db_1.FieldType.SMALL_INTEGER:
                             return new erm.IntegerAttribute(rf[0], lName, required, rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT, Number.isInteger(Number(defaultValue)) ? Number(defaultValue) : undefined, { relation: r.name });
-                        }
-                        else {
-                            return new erm.IntegerAttribute(rf[0], lName, required, rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT, Number.isInteger(Number(defaultValue)) ? Number(defaultValue) : undefined, { relation: r.name });
-                        }
-                    default:
-                        console.log('unknown type ' + fieldSource.fieldType + ' ' + r.name + '.' + rf[0]);
-                        return undefined;
-                    // throw new Error('Unknown data type for field ' + r.name + '.' + rf[0]);
-                }
-            })
-                .forEach(attr => { if (attr)
-                entity.add(attr); });
+                        case gdmn_db_1.FieldType.INTEGER:
+                            if (isFieldRef(rf[0], r.foreignKeys)) {
+                                return new erm.IntegerAttribute(rf[0], lName, required, rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT, Number.isInteger(Number(defaultValue)) ? Number(defaultValue) : undefined, { relation: r.name });
+                            }
+                            else {
+                                return new erm.IntegerAttribute(rf[0], lName, required, rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT, Number.isInteger(Number(defaultValue)) ? Number(defaultValue) : undefined, { relation: r.name });
+                            }
+                        default:
+                            console.log('unknown type ' + fieldSource.fieldType + ' ' + r.name + '.' + rf[0]);
+                            return undefined;
+                        // throw new Error('Unknown data type for field ' + r.name + '.' + rf[0]);
+                    }
+                })();
+                if (attr)
+                    entity.add(attr);
+            });
         }
     });
     return erModel;
