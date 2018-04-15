@@ -445,6 +445,7 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
             }
 
           default:
+            console.log('unknown type ' + fieldSource.fieldType  + ' ' + r.name + '.' + rf[0]);
             return undefined;
             // throw new Error('Unknown data type for field ' + r.name + '.' + rf[0]);
         }

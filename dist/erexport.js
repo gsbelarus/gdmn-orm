@@ -291,6 +291,7 @@ function erExport(dbs, erModel) {
                             return new erm.IntegerAttribute(rf[0], lName, required, rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT, Number.isInteger(Number(defaultValue)) ? Number(defaultValue) : undefined, { relation: r.name });
                         }
                     default:
+                        console.log('unknown type ' + fieldSource.fieldType + ' ' + r.name + '.' + rf[0]);
                         return undefined;
                     // throw new Error('Unknown data type for field ' + r.name + '.' + rf[0]);
                 }
