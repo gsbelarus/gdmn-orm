@@ -416,8 +416,6 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
     if (r.primaryKey && r.primaryKey.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)) {
       const entity = createEntity(r);
 
-      console.log(JSON.stringify(r.relationFields));
-
       Object.entries(r.relationFields).forEach( rf => {
         const fieldSource = dbs.fields[rf[1].fieldSource];
         const lName = {en: {name: rf[0]}};
@@ -448,7 +446,6 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
               }
 
             default:
-              console.log('unknown type ' + fieldSource.fieldType  + ' ' + r.name + '.' + rf[0]);
               return undefined;
               // throw new Error('Unknown data type for field ' + r.name + '.' + rf[0]);
           }
