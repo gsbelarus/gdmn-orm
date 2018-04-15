@@ -416,33 +416,44 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
     if (r.primaryKey && r.primaryKey.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)) {
       const entity = createEntity(r);
 
+      entity.add(
+        new erm.SequenceAttribute('ID', {ru: {name: 'Идентификатор'}}, GDGUnique)
+      );
+
       Object.entries(r.relationFields).forEach( rf => {
         const fieldSource = dbs.fields[rf[1].fieldSource];
         const lName = {en: {name: rf[0]}};
         const required = rf[1].notNull || fieldSource.notNull;
         const defaultValue = rf[1].defaultValue || fieldSource.defaultValue;
+        const adapter = {relation: r.name};
 
         const attr = ( () => {
+          if (rf[1].fieldSource === 'DBOOLEAN') {
+            return new erm.BooleanAttribute(rf[0], lName, false, false, adapter);
+          }
+
+          if (rf[1].fieldSource === 'DBOOLEAN_NOTNULL') {
+            return new erm.BooleanAttribute(rf[0], lName, true, false, adapter);
+          }
+
           switch (fieldSource.fieldType) {
             case FieldType.SMALL_INTEGER:
               return new erm.IntegerAttribute(rf[0], lName, required,
                   rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT,
                   Number.isInteger(Number(defaultValue)) ? Number(defaultValue) : undefined,
-                  {relation: r.name});
+                  adapter);
 
             case FieldType.INTEGER:
               if (isFieldRef(rf[0], r.foreignKeys)) {
                 return new erm.IntegerAttribute(rf[0], lName, required,
                   rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT,
                   Number.isInteger(Number(defaultValue)) ? Number(defaultValue) : undefined,
-                  {relation: r.name}
-                );
+                  adapter);
               } else {
                 return new erm.IntegerAttribute(rf[0], lName, required,
-                  rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT,
+                  rdbadapter.MIN_32BIT_INT, rdbadapter.MAX_32BIT_INT,
                   Number.isInteger(Number(defaultValue)) ? Number(defaultValue) : undefined,
-                  {relation: r.name}
-                );
+                  adapter);
               }
 
             default:
@@ -450,7 +461,7 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
               // throw new Error('Unknown data type for field ' + r.name + '.' + rf[0]);
           }
         })();
-        if (attr) entity.add(attr);
+        if (attr && !entity.attributes[attr.name]) entity.add(attr);
       });
     }
   });
