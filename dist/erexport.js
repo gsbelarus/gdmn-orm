@@ -275,6 +275,7 @@ function erExport(dbs, erModel) {
     dbs.forEachRelation(r => {
         if (r.primaryKey && r.primaryKey.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)) {
             const entity = createEntity(r);
+            console.log(JSON.stringify(r.relationFields));
             Object.entries(r.relationFields).forEach(rf => {
                 const fieldSource = dbs.fields[rf[1].fieldSource];
                 const lName = { en: { name: rf[0] } };
