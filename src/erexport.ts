@@ -497,7 +497,7 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
             case FieldType.VARCHAR:
             {
               if (fieldSource.fieldLength === 1 && fieldSource.validationSource) {
-                console.log(fieldSource.validationSource);
+                console.log(JSON.stringify(fieldSource.validationSource));
                 const enumValues = [];
                 const reValueIn = /CHECK\s*\((\(VALUE IS NULL\) OR )?(\(VALUE\s+IN\s*\(){1}((?:\'[A-Z]\'(?:\,\ )?)+)\)\)\)/;
                 let match;
