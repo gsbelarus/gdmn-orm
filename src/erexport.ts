@@ -499,7 +499,7 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
               if (fieldSource.fieldLength === 1 && fieldSource.validationSource) {
                 console.log(JSON.stringify(fieldSource.validationSource));
                 const enumValues = [];
-                const reValueIn = /CHECK\s*\((\(VALUE IS NULL\) OR )?(\(VALUE\s+IN\s*\(){1}((?:\'[A-Z]\'(?:\,\ )?)+)\)\)\)/;
+                const reValueIn = /CHECK\s*\((\(VALUE IS NULL\) OR )?(\(VALUE\s+IN\s*\(\s*){1}((?:\'[A-Z0-9]\'(?:\,\s*)?)+)\)\)\)/;
                 let match;
                 if (match = reValueIn.exec(fieldSource.validationSource)) {
                   const reEnumValue = /\'([A-Z0-9]{1})\'/g;
