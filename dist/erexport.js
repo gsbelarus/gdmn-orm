@@ -294,6 +294,9 @@ function erExport(dbs, erModel) {
                                     return new erm.IntegerAttribute(rf[0], lName, required, rdbadapter.MIN_32BIT_INT, rdbadapter.MAX_32BIT_INT, Default2Int(defaultValue), adapter);
                                 }
                             }
+                        case gdmn_db_1.FieldType.CHAR:
+                        case gdmn_db_1.FieldType.VARCHAR:
+                            return new erm.StringAttribute(rf[0], lName, required, undefined, fieldSource.fieldLength, undefined, true, undefined);
                         default:
                             return undefined;
                         // throw new Error('Unknown data type for field ' + r.name + '.' + rf[0]);

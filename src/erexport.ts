@@ -455,6 +455,11 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
               }
             }
 
+            case FieldType.CHAR:
+            case FieldType.VARCHAR:
+              return new erm.StringAttribute(rf[0], lName, required, undefined,
+                fieldSource.fieldLength, undefined, true, undefined);
+
             default:
               return undefined;
               // throw new Error('Unknown data type for field ' + r.name + '.' + rf[0]);
