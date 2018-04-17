@@ -497,6 +497,7 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
             case FieldType.VARCHAR:
             {
               if (fieldSource.fieldLength === 1 && fieldSource.validationSource) {
+                console.log(fieldSource.validationSource);
                 const enumValues = [];
                 const reValueIn = /CHECK\s*\((\(VALUE IS NULL\) OR )?(\(VALUE\s+IN\s*\(){1}((?:\'[A-Z]\'(?:\,\ )?)+)\)\)\)/;
                 let match;
@@ -539,6 +540,12 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
                   rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT,
                   default2Int(defaultValue),
                   adapter);
+
+            case FieldType.BIG_INTEGER:
+              return new erm.IntegerAttribute(rf[0], lName, required,
+                rdbadapter.MIN_64BIT_INT, rdbadapter.MAX_64BIT_INT,
+                default2Int(defaultValue),
+                adapter);
 
             case FieldType.BLOB:
               if (fieldSource.fieldSubType === 1) {

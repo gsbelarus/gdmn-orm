@@ -333,6 +333,7 @@ function erExport(dbs, erModel) {
                         case gdmn_db_1.FieldType.VARCHAR:
                             {
                                 if (fieldSource.fieldLength === 1 && fieldSource.validationSource) {
+                                    console.log(fieldSource.validationSource);
                                     const enumValues = [];
                                     const reValueIn = /CHECK\s*\((\(VALUE IS NULL\) OR )?(\(VALUE\s+IN\s*\(){1}((?:\'[A-Z]\'(?:\,\ )?)+)\)\)\)/;
                                     let match;
@@ -361,6 +362,8 @@ function erExport(dbs, erModel) {
                             return new erm.FloatAttribute(rf[0], lName, required, undefined, undefined, default2Number(defaultValue), adapter);
                         case gdmn_db_1.FieldType.SMALL_INTEGER:
                             return new erm.IntegerAttribute(rf[0], lName, required, rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT, default2Int(defaultValue), adapter);
+                        case gdmn_db_1.FieldType.BIG_INTEGER:
+                            return new erm.IntegerAttribute(rf[0], lName, required, rdbadapter.MIN_64BIT_INT, rdbadapter.MAX_64BIT_INT, default2Int(defaultValue), adapter);
                         case gdmn_db_1.FieldType.BLOB:
                             if (fieldSource.fieldSubType === 1) {
                                 return new erm.StringAttribute(rf[0], lName, required, undefined, undefined, undefined, false, undefined);
