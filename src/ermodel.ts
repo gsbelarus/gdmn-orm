@@ -126,11 +126,21 @@ export class IntegerAttribute extends NumberAttribute<number> { }
 
 export class FloatAttribute extends NumberAttribute<number> { }
 
-export class NumericAttribute extends NumberAttribute<number> { }
+export class NumericAttribute extends NumberAttribute<number> {
+  private _scale: number;
 
-export class DateAttribute extends NumberAttribute<Date> { }
+  constructor(name: string, lName: LName, required: boolean,
+    scale: number, minValue: number | undefined, maxValue: number | undefined,
+    defaultValue: number | undefined, adapter?: AttributeAdapter)
+  {
+    super(name, lName, required, minValue, maxValue, defaultValue, adapter);
+    this._scale = scale;
+  }
+}
 
-export class TimeAttribute extends NumberAttribute<Date> { }
+export class DateAttribute extends NumberAttribute<Date, ContextVariables> { }
+
+export class TimeAttribute extends NumberAttribute<Date, ContextVariables> { }
 
 export class TimeStampAttribute extends NumberAttribute<Date, ContextVariables> { }
 

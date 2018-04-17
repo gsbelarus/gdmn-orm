@@ -228,8 +228,23 @@ function erExport(dbs, erModel) {
     Document.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
     Document.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в' } }, [Document]));
     Document.add(new erm.TimeStampAttribute('EDITIONDATE', { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP'));
-    function Default2Int(defaultValue) {
-        return Number.isInteger(Number(defaultValue)) ? Number(defaultValue) : undefined;
+    function default2Int(defaultValue) {
+        const num = Number(defaultValue);
+        return (num || num === 0) && Number.isInteger(num) ? num : undefined;
+    }
+    function default2Number(defaultValue) {
+        const num = Number(defaultValue);
+        return (num || num === 0) ? num : undefined;
+    }
+    function default2Date(defaultValue) {
+        if (defaultValue === 'CURRENT_TIMESTAMP')
+            return 'CURRENT_TIMESTAMP';
+        if (defaultValue === 'CURRENT_TIME')
+            return 'CURRENT_TIME';
+        if (defaultValue === 'CURRENT_DATE')
+            return 'CURRENT_DATE';
+        if (Date.parse(defaultValue))
+            return new Date(defaultValue);
     }
     function createEntity(relation) {
         const found = Object.entries(erModel.entities).find(e => {
@@ -281,9 +296,28 @@ function erExport(dbs, erModel) {
                         case 'DBOOLEAN': return new erm.BooleanAttribute(rf[0], lName, false, false, adapter);
                         case 'DBOOLEAN_NOTNULL': return new erm.BooleanAttribute(rf[0], lName, true, false, adapter);
                     }
+                    if (fieldSource.fieldScale < 0) {
+                        const factor = Math.pow(10, fieldSource.fieldScale);
+                        let MaxValue;
+                        let MinValue;
+                        switch (fieldSource.fieldType) {
+                            case gdmn_db_1.FieldType.SMALL_INTEGER:
+                                MaxValue = rdbadapter.MAX_16BIT_INT * factor;
+                                MinValue = rdbadapter.MIN_16BIT_INT * factor;
+                                break;
+                            case gdmn_db_1.FieldType.INTEGER:
+                                MaxValue = rdbadapter.MAX_32BIT_INT * factor;
+                                MinValue = rdbadapter.MIN_32BIT_INT * factor;
+                                break;
+                            default:
+                                MaxValue = rdbadapter.MAX_64BIT_INT * factor;
+                                MinValue = rdbadapter.MIN_64BIT_INT * factor;
+                        }
+                        return new erm.NumericAttribute(rf[0], lName, required, fieldSource.fieldScale, MinValue, MaxValue, default2Number(defaultValue), adapter);
+                    }
                     switch (fieldSource.fieldType) {
                         case gdmn_db_1.FieldType.SMALL_INTEGER:
-                            return new erm.IntegerAttribute(rf[0], lName, required, rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT, Default2Int(defaultValue), adapter);
+                            return new erm.IntegerAttribute(rf[0], lName, required, rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT, default2Int(defaultValue), adapter);
                         case gdmn_db_1.FieldType.INTEGER:
                             {
                                 const fk = Object.entries(r.foreignKeys).find(f => !!f[1].fields.find(fld => fld === rf[0]));
@@ -291,13 +325,24 @@ function erExport(dbs, erModel) {
                                     return new erm.EntityAttribute(rf[0], lName, required, [createEntity(dbs.relationByUqConstraint(fk[1].constNameUq))], adapter);
                                 }
                                 else {
-                                    return new erm.IntegerAttribute(rf[0], lName, required, rdbadapter.MIN_32BIT_INT, rdbadapter.MAX_32BIT_INT, Default2Int(defaultValue), adapter);
+                                    return new erm.IntegerAttribute(rf[0], lName, required, rdbadapter.MIN_32BIT_INT, rdbadapter.MAX_32BIT_INT, default2Int(defaultValue), adapter);
                                 }
                             }
                         case gdmn_db_1.FieldType.CHAR:
                         case gdmn_db_1.FieldType.VARCHAR:
                             return new erm.StringAttribute(rf[0], lName, required, undefined, fieldSource.fieldLength, undefined, true, undefined);
+                        case gdmn_db_1.FieldType.TIMESTAMP:
+                            new erm.TimeStampAttribute(rf[0], lName, required, undefined, undefined, default2Date(defaultValue));
+                        case gdmn_db_1.FieldType.DATE:
+                            new erm.DateAttribute(rf[0], lName, required, undefined, undefined, default2Date(defaultValue));
+                        case gdmn_db_1.FieldType.TIME:
+                            new erm.TimeAttribute(rf[0], lName, required, undefined, undefined, default2Date(defaultValue));
+                        case gdmn_db_1.FieldType.BLOB:
+                            if (fieldSource.fieldSubType === 1) {
+                                return new erm.StringAttribute(rf[0], lName, required, undefined, undefined, undefined, false, undefined);
+                            }
                         default:
+                            console.log('Unknown data type for field ' + r.name + '.' + rf[0]);
                             return undefined;
                         // throw new Error('Unknown data type for field ' + r.name + '.' + rf[0]);
                     }

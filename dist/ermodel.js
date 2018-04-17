@@ -87,6 +87,10 @@ class FloatAttribute extends NumberAttribute {
 }
 exports.FloatAttribute = FloatAttribute;
 class NumericAttribute extends NumberAttribute {
+    constructor(name, lName, required, scale, minValue, maxValue, defaultValue, adapter) {
+        super(name, lName, required, minValue, maxValue, defaultValue, adapter);
+        this._scale = scale;
+    }
 }
 exports.NumericAttribute = NumericAttribute;
 class DateAttribute extends NumberAttribute {

@@ -48,10 +48,12 @@ export declare class IntegerAttribute extends NumberAttribute<number> {
 export declare class FloatAttribute extends NumberAttribute<number> {
 }
 export declare class NumericAttribute extends NumberAttribute<number> {
+    private _scale;
+    constructor(name: string, lName: LName, required: boolean, scale: number, minValue: number | undefined, maxValue: number | undefined, defaultValue: number | undefined, adapter?: AttributeAdapter);
 }
-export declare class DateAttribute extends NumberAttribute<Date> {
+export declare class DateAttribute extends NumberAttribute<Date, ContextVariables> {
 }
-export declare class TimeAttribute extends NumberAttribute<Date> {
+export declare class TimeAttribute extends NumberAttribute<Date, ContextVariables> {
 }
 export declare class TimeStampAttribute extends NumberAttribute<Date, ContextVariables> {
 }

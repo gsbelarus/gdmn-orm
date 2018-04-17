@@ -357,8 +357,21 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
     new erm.TimeStampAttribute('EDITIONDATE', {ru: {name: 'Изменено'}}, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP')
   );
 
-  function Default2Int(defaultValue: string | undefined): number | undefined {
-    return Number.isInteger(Number(defaultValue)) ? Number(defaultValue) : undefined;
+  function default2Int(defaultValue: string | undefined): number | undefined {
+    const num = Number(defaultValue);
+    return (num || num === 0) && Number.isInteger(num) ? num : undefined;
+  }
+
+  function default2Number(defaultValue: string | undefined): number | undefined {
+    const num = Number(defaultValue);
+    return (num || num === 0) ? num : undefined;
+  }
+
+  function default2Date(defaultValue: string | undefined): Date | erm.ContextVariables | undefined {
+    if (defaultValue === 'CURRENT_TIMESTAMP') return 'CURRENT_TIMESTAMP';
+    if (defaultValue === 'CURRENT_TIME') return 'CURRENT_TIME';
+    if (defaultValue === 'CURRENT_DATE') return 'CURRENT_DATE';
+    if (Date.parse(defaultValue)) return new Date(defaultValue);
   }
 
   function createEntity(relation: Relation): erm.Entity {
@@ -430,11 +443,39 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
             case 'DBOOLEAN_NOTNULL': return new erm.BooleanAttribute(rf[0], lName, true, false, adapter);
           }
 
+          if (fieldSource.fieldScale < 0) {
+            const factor = Math.pow(10, fieldSource.fieldScale);
+            let MaxValue;
+            let MinValue;
+
+            switch (fieldSource.fieldType) {
+              case FieldType.SMALL_INTEGER:
+                MaxValue = rdbadapter.MAX_16BIT_INT * factor;
+                MinValue = rdbadapter.MIN_16BIT_INT * factor;
+                break;
+
+              case FieldType.INTEGER:
+                MaxValue = rdbadapter.MAX_32BIT_INT * factor;
+                MinValue = rdbadapter.MIN_32BIT_INT * factor;
+                break;
+
+              default:
+                MaxValue = rdbadapter.MAX_64BIT_INT * factor;
+                MinValue = rdbadapter.MIN_64BIT_INT * factor;
+            }
+
+            return new erm.NumericAttribute(rf[0], lName, required,
+              fieldSource.fieldScale,
+              MinValue, MaxValue,
+              default2Number(defaultValue),
+              adapter);
+          }
+
           switch (fieldSource.fieldType) {
             case FieldType.SMALL_INTEGER:
               return new erm.IntegerAttribute(rf[0], lName, required,
                   rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT,
-                  Default2Int(defaultValue),
+                  default2Int(defaultValue),
                   adapter);
 
             case FieldType.INTEGER:
@@ -450,7 +491,7 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
               } else {
                 return new erm.IntegerAttribute(rf[0], lName, required,
                   rdbadapter.MIN_32BIT_INT, rdbadapter.MAX_32BIT_INT,
-                  Default2Int(defaultValue),
+                  default2Int(defaultValue),
                   adapter);
               }
             }
@@ -460,7 +501,23 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
               return new erm.StringAttribute(rf[0], lName, required, undefined,
                 fieldSource.fieldLength, undefined, true, undefined);
 
+            case FieldType.TIMESTAMP:
+              new erm.TimeStampAttribute(rf[0], lName, required, undefined, undefined, default2Date(defaultValue));
+
+            case FieldType.DATE:
+              new erm.DateAttribute(rf[0], lName, required, undefined, undefined, default2Date(defaultValue));
+
+            case FieldType.TIME:
+              new erm.TimeAttribute(rf[0], lName, required, undefined, undefined, default2Date(defaultValue));
+
+            case FieldType.BLOB:
+              if (fieldSource.fieldSubType === 1) {
+                return new erm.StringAttribute(rf[0], lName, required, undefined,
+                  undefined, undefined, false, undefined);
+              }
+
             default:
+              console.log('Unknown data type for field ' + r.name + '.' + rf[0]);
               return undefined;
               // throw new Error('Unknown data type for field ' + r.name + '.' + rf[0]);
           }

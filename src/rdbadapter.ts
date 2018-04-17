@@ -1,6 +1,8 @@
 
 import { EntityAdapter, AttributeAdapter, SequenceAdapter } from './types';
 
+export const MIN_64BIT_INT = -9223372036854775808;
+export const MAX_64BIT_INT = +9223372036854775807;
 export const MIN_32BIT_INT = -2147483648;
 export const MAX_32BIT_INT = +2147483647;
 export const MIN_16BIT_INT = -32768;
