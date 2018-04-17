@@ -497,7 +497,6 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
             case FieldType.VARCHAR:
             {
               if (fieldSource.fieldLength === 1 && fieldSource.validationSource) {
-                console.log(JSON.stringify(fieldSource.validationSource));
                 const enumValues = [];
                 const reValueIn = /CHECK\s*\((\(VALUE IS NULL\) OR )?(\(VALUE\s+IN\s*\(\s*){1}((?:\'[A-Z0-9]\'(?:\,\s*)?)+)\)\)\)/;
                 let match;
@@ -510,8 +509,9 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
                 }
 
                 if (enumValues.length) {
-                  console.log(`${r.name}.${rf[0]} -- ${JSON.stringify(enumValues)}`);
                   return new erm.EnumAttribute(rf[0], lName, required, enumValues, undefined, adapter);
+                } else {
+                  console.log(JSON.stringify(fieldSource.validationSource));
                 }
               }
 
