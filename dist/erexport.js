@@ -332,11 +332,11 @@ function erExport(dbs, erModel) {
                         case gdmn_db_1.FieldType.VARCHAR:
                             return new erm.StringAttribute(rf[0], lName, required, undefined, fieldSource.fieldLength, undefined, true, undefined);
                         case gdmn_db_1.FieldType.TIMESTAMP:
-                            new erm.TimeStampAttribute(rf[0], lName, required, undefined, undefined, default2Date(defaultValue));
+                            return new erm.TimeStampAttribute(rf[0], lName, required, undefined, undefined, default2Date(defaultValue));
                         case gdmn_db_1.FieldType.DATE:
-                            new erm.DateAttribute(rf[0], lName, required, undefined, undefined, default2Date(defaultValue));
+                            return new erm.DateAttribute(rf[0], lName, required, undefined, undefined, default2Date(defaultValue));
                         case gdmn_db_1.FieldType.TIME:
-                            new erm.TimeAttribute(rf[0], lName, required, undefined, undefined, default2Date(defaultValue));
+                            return new erm.TimeAttribute(rf[0], lName, required, undefined, undefined, default2Date(defaultValue));
                         case gdmn_db_1.FieldType.BLOB:
                             if (fieldSource.fieldSubType === 1) {
                                 return new erm.StringAttribute(rf[0], lName, required, undefined, undefined, undefined, false, undefined);

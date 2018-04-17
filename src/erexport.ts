@@ -502,13 +502,13 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
                 fieldSource.fieldLength, undefined, true, undefined);
 
             case FieldType.TIMESTAMP:
-              new erm.TimeStampAttribute(rf[0], lName, required, undefined, undefined, default2Date(defaultValue));
+              return new erm.TimeStampAttribute(rf[0], lName, required, undefined, undefined, default2Date(defaultValue));
 
             case FieldType.DATE:
-              new erm.DateAttribute(rf[0], lName, required, undefined, undefined, default2Date(defaultValue));
+              return new erm.DateAttribute(rf[0], lName, required, undefined, undefined, default2Date(defaultValue));
 
             case FieldType.TIME:
-              new erm.TimeAttribute(rf[0], lName, required, undefined, undefined, default2Date(defaultValue));
+              return new erm.TimeAttribute(rf[0], lName, required, undefined, undefined, default2Date(defaultValue));
 
             case FieldType.BLOB:
               if (fieldSource.fieldSubType === 1) {
