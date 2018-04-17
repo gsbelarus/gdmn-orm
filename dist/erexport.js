@@ -293,6 +293,9 @@ function erExport(dbs, erModel) {
                 const adapter = { relation: r.name };
                 const attr = (() => {
                     switch (rf[1].fieldSource) {
+                        case 'DACCOUNTTYPE': return new erm.EnumAttribute(rf[0], lName, false, [{ value: 'D' }, { value: 'K' }], undefined, adapter);
+                        case 'DSECURITY': return new erm.IntegerAttribute(rf[0], lName, true, undefined, undefined, -1, adapter);
+                        case 'DDISABLED': return new erm.BooleanAttribute(rf[0], lName, false, false, adapter);
                         case 'DBOOLEAN': return new erm.BooleanAttribute(rf[0], lName, false, false, adapter);
                         case 'DBOOLEAN_NOTNULL': return new erm.BooleanAttribute(rf[0], lName, true, false, adapter);
                     }
@@ -316,8 +319,6 @@ function erExport(dbs, erModel) {
                         return new erm.NumericAttribute(rf[0], lName, required, fieldSource.fieldScale, MinValue, MaxValue, default2Number(defaultValue), adapter);
                     }
                     switch (fieldSource.fieldType) {
-                        case gdmn_db_1.FieldType.SMALL_INTEGER:
-                            return new erm.IntegerAttribute(rf[0], lName, required, rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT, default2Int(defaultValue), adapter);
                         case gdmn_db_1.FieldType.INTEGER:
                             {
                                 const fk = Object.entries(r.foreignKeys).find(f => !!f[1].fields.find(fld => fld === rf[0]));
@@ -330,13 +331,36 @@ function erExport(dbs, erModel) {
                             }
                         case gdmn_db_1.FieldType.CHAR:
                         case gdmn_db_1.FieldType.VARCHAR:
-                            return new erm.StringAttribute(rf[0], lName, required, undefined, fieldSource.fieldLength, undefined, true, undefined);
+                            {
+                                if (fieldSource.fieldLength === 1 && fieldSource.validationSource) {
+                                    const enumValues = [];
+                                    const reValueIn = /CHECK\s*\((\(VALUE IS NULL\) OR )?(\(VALUE\s+IN\s*\(){1}((?:\'[A-Z]\'(?:\,\ )?)+)\)\)\)/;
+                                    let match;
+                                    if ((match = reValueIn.exec(fieldSource.validationSource)) && match[3]) {
+                                        const reEnumValue = /\'([A-Z0-9]{1})\'/g;
+                                        let enumValue;
+                                        while ((enumValue = reEnumValue.exec(match[3])) && enumValue[1]) {
+                                            enumValues.push({ value: enumValue[1] });
+                                        }
+                                    }
+                                    if (enumValues.length) {
+                                        console.log(`${r.name}.${rf[0]} -- ${JSON.stringify(enumValues)}`);
+                                        return new erm.EnumAttribute(rf[0], lName, required, enumValues, undefined, adapter);
+                                    }
+                                }
+                                return new erm.StringAttribute(rf[0], lName, required, undefined, fieldSource.fieldLength, undefined, true, undefined);
+                            }
                         case gdmn_db_1.FieldType.TIMESTAMP:
                             return new erm.TimeStampAttribute(rf[0], lName, required, undefined, undefined, default2Date(defaultValue));
                         case gdmn_db_1.FieldType.DATE:
                             return new erm.DateAttribute(rf[0], lName, required, undefined, undefined, default2Date(defaultValue));
                         case gdmn_db_1.FieldType.TIME:
                             return new erm.TimeAttribute(rf[0], lName, required, undefined, undefined, default2Date(defaultValue));
+                        case gdmn_db_1.FieldType.FLOAT:
+                        case gdmn_db_1.FieldType.DOUBLE:
+                            return new erm.FloatAttribute(rf[0], lName, required, undefined, undefined, default2Number(defaultValue), adapter);
+                        case gdmn_db_1.FieldType.SMALL_INTEGER:
+                            return new erm.IntegerAttribute(rf[0], lName, required, rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT, default2Int(defaultValue), adapter);
                         case gdmn_db_1.FieldType.BLOB:
                             if (fieldSource.fieldSubType === 1) {
                                 return new erm.StringAttribute(rf[0], lName, required, undefined, undefined, undefined, false, undefined);
