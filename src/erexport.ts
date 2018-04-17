@@ -357,14 +357,9 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
     new erm.TimeStampAttribute('EDITIONDATE', {ru: {name: 'Изменено'}}, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP')
   );
 
-  function isFieldRef(fieldName: string, fk: IRefConstraints) {
-    for (const cName in fk) {
-      if (fk[cName].fields.find( f => f === fieldName )) {
-        return true;
-      }
-    }
-    return false;
-  };
+  function Default2Int(defaultValue: string | undefined): number | undefined {
+    return Number.isInteger(Number(defaultValue)) ? Number(defaultValue) : undefined;
+  }
 
   function createEntity(relation: Relation): erm.Entity {
 
@@ -412,6 +407,8 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
    * @todo Parse fields CHECK constraint and extract min and max allowed values.
    */
 
+
+
   dbs.forEachRelation( r => {
     if (r.primaryKey && r.primaryKey.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)) {
       const entity = createEntity(r);
@@ -428,33 +425,35 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
         const adapter = {relation: r.name};
 
         const attr = ( () => {
-          if (rf[1].fieldSource === 'DBOOLEAN') {
-            return new erm.BooleanAttribute(rf[0], lName, false, false, adapter);
-          }
-
-          if (rf[1].fieldSource === 'DBOOLEAN_NOTNULL') {
-            return new erm.BooleanAttribute(rf[0], lName, true, false, adapter);
+          switch (rf[1].fieldSource) {
+            case 'DBOOLEAN': return new erm.BooleanAttribute(rf[0], lName, false, false, adapter);
+            case 'DBOOLEAN_NOTNULL': return new erm.BooleanAttribute(rf[0], lName, true, false, adapter);
           }
 
           switch (fieldSource.fieldType) {
             case FieldType.SMALL_INTEGER:
               return new erm.IntegerAttribute(rf[0], lName, required,
                   rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT,
-                  Number.isInteger(Number(defaultValue)) ? Number(defaultValue) : undefined,
+                  Default2Int(defaultValue),
                   adapter);
 
             case FieldType.INTEGER:
-              if (isFieldRef(rf[0], r.foreignKeys)) {
-                return new erm.IntegerAttribute(rf[0], lName, required,
-                  rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT,
-                  Number.isInteger(Number(defaultValue)) ? Number(defaultValue) : undefined,
+            {
+              const fk = Object.entries(r.foreignKeys).find(
+                f => !!f[1].fields.find( fld => fld === rf[0] )
+              );
+
+              if (fk && fk[1].fields.length === 1) {
+                return new erm.EntityAttribute(rf[0], lName, required,
+                  [createEntity(dbs.relationByUqConstraint(fk[1].constNameUq))],
                   adapter);
               } else {
                 return new erm.IntegerAttribute(rf[0], lName, required,
                   rdbadapter.MIN_32BIT_INT, rdbadapter.MAX_32BIT_INT,
-                  Number.isInteger(Number(defaultValue)) ? Number(defaultValue) : undefined,
+                  Default2Int(defaultValue),
                   adapter);
               }
+            }
 
             default:
               return undefined;

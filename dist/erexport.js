@@ -228,15 +228,9 @@ function erExport(dbs, erModel) {
     Document.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
     Document.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в' } }, [Document]));
     Document.add(new erm.TimeStampAttribute('EDITIONDATE', { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP'));
-    function isFieldRef(fieldName, fk) {
-        for (const cName in fk) {
-            if (fk[cName].fields.find(f => f === fieldName)) {
-                return true;
-            }
-        }
-        return false;
+    function Default2Int(defaultValue) {
+        return Number.isInteger(Number(defaultValue)) ? Number(defaultValue) : undefined;
     }
-    ;
     function createEntity(relation) {
         const found = Object.entries(erModel.entities).find(e => {
             if (e[1].adapter && e[1].adapter['relation']) {
@@ -283,21 +277,22 @@ function erExport(dbs, erModel) {
                 const defaultValue = rf[1].defaultValue || fieldSource.defaultValue;
                 const adapter = { relation: r.name };
                 const attr = (() => {
-                    if (rf[1].fieldSource === 'DBOOLEAN') {
-                        return new erm.BooleanAttribute(rf[0], lName, false, false, adapter);
-                    }
-                    if (rf[1].fieldSource === 'DBOOLEAN_NOTNULL') {
-                        return new erm.BooleanAttribute(rf[0], lName, true, false, adapter);
+                    switch (rf[1].fieldSource) {
+                        case 'DBOOLEAN': return new erm.BooleanAttribute(rf[0], lName, false, false, adapter);
+                        case 'DBOOLEAN_NOTNULL': return new erm.BooleanAttribute(rf[0], lName, true, false, adapter);
                     }
                     switch (fieldSource.fieldType) {
                         case gdmn_db_1.FieldType.SMALL_INTEGER:
-                            return new erm.IntegerAttribute(rf[0], lName, required, rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT, Number.isInteger(Number(defaultValue)) ? Number(defaultValue) : undefined, adapter);
+                            return new erm.IntegerAttribute(rf[0], lName, required, rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT, Default2Int(defaultValue), adapter);
                         case gdmn_db_1.FieldType.INTEGER:
-                            if (isFieldRef(rf[0], r.foreignKeys)) {
-                                return new erm.IntegerAttribute(rf[0], lName, required, rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT, Number.isInteger(Number(defaultValue)) ? Number(defaultValue) : undefined, adapter);
-                            }
-                            else {
-                                return new erm.IntegerAttribute(rf[0], lName, required, rdbadapter.MIN_32BIT_INT, rdbadapter.MAX_32BIT_INT, Number.isInteger(Number(defaultValue)) ? Number(defaultValue) : undefined, adapter);
+                            {
+                                const fk = Object.entries(r.foreignKeys).find(f => !!f[1].fields.find(fld => fld === rf[0]));
+                                if (fk && fk[1].fields.length === 1) {
+                                    return new erm.EntityAttribute(rf[0], lName, required, [createEntity(dbs.relationByUqConstraint(fk[1].constNameUq))], adapter);
+                                }
+                                else {
+                                    return new erm.IntegerAttribute(rf[0], lName, required, rdbadapter.MIN_32BIT_INT, rdbadapter.MAX_32BIT_INT, Default2Int(defaultValue), adapter);
+                                }
                             }
                         default:
                             return undefined;
