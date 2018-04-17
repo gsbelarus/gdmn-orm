@@ -336,10 +336,10 @@ function erExport(dbs, erModel) {
                                     const enumValues = [];
                                     const reValueIn = /CHECK\s*\((\(VALUE IS NULL\) OR )?(\(VALUE\s+IN\s*\(){1}((?:\'[A-Z]\'(?:\,\ )?)+)\)\)\)/;
                                     let match;
-                                    if ((match = reValueIn.exec(fieldSource.validationSource)) && match[3]) {
+                                    if (match = reValueIn.exec(fieldSource.validationSource)) {
                                         const reEnumValue = /\'([A-Z0-9]{1})\'/g;
                                         let enumValue;
-                                        while ((enumValue = reEnumValue.exec(match[3])) && enumValue[1]) {
+                                        while (enumValue = reEnumValue.exec(match[3])) {
                                             enumValues.push({ value: enumValue[1] });
                                         }
                                     }
@@ -366,7 +366,7 @@ function erExport(dbs, erModel) {
                                 return new erm.StringAttribute(rf[0], lName, required, undefined, undefined, undefined, false, undefined);
                             }
                         default:
-                            console.log('Unknown data type for field ' + r.name + '.' + rf[0]);
+                            console.log(`Unknown data type ${fieldSource.fieldType} for field ${r.name}.${rf[0]}`);
                             return undefined;
                         // throw new Error('Unknown data type for field ' + r.name + '.' + rf[0]);
                     }
