@@ -22,7 +22,11 @@ function erExport(dbs, erModel) {
      * -- Первое добавляемое поле в Entity автоматом становится PK.
      * -- Если имя атрибута совпадает с именем поля, то в адаптере имя поля можно не указывать.
      */
-    const Holiday = erModel.add(new erm.Entity(undefined, 'WG_HOLIDAY', { ru: { name: 'Государственный праздник' } }, false));
+    const Holiday = erModel.add(new erm.Entity(undefined, 'WG_HOLIDAY', { ru: { name: 'Государственный праздник' } }, false, {
+        relation: {
+            relation: 'WG_HOLIDAY'
+        }
+    }));
     Holiday.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
     Holiday.addUnique([
         Holiday.add(new erm.DateAttribute('HOLIDAYDATE', { ru: { name: 'Дата праздника' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), undefined))
@@ -180,11 +184,13 @@ function erExport(dbs, erModel) {
      * CONTACTLIST -- множество, которое хранится в кросс-таблице.
      */
     const Group = erModel.add(new erm.Entity(undefined, 'Group', { ru: { name: 'Группа' } }, false, {
-        relation: 'GD_CONTACT',
-        structure: 'LBRB',
-        selector: {
-            field: 'CONTACTTYPE',
-            value: 1
+        relation: {
+            relation: 'GD_CONTACT',
+            structure: 'LBRB',
+            selector: {
+                field: 'CONTACTTYPE',
+                value: 1
+            }
         }
     }));
     Group.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
@@ -222,7 +228,7 @@ function erExport(dbs, erModel) {
     const Document = erModel.add(new erm.Entity(undefined, 'Document', { ru: { name: 'Документ' } }, true, {
         relation: {
             relation: 'GD_DOCUMENT',
-            structure: 'PARENT'
+            structure: 'TREE'
         }
     }));
     Document.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
@@ -249,24 +255,19 @@ function erExport(dbs, erModel) {
     }
     function createEntity(relation) {
         const found = Object.entries(erModel.entities).find(e => {
-            if (e[1].adapter && e[1].adapter['relation']) {
-                const adapterRelations = (() => {
-                    if (Array.isArray(e[1].adapter['relation'])) {
-                        return e[1].adapter['relation'];
-                    }
-                    else {
-                        return [e[1].adapter['relation']];
-                    }
-                })();
-                return !!adapterRelations.find(r => r.relation === relation.name && !r.weak);
+            const adapter = e[1].adapter;
+            if (Array.isArray(adapter.relation)) {
+                return !!adapter.relation.find((r) => r.relation === relation.name && !r.weak);
             }
             else {
-                return e[0] === relation.name;
+                return adapter.relation.relation === relation.name;
             }
         });
         if (found) {
             return found[1];
         }
+        if (!relation.primaryKey)
+            throw 'No primary key found';
         const pkFields = relation.primaryKey.fields.join();
         const parent = Object.entries(relation.foreignKeys).reduce((p, fk) => {
             if (!p && fk[1].fields.join() === pkFields) {
@@ -276,7 +277,11 @@ function erExport(dbs, erModel) {
                 return p;
             }
         }, undefined);
-        return erModel.add(new erm.Entity(parent, relation.name, { en: { name: relation.name } }, false));
+        return erModel.add(new erm.Entity(parent, relation.name, { en: { name: relation.name } }, false, {
+            relation: {
+                relation: relation.name
+            }
+        }));
     }
     ;
     /**

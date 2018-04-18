@@ -19,7 +19,14 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
    */
 
   const Holiday = erModel.add(
-    new erm.Entity(undefined, 'WG_HOLIDAY', {ru: {name: 'Государственный праздник'}}, false)
+    new erm.Entity(undefined, 'WG_HOLIDAY', {ru: {name: 'Государственный праздник'}}, false,
+      {
+        relation:
+          {
+            relation: 'WG_HOLIDAY'
+          }
+      }
+    )
   );
   Holiday.add(
     new erm.SequenceAttribute('ID', {ru: {name: 'Идентификатор'}}, GDGUnique)
@@ -267,12 +274,15 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
   const Group = erModel.add(new erm.Entity(undefined, 'Group', {ru: {name: 'Группа'}},
     false,
     {
-      relation: 'GD_CONTACT',
-      structure: 'LBRB',
-      selector: {
-        field: 'CONTACTTYPE',
-        value: 1
-      }
+      relation:
+        {
+          relation: 'GD_CONTACT',
+          structure: 'LBRB',
+          selector: {
+            field: 'CONTACTTYPE',
+            value: 1
+          }
+        }
     }
   ));
   Group.add(
@@ -343,7 +353,7 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
     {
       relation: {
         relation: 'GD_DOCUMENT',
-        structure: 'PARENT'
+        structure: 'TREE'
       }
     }
   ));
@@ -378,23 +388,19 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
   function createEntity(relation: Relation): erm.Entity {
 
     const found = Object.entries(erModel.entities).find( e => {
-      if (e[1].adapter && e[1].adapter['relation']) {
-        const adapterRelations = (() => {
-          if (Array.isArray(e[1].adapter['relation'])) {
-            return e[1].adapter['relation'];
-          } else {
-            return [e[1].adapter['relation']];
-          }
-        })();
-        return !!adapterRelations.find( r => r.relation === relation.name && !r.weak);
+      const adapter = e[1].adapter;
+      if (Array.isArray(adapter.relation)) {
+        return !!adapter.relation.find( (r: rdbadapter.Relation) => r.relation === relation.name && !r.weak);
       } else {
-        return e[0] === relation.name;
+        return adapter.relation.relation === relation.name;
       }
     });
 
     if (found) {
       return found[1];
     }
+
+    if (!relation.primaryKey) throw 'No primary key found';
 
     const pkFields = relation.primaryKey.fields.join();
 
@@ -413,15 +419,18 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
       parent,
       relation.name,
       {en: {name: relation.name}},
-      false
+      false,
+      {
+        relation: {
+          relation: relation.name
+        }
+      }
     ));
   };
 
   /**
    * @todo Parse fields CHECK constraint and extract min and max allowed values.
    */
-
-
 
   dbs.forEachRelation( r => {
     if (r.primaryKey && r.primaryKey.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)) {

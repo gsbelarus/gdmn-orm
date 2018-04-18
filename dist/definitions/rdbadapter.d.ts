@@ -1,4 +1,4 @@
-import { EntityAdapter, AttributeAdapter, SequenceAdapter } from './types';
+import { AttributeAdapter, SequenceAdapter } from './types';
 export declare const MIN_64BIT_INT = -9223372036854776000;
 export declare const MAX_64BIT_INT = 9223372036854776000;
 export declare const MIN_32BIT_INT = -2147483648;
@@ -19,7 +19,7 @@ export interface Relation {
     weak?: boolean;
     selector?: EntitySelector;
 }
-export interface Entity2RelationMap extends EntityAdapter {
+export interface Entity2RelationMap {
     relation: Relation | Relation[];
     refresh?: boolean;
 }

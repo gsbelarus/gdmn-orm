@@ -9,7 +9,5 @@ export interface LName {
 }
 export interface AttributeAdapter {
 }
-export interface EntityAdapter {
-}
 export interface SequenceAdapter {
 }

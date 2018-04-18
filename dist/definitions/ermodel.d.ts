@@ -1,8 +1,9 @@
 /**
  *
  */
-import { LName, EntityAdapter, AttributeAdapter, SequenceAdapter } from './types';
+import { LName, AttributeAdapter, SequenceAdapter } from './types';
 import { IEntity, IAttribute, IERModel } from './interfaces';
+import { Entity2RelationMap } from './rdbadapter';
 export declare type ContextVariables = 'CURRENT_TIMESTAMP' | 'CURRENT_DATE' | 'CURRENT_TIME';
 export declare class Attribute {
     private _name;
@@ -39,9 +40,9 @@ export declare class NumberAttribute<T, DF = undefined> extends ScalarAttribute 
     private _maxValue?;
     private _defaultValue?;
     constructor(name: string, lName: LName, required: boolean, minValue: T | undefined, maxValue: T | undefined, defaultValue: T | undefined | DF, adapter?: AttributeAdapter);
-    minValue: T;
-    maxValue: T;
-    defaultValue: T | DF;
+    minValue: T | undefined;
+    maxValue: T | undefined;
+    defaultValue: T | DF | undefined;
 }
 export declare class IntegerAttribute extends NumberAttribute<number> {
 }
@@ -94,15 +95,15 @@ export declare class Entity {
     readonly name: string;
     readonly lName: LName;
     readonly isAbstract: boolean;
-    readonly adapter?: EntityAdapter;
+    readonly adapter: Entity2RelationMap;
     private _pk;
     private _attributes;
     private _unique;
-    constructor(parent: Entity | undefined, name: string, lName: LName, isAbstract: boolean, adapter?: EntityAdapter);
+    constructor(parent: Entity | undefined, name: string, lName: LName, isAbstract: boolean, adapter: Entity2RelationMap);
     readonly pk: Attribute[];
     readonly attributes: Attributes;
     readonly unique: Attribute[][];
-    addUnique(value: any): void;
+    addUnique(value: Attribute[]): void;
     attribute(name: string): Attribute;
     add(attribute: Attribute): Attribute;
     serialize(): IEntity;

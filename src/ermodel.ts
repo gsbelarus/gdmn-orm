@@ -2,8 +2,9 @@
  *
  */
 
-import { LName, EntityAdapter, AttributeAdapter, SequenceAdapter } from './types';
+import { LName, AttributeAdapter, SequenceAdapter } from './types';
 import { IEntity, IAttribute, IERModel } from './interfaces';
+import { Entity2RelationMap } from './rdbadapter';
 
 export type ContextVariables = 'CURRENT_TIMESTAMP' | 'CURRENT_DATE' | 'CURRENT_TIME';
 
@@ -162,7 +163,7 @@ export interface EnumValue {
 
 export class EnumAttribute extends ScalarAttribute {
   private _values: EnumValue[];
-  private _defaultValue: string | number;
+  private _defaultValue: string | number | undefined;
 
   constructor(name: string, lName: LName, required: boolean,
     values: EnumValue[], defaultValue: string | number | undefined,
@@ -236,13 +237,13 @@ export class Entity {
   readonly name: string;
   readonly lName: LName;
   readonly isAbstract: boolean;
-  readonly adapter?: EntityAdapter;
+  readonly adapter: Entity2RelationMap;
   private _pk: Attribute[] = [];
   private _attributes: Attributes = {};
   private _unique: Attribute[][] = [];
 
   constructor(parent: Entity | undefined, name: string, lName: LName,
-    isAbstract: boolean, adapter?: EntityAdapter)
+    isAbstract: boolean, adapter: Entity2RelationMap)
   {
     this.parent = parent;
     this.name = name;
@@ -267,7 +268,7 @@ export class Entity {
     return this._unique;
   }
 
-  addUnique(value) {
+  addUnique(value: Attribute[]) {
     this._unique.push(value);
   }
 
