@@ -62,6 +62,7 @@ export declare class TimeStampAttribute extends NumberAttribute<Date, ContextVar
 export declare class BooleanAttribute extends ScalarAttribute {
     private _defaultValue;
     constructor(name: string, lName: LName, required: boolean, defaultValue: boolean, adapter?: AttributeAdapter);
+    defaultValue: boolean;
 }
 export interface EnumValue {
     value: string | number;
@@ -71,6 +72,8 @@ export declare class EnumAttribute extends ScalarAttribute {
     private _values;
     private _defaultValue;
     constructor(name: string, lName: LName, required: boolean, values: EnumValue[], defaultValue: string | number | undefined, adapter?: AttributeAdapter);
+    values: EnumValue[];
+    defaultValue: string | number | undefined;
 }
 export declare class TimeIntervalAttribute extends ScalarAttribute {
 }
