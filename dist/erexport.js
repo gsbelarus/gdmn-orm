@@ -306,12 +306,19 @@ function erExport(dbs, erModel) {
                 const adapter = { relation: r.name };
                 const attr = (() => {
                     switch (rf[1].fieldSource) {
+                        /*
                         case 'DEDITIONDATE':
-                            return new erm.TimeStampAttribute(rf[0], { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)');
+                          return new erm.TimeStampAttribute(rf[0], {ru: {name: 'Изменено'}}, true,
+                            new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'
+                          );
                         case 'DCREATIONDATE':
-                            return new erm.TimeStampAttribute(rf[0], { ru: { name: 'Создано' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)');
+                          return new erm.TimeStampAttribute(rf[0], {ru: {name: 'Создано'}}, true,
+                            new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'
+                          );
                         case 'DDOCUMENTDATE':
-                            return new erm.TimeStampAttribute(rf[0], { ru: { name: 'Дата документа' } }, true, new Date('1900-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)');
+                          return new erm.TimeStampAttribute(rf[0], {ru: {name: 'Дата документа'}}, true,
+                            new Date('1900-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'
+                          );
                         case 'DQUANTITY': return new erm.NumericAttribute(rf[0], lName, false, 15, 4, undefined, undefined, undefined, adapter);
                         case 'DLAT': return new erm.NumericAttribute(rf[0], lName, false, 10, 8, -90, +90, undefined, adapter);
                         case 'DLON': return new erm.NumericAttribute(rf[0], lName, false, 11, 8, -180, +180, undefined, adapter);
@@ -320,16 +327,21 @@ function erExport(dbs, erModel) {
                         case 'DPERCENT': return new erm.NumericAttribute(rf[0], lName, false, 7, 4, undefined, undefined, undefined, adapter);
                         case 'DTAX': return new erm.NumericAttribute(rf[0], lName, false, 7, 4, 0, 99, undefined, adapter);
                         case 'DDECDIGITS': return new erm.IntegerAttribute(rf[0], lName, false, 0, 16, undefined, adapter);
-                        case 'DACCOUNTTYPE': return new erm.EnumAttribute(rf[0], lName, false, [{ value: 'D' }, { value: 'K' }], undefined, adapter);
-                        case 'DGENDER': return new erm.EnumAttribute(rf[0], lName, false, [{ value: 'M' }, { value: 'F' }, { value: 'N' }], undefined, adapter);
-                        case 'DTEXTALIGNMENT': return new erm.EnumAttribute(rf[0], lName, false, [{ value: 'L' }, { value: 'R' }, { value: 'C' }, { value: 'J' }], 'L', adapter);
+                        case 'DACCOUNTTYPE': return new erm.EnumAttribute(rf[0], lName, false, [{value: 'D'}, {value: 'K'}], undefined, adapter);
+                        case 'DGENDER': return new erm.EnumAttribute(rf[0], lName, false, [{value: 'M'}, {value: 'F'}, {value: 'N'}], undefined, adapter);
+                        case 'DTEXTALIGNMENT': return new erm.EnumAttribute(rf[0], lName, false,
+                          [{value: 'L'}, {value: 'R'}, {value: 'C'}, {value: 'J'}], 'L', adapter);
                         case 'DSECURITY': return new erm.IntegerAttribute(rf[0], lName, true, undefined, undefined, -1, adapter);
+                        */
                         case 'DDISABLED': return new erm.BooleanAttribute(rf[0], lName, false, false, adapter);
                         case 'DBOOLEAN': return new erm.BooleanAttribute(rf[0], lName, false, false, adapter);
                         case 'DBOOLEAN_NOTNULL': return new erm.BooleanAttribute(rf[0], lName, true, false, adapter);
                         // следующие домены надо проверить, возможно уже нигде и не используются
-                        case 'DTYPETRANSPORT': return new erm.EnumAttribute(rf[0], lName, false, [{ value: 'C' }, { value: 'S' }, { value: 'R' }, { value: 'O' }, { value: 'W' }], undefined, adapter);
+                        /*
+                        case 'DTYPETRANSPORT': return new erm.EnumAttribute(rf[0], lName, false,
+                          [{value: 'C'}, {value: 'S'}, {value: 'R'}, {value: 'O'}, {value: 'W'}], undefined, adapter);
                         case 'DGOLDQUANTITY': return new erm.NumericAttribute(rf[0], lName, false, 15, 8, undefined, undefined, undefined, adapter);
+                        */
                     }
                     if (fieldSource.fieldScale < 0) {
                         const factor = Math.pow(10, fieldSource.fieldScale);
