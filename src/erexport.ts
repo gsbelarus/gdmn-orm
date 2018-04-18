@@ -1,9 +1,9 @@
-import { DBStructure, IRefConstraints, FKConstraint, Relation, FieldType } from 'gdmn-db';
+import { DBStructure, IRefConstraints, FKConstraint, Relation, FieldType, ATransaction } from 'gdmn-db';
 import * as erm from './ermodel';
 import * as rdbadapter from './rdbadapter';
 import { LName } from './types';
 
-export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
+export function erExport(dbs: DBStructure, transaction: ATransaction, erModel: erm.ERModel): erm.ERModel {
 
   /**
    * Если имя генератора совпадает с именем объекта в БД, то адаптер можем не указывать.
@@ -467,7 +467,6 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
 
         const attr = ( () => {
           switch (rf[1].fieldSource) {
-            /*
             case 'DEDITIONDATE':
               return new erm.TimeStampAttribute(rf[0], {ru: {name: 'Изменено'}}, true,
                 new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'
@@ -493,16 +492,13 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
             case 'DTEXTALIGNMENT': return new erm.EnumAttribute(rf[0], lName, false,
               [{value: 'L'}, {value: 'R'}, {value: 'C'}, {value: 'J'}], 'L', adapter);
             case 'DSECURITY': return new erm.IntegerAttribute(rf[0], lName, true, undefined, undefined, -1, adapter);
-            */
             case 'DDISABLED': return new erm.BooleanAttribute(rf[0], lName, false, false, adapter);
             case 'DBOOLEAN': return new erm.BooleanAttribute(rf[0], lName, false, false, adapter);
             case 'DBOOLEAN_NOTNULL': return new erm.BooleanAttribute(rf[0], lName, true, false, adapter);
             // следующие домены надо проверить, возможно уже нигде и не используются
-            /*
             case 'DTYPETRANSPORT': return new erm.EnumAttribute(rf[0], lName, false,
               [{value: 'C'}, {value: 'S'}, {value: 'R'}, {value: 'O'}, {value: 'W'}], undefined, adapter);
             case 'DGOLDQUANTITY': return new erm.NumericAttribute(rf[0], lName, false, 15, 8, undefined, undefined, undefined, adapter);
-            */
           }
 
           if (fieldSource.fieldScale < 0) {
