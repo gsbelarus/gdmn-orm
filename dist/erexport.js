@@ -243,8 +243,9 @@ function erExport(dbs, erModel) {
             return 'CURRENT_TIME';
         if (defaultValue === 'CURRENT_DATE')
             return 'CURRENT_DATE';
-        if (Date.parse(defaultValue))
+        if (defaultValue && Date.parse(defaultValue))
             return new Date(defaultValue);
+        return undefined;
     }
     function createEntity(relation) {
         const found = Object.entries(erModel.entities).find(e => {

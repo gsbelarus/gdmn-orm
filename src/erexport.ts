@@ -1,4 +1,4 @@
-import { DBStructure, IRefConstraints, FKConstraint, Relation, FieldType } from '../../gdmn-db/src';
+import { DBStructure, IRefConstraints, FKConstraint, Relation, FieldType } from 'gdmn-db';
 import * as erm from './ermodel';
 import * as rdbadapter from './rdbadapter';
 
