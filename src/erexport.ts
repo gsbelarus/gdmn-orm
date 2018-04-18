@@ -1,4 +1,4 @@
-import { DBStructure, IRefConstraints, FKConstraint, Relation, FieldType } from 'gdmn-db';
+import { DBStructure, IRefConstraints, FKConstraint, Relation, FieldType } from '../../gdmn-db/src';
 import * as erm from './ermodel';
 import * as rdbadapter from './rdbadapter';
 
@@ -357,21 +357,22 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
     new erm.TimeStampAttribute('EDITIONDATE', {ru: {name: 'Изменено'}}, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP')
   );
 
-  function default2Int(defaultValue: string | undefined): number | undefined {
+  function default2Int(defaultValue: string | null): number | undefined {
     const num = Number(defaultValue);
     return (num || num === 0) && Number.isInteger(num) ? num : undefined;
   }
 
-  function default2Number(defaultValue: string | undefined): number | undefined {
+  function default2Number(defaultValue: string | null): number | undefined {
     const num = Number(defaultValue);
     return (num || num === 0) ? num : undefined;
   }
 
-  function default2Date(defaultValue: string | undefined): Date | erm.ContextVariables | undefined {
+  function default2Date(defaultValue: string | null): Date | erm.ContextVariables | undefined {
     if (defaultValue === 'CURRENT_TIMESTAMP') return 'CURRENT_TIMESTAMP';
     if (defaultValue === 'CURRENT_TIME') return 'CURRENT_TIME';
     if (defaultValue === 'CURRENT_DATE') return 'CURRENT_DATE';
-    if (Date.parse(defaultValue)) return new Date(defaultValue);
+    if (defaultValue && Date.parse(defaultValue)) return new Date(defaultValue);
+    return undefined;
   }
 
   function createEntity(relation: Relation): erm.Entity {
