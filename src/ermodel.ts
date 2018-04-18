@@ -6,7 +6,7 @@ import { LName, AttributeAdapter, SequenceAdapter } from './types';
 import { IEntity, IAttribute, IERModel } from './interfaces';
 import { Entity2RelationMap } from './rdbadapter';
 
-export type ContextVariables = 'CURRENT_TIMESTAMP' | 'CURRENT_DATE' | 'CURRENT_TIME';
+export type ContextVariables = 'CURRENT_TIMESTAMP' | 'CURRENT_TIMESTAMP(0)' | 'CURRENT_DATE' | 'CURRENT_TIME';
 
 export class Attribute {
   private _name: string;
@@ -128,13 +128,15 @@ export class IntegerAttribute extends NumberAttribute<number> { }
 export class FloatAttribute extends NumberAttribute<number> { }
 
 export class NumericAttribute extends NumberAttribute<number> {
+  private _precision: number;
   private _scale: number;
 
-  constructor(name: string, lName: LName, required: boolean,
+  constructor(name: string, lName: LName, required: boolean, precision: number,
     scale: number, minValue: number | undefined, maxValue: number | undefined,
     defaultValue: number | undefined, adapter?: AttributeAdapter)
   {
     super(name, lName, required, minValue, maxValue, defaultValue, adapter);
+    this._precision = precision;
     this._scale = scale;
   }
 }
@@ -237,13 +239,13 @@ export class Entity {
   readonly name: string;
   readonly lName: LName;
   readonly isAbstract: boolean;
-  readonly adapter: Entity2RelationMap;
+  readonly adapter?: Entity2RelationMap;
   private _pk: Attribute[] = [];
   private _attributes: Attributes = {};
   private _unique: Attribute[][] = [];
 
   constructor(parent: Entity | undefined, name: string, lName: LName,
-    isAbstract: boolean, adapter: Entity2RelationMap)
+    isAbstract: boolean, adapter?: Entity2RelationMap)
   {
     this.parent = parent;
     this.name = name;

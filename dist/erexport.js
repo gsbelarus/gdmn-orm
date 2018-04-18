@@ -24,7 +24,7 @@ function erExport(dbs, erModel) {
      */
     const Holiday = erModel.add(new erm.Entity(undefined, 'WG_HOLIDAY', { ru: { name: 'Государственный праздник' } }, false, {
         relation: {
-            relation: 'WG_HOLIDAY'
+            relationName: 'WG_HOLIDAY'
         }
     }));
     Holiday.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
@@ -32,7 +32,7 @@ function erExport(dbs, erModel) {
         Holiday.add(new erm.DateAttribute('HOLIDAYDATE', { ru: { name: 'Дата праздника' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), undefined))
     ]);
     Holiday.add(new erm.StringAttribute('NAME', { ru: { name: 'Наименование' } }, true, undefined, 60, undefined, true, undefined));
-    Holiday.add(new erm.TimeStampAttribute('EDITIONDATE', { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP'));
+    Holiday.add(new erm.TimeStampAttribute('EDITIONDATE', { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'));
     Holiday.add(new erm.BooleanAttribute('DISABLED', { ru: { name: 'Отключено' } }, true, false));
     /**
      * Папка из справочника контактов.
@@ -42,7 +42,7 @@ function erExport(dbs, erModel) {
      */
     const Folder = erModel.add(new erm.Entity(undefined, 'Folder', { ru: { name: 'Папка' } }, false, {
         relation: {
-            relation: 'GD_CONTACT',
+            relationName: 'GD_CONTACT',
             structure: 'LBRB',
             selector: {
                 field: 'CONTACTTYPE',
@@ -53,7 +53,7 @@ function erExport(dbs, erModel) {
     Folder.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
     Folder.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в папку' } }, [Folder]));
     Folder.add(new erm.StringAttribute('NAME', { ru: { name: 'Наименование' } }, true, undefined, 60, undefined, true, undefined));
-    Folder.add(new erm.TimeStampAttribute('EDITIONDATE', { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP'));
+    Folder.add(new erm.TimeStampAttribute('EDITIONDATE', { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'));
     Folder.add(new erm.BooleanAttribute('DISABLED', { ru: { name: 'Отключено' } }, true, false));
     /**
      * Компания хранится в трех таблицах.
@@ -70,7 +70,7 @@ function erExport(dbs, erModel) {
     const Company = erModel.add(new erm.Entity(undefined, 'Company', { ru: { name: 'Организация' } }, false, {
         relation: [
             {
-                relation: 'GD_CONTACT',
+                relationName: 'GD_CONTACT',
                 structure: 'LBRB',
                 selector: {
                     field: 'CONTACTTYPE',
@@ -78,10 +78,10 @@ function erExport(dbs, erModel) {
                 }
             },
             {
-                relation: 'GD_COMPANY'
+                relationName: 'GD_COMPANY'
             },
             {
-                relation: 'GD_COMPANYCODE',
+                relationName: 'GD_COMPANYCODE',
                 weak: true
             }
         ],
@@ -109,14 +109,14 @@ function erExport(dbs, erModel) {
     const Bank = erModel.add(new erm.Entity(Company, 'Bank', { ru: { name: 'Банк' } }, false, {
         relation: [
             {
-                relation: 'GD_CONTACT',
+                relationName: 'GD_CONTACT',
                 selector: {
                     field: 'CONTACTTYPE',
                     value: 5
                 }
             },
             {
-                relation: 'GD_BANK'
+                relationName: 'GD_BANK'
             }
         ],
         refresh: true
@@ -130,7 +130,7 @@ function erExport(dbs, erModel) {
      */
     const Department = erModel.add(new erm.Entity(undefined, 'Department', { ru: { name: 'Подразделение' } }, false, {
         relation: {
-            relation: 'GD_CONTACT',
+            relationName: 'GD_CONTACT',
             structure: 'LBRB',
             selector: {
                 field: 'CONTACTTYPE',
@@ -141,7 +141,7 @@ function erExport(dbs, erModel) {
     Department.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
     Department.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в организацию (подразделение)' } }, [Company, Department]));
     Department.add(new erm.StringAttribute('NAME', { ru: { name: 'Наименование' } }, true, undefined, 60, undefined, true, undefined));
-    Department.add(new erm.TimeStampAttribute('EDITIONDATE', { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP'));
+    Department.add(new erm.TimeStampAttribute('EDITIONDATE', { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'));
     Department.add(new erm.BooleanAttribute('DISABLED', { ru: { name: 'Отключено' } }, true, false));
     /**
      * Физическое лицо хранится в двух таблицах GD_CONTACT - GD_PEOPLE.
@@ -149,7 +149,7 @@ function erExport(dbs, erModel) {
     const Person = erModel.add(new erm.Entity(undefined, 'Person', { ru: { name: 'Физическое лицо' } }, false, {
         relation: [
             {
-                relation: 'GD_CONTACT',
+                relationName: 'GD_CONTACT',
                 structure: 'LBRB',
                 selector: {
                     field: 'CONTACTTYPE',
@@ -157,7 +157,7 @@ function erExport(dbs, erModel) {
                 }
             },
             {
-                relation: 'GD_PEOPLE'
+                relationName: 'GD_PEOPLE'
             }
         ],
         refresh: true
@@ -175,7 +175,7 @@ function erExport(dbs, erModel) {
      */
     const Employee = erModel.add(new erm.Entity(Person, 'Employee', { ru: { name: 'Физическое лицо' } }, false, {
         relation: {
-            relation: 'GD_EMPLOYEE'
+            relationName: 'GD_EMPLOYEE'
         }
     }));
     Employee.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Организация или подразделение' } }, [Company, Department]));
@@ -185,7 +185,7 @@ function erExport(dbs, erModel) {
      */
     const Group = erModel.add(new erm.Entity(undefined, 'Group', { ru: { name: 'Группа' } }, false, {
         relation: {
-            relation: 'GD_CONTACT',
+            relationName: 'GD_CONTACT',
             structure: 'LBRB',
             selector: {
                 field: 'CONTACTTYPE',
@@ -206,7 +206,7 @@ function erExport(dbs, erModel) {
      */
     const Place = erModel.add(new erm.Entity(undefined, 'Place', { ru: { name: 'Папка' } }, false, {
         relation: {
-            relation: 'GD_PLACE',
+            relationName: 'GD_PLACE',
             structure: 'LBRB'
         }
     }));
@@ -221,19 +221,19 @@ function erExport(dbs, erModel) {
             value: 'Район'
         },
     ], 'Область'));
-    Place.add(new erm.TimeStampAttribute('EDITIONDATE', { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP'));
+    Place.add(new erm.TimeStampAttribute('EDITIONDATE', { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'));
     /**
      * Документ.
      */
     const Document = erModel.add(new erm.Entity(undefined, 'Document', { ru: { name: 'Документ' } }, true, {
         relation: {
-            relation: 'GD_DOCUMENT',
+            relationName: 'GD_DOCUMENT',
             structure: 'TREE'
         }
     }));
     Document.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
     Document.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в' } }, [Document]));
-    Document.add(new erm.TimeStampAttribute('EDITIONDATE', { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP'));
+    Document.add(new erm.TimeStampAttribute('EDITIONDATE', { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'));
     function default2Int(defaultValue) {
         const num = Number(defaultValue);
         return (num || num === 0) && Number.isInteger(num) ? num : undefined;
@@ -243,6 +243,8 @@ function erExport(dbs, erModel) {
         return (num || num === 0) ? num : undefined;
     }
     function default2Date(defaultValue) {
+        if (defaultValue === 'CURRENT_TIMESTAMP(0)')
+            return 'CURRENT_TIMESTAMP(0)';
         if (defaultValue === 'CURRENT_TIMESTAMP')
             return 'CURRENT_TIMESTAMP';
         if (defaultValue === 'CURRENT_TIME')
@@ -256,11 +258,16 @@ function erExport(dbs, erModel) {
     function createEntity(relation) {
         const found = Object.entries(erModel.entities).find(e => {
             const adapter = e[1].adapter;
-            if (Array.isArray(adapter.relation)) {
-                return !!adapter.relation.find((r) => r.relation === relation.name && !r.weak);
+            if (adapter) {
+                if (Array.isArray(adapter.relation)) {
+                    return !!adapter.relation.find((r) => r.relationName === relation.name && !r.weak);
+                }
+                else {
+                    return adapter.relation.relationName === relation.name;
+                }
             }
             else {
-                return adapter.relation.relation === relation.name;
+                return e[0] === relation.name;
             }
         });
         if (found) {
@@ -279,7 +286,7 @@ function erExport(dbs, erModel) {
         }, undefined);
         return erModel.add(new erm.Entity(parent, relation.name, { en: { name: relation.name } }, false, {
             relation: {
-                relation: relation.name
+                relationName: relation.name
             }
         }));
     }
@@ -299,11 +306,30 @@ function erExport(dbs, erModel) {
                 const adapter = { relation: r.name };
                 const attr = (() => {
                     switch (rf[1].fieldSource) {
+                        case 'DEDITIONDATE':
+                            return new erm.TimeStampAttribute(rf[0], { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)');
+                        case 'DCREATIONDATE':
+                            return new erm.TimeStampAttribute(rf[0], { ru: { name: 'Создано' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)');
+                        case 'DDOCUMENTDATE':
+                            return new erm.TimeStampAttribute(rf[0], { ru: { name: 'Дата документа' } }, true, new Date('1900-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)');
+                        case 'DQUANTITY': return new erm.NumericAttribute(rf[0], lName, false, 15, 4, undefined, undefined, undefined, adapter);
+                        case 'DLAT': return new erm.NumericAttribute(rf[0], lName, false, 10, 8, -90, +90, undefined, adapter);
+                        case 'DLON': return new erm.NumericAttribute(rf[0], lName, false, 11, 8, -180, +180, undefined, adapter);
+                        case 'DCURRENCY': return new erm.NumericAttribute(rf[0], lName, false, 15, 4, undefined, undefined, undefined, adapter);
+                        case 'DPOSITIVE': return new erm.NumericAttribute(rf[0], lName, false, 15, 8, 0, undefined, undefined, adapter);
+                        case 'DPERCENT': return new erm.NumericAttribute(rf[0], lName, false, 7, 4, undefined, undefined, undefined, adapter);
+                        case 'DTAX': return new erm.NumericAttribute(rf[0], lName, false, 7, 4, 0, 99, undefined, adapter);
+                        case 'DDECDIGITS': return new erm.IntegerAttribute(rf[0], lName, false, 0, 16, undefined, adapter);
                         case 'DACCOUNTTYPE': return new erm.EnumAttribute(rf[0], lName, false, [{ value: 'D' }, { value: 'K' }], undefined, adapter);
+                        case 'DGENDER': return new erm.EnumAttribute(rf[0], lName, false, [{ value: 'M' }, { value: 'F' }, { value: 'N' }], undefined, adapter);
+                        case 'DTEXTALIGNMENT': return new erm.EnumAttribute(rf[0], lName, false, [{ value: 'L' }, { value: 'R' }, { value: 'C' }, { value: 'J' }], 'L', adapter);
                         case 'DSECURITY': return new erm.IntegerAttribute(rf[0], lName, true, undefined, undefined, -1, adapter);
                         case 'DDISABLED': return new erm.BooleanAttribute(rf[0], lName, false, false, adapter);
                         case 'DBOOLEAN': return new erm.BooleanAttribute(rf[0], lName, false, false, adapter);
                         case 'DBOOLEAN_NOTNULL': return new erm.BooleanAttribute(rf[0], lName, true, false, adapter);
+                        // следующие домены надо проверить, возможно уже нигде и не используются
+                        case 'DTYPETRANSPORT': return new erm.EnumAttribute(rf[0], lName, false, [{ value: 'C' }, { value: 'S' }, { value: 'R' }, { value: 'O' }, { value: 'W' }], undefined, adapter);
+                        case 'DGOLDQUANTITY': return new erm.NumericAttribute(rf[0], lName, false, 15, 8, undefined, undefined, undefined, adapter);
                     }
                     if (fieldSource.fieldScale < 0) {
                         const factor = Math.pow(10, fieldSource.fieldScale);
@@ -322,7 +348,7 @@ function erExport(dbs, erModel) {
                                 MaxValue = rdbadapter.MAX_64BIT_INT * factor;
                                 MinValue = rdbadapter.MIN_64BIT_INT * factor;
                         }
-                        return new erm.NumericAttribute(rf[0], lName, required, fieldSource.fieldScale, MinValue, MaxValue, default2Number(defaultValue), adapter);
+                        return new erm.NumericAttribute(rf[0], lName, required, fieldSource.fieldPrecision, fieldSource.fieldScale, MinValue, MaxValue, default2Number(defaultValue), adapter);
                     }
                     switch (fieldSource.fieldType) {
                         case gdmn_db_1.FieldType.INTEGER:

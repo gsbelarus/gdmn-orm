@@ -1,6 +1,7 @@
 import { DBStructure, IRefConstraints, FKConstraint, Relation, FieldType } from 'gdmn-db';
 import * as erm from './ermodel';
 import * as rdbadapter from './rdbadapter';
+import { LName } from './types';
 
 export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
 
@@ -23,7 +24,7 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
       {
         relation:
           {
-            relation: 'WG_HOLIDAY'
+            relationName: 'WG_HOLIDAY'
           }
       }
     )
@@ -40,7 +41,9 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
     new erm.StringAttribute('NAME', {ru: {name: 'Наименование'}}, true, undefined, 60, undefined, true, undefined)
   );
   Holiday.add(
-    new erm.TimeStampAttribute('EDITIONDATE', {ru: {name: 'Изменено'}}, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP')
+    new erm.TimeStampAttribute('EDITIONDATE', {ru: {name: 'Изменено'}}, true,
+      new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'
+    )
   );
   Holiday.add(
     new erm.BooleanAttribute('DISABLED', {ru: {name: 'Отключено'}}, true, false)
@@ -56,7 +59,7 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
     false,
     {
       relation: {
-        relation: 'GD_CONTACT',
+        relationName: 'GD_CONTACT',
         structure: 'LBRB',
         selector: {
           field: 'CONTACTTYPE',
@@ -75,7 +78,9 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
     new erm.StringAttribute('NAME', {ru: {name: 'Наименование'}}, true, undefined, 60, undefined, true, undefined)
   );
   Folder.add(
-    new erm.TimeStampAttribute('EDITIONDATE', {ru: {name: 'Изменено'}}, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP')
+    new erm.TimeStampAttribute('EDITIONDATE', {ru: {name: 'Изменено'}}, true,
+      new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'
+    )
   );
   Folder.add(
     new erm.BooleanAttribute('DISABLED', {ru: {name: 'Отключено'}}, true, false)
@@ -98,7 +103,7 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
     {
       relation: [
         {
-          relation: 'GD_CONTACT',
+          relationName: 'GD_CONTACT',
           structure: 'LBRB',
           selector: {
             field: 'CONTACTTYPE',
@@ -106,10 +111,10 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
           }
         },
         {
-          relation: 'GD_COMPANY'
+          relationName: 'GD_COMPANY'
         },
         {
-          relation: 'GD_COMPANYCODE',
+          relationName: 'GD_COMPANYCODE',
           weak: true
         }
       ],
@@ -155,14 +160,14 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
     {
       relation: [
         {
-          relation: 'GD_CONTACT',
+          relationName: 'GD_CONTACT',
           selector: {
             field: 'CONTACTTYPE',
             value: 5
           }
         },
         {
-          relation: 'GD_BANK'
+          relationName: 'GD_BANK'
         }
       ],
       refresh: true
@@ -183,7 +188,7 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
     false,
     {
       relation: {
-        relation: 'GD_CONTACT',
+        relationName: 'GD_CONTACT',
         structure: 'LBRB',
         selector: {
           field: 'CONTACTTYPE',
@@ -202,7 +207,9 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
     new erm.StringAttribute('NAME', {ru: {name: 'Наименование'}}, true, undefined, 60, undefined, true, undefined)
   );
   Department.add(
-    new erm.TimeStampAttribute('EDITIONDATE', {ru: {name: 'Изменено'}}, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP')
+    new erm.TimeStampAttribute('EDITIONDATE', {ru: {name: 'Изменено'}}, true,
+      new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'
+    )
   );
   Department.add(
     new erm.BooleanAttribute('DISABLED', {ru: {name: 'Отключено'}}, true, false)
@@ -216,7 +223,7 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
     {
       relation: [
         {
-          relation: 'GD_CONTACT',
+          relationName: 'GD_CONTACT',
           structure: 'LBRB',
           selector: {
             field: 'CONTACTTYPE',
@@ -224,7 +231,7 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
           }
         },
         {
-          relation: 'GD_PEOPLE'
+          relationName: 'GD_PEOPLE'
         }
       ],
       refresh: true
@@ -258,7 +265,7 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
     {
       relation:
         {
-          relation: 'GD_EMPLOYEE'
+          relationName: 'GD_EMPLOYEE'
         }
     }
   ));
@@ -276,7 +283,7 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
     {
       relation:
         {
-          relation: 'GD_CONTACT',
+          relationName: 'GD_CONTACT',
           structure: 'LBRB',
           selector: {
             field: 'CONTACTTYPE',
@@ -314,7 +321,7 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
     false,
     {
       relation: {
-        relation: 'GD_PLACE',
+        relationName: 'GD_PLACE',
         structure: 'LBRB'
       }
     }
@@ -342,7 +349,9 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
     )
   );
   Place.add(
-    new erm.TimeStampAttribute('EDITIONDATE', {ru: {name: 'Изменено'}}, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP')
+    new erm.TimeStampAttribute('EDITIONDATE', {ru: {name: 'Изменено'}}, true,
+      new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'
+    )
   );
 
   /**
@@ -352,7 +361,7 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
     true,
     {
       relation: {
-        relation: 'GD_DOCUMENT',
+        relationName: 'GD_DOCUMENT',
         structure: 'TREE'
       }
     }
@@ -364,7 +373,9 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
     new erm.ParentAttribute('PARENT', {ru: {name: 'Входит в'}}, [Document])
   );
   Document.add(
-    new erm.TimeStampAttribute('EDITIONDATE', {ru: {name: 'Изменено'}}, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP')
+    new erm.TimeStampAttribute('EDITIONDATE', {ru: {name: 'Изменено'}}, true,
+      new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'
+    )
   );
 
   function default2Int(defaultValue: string | null): number | undefined {
@@ -378,6 +389,7 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
   }
 
   function default2Date(defaultValue: string | null): Date | erm.ContextVariables | undefined {
+    if (defaultValue === 'CURRENT_TIMESTAMP(0)') return 'CURRENT_TIMESTAMP(0)';
     if (defaultValue === 'CURRENT_TIMESTAMP') return 'CURRENT_TIMESTAMP';
     if (defaultValue === 'CURRENT_TIME') return 'CURRENT_TIME';
     if (defaultValue === 'CURRENT_DATE') return 'CURRENT_DATE';
@@ -389,10 +401,16 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
 
     const found = Object.entries(erModel.entities).find( e => {
       const adapter = e[1].adapter;
-      if (Array.isArray(adapter.relation)) {
-        return !!adapter.relation.find( (r: rdbadapter.Relation) => r.relation === relation.name && !r.weak);
+      if (adapter) {
+        if (Array.isArray(adapter.relation)) {
+          return !!adapter.relation.find(
+            (r: rdbadapter.Relation) => r.relationName === relation.name && !r.weak
+          );
+        } else {
+          return adapter.relation.relationName === relation.name;
+        }
       } else {
-        return adapter.relation.relation === relation.name;
+        return e[0] === relation.name;
       }
     });
 
@@ -422,7 +440,7 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
       false,
       {
         relation: {
-          relation: relation.name
+          relationName: relation.name
         }
       }
     ));
@@ -442,18 +460,45 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
 
       Object.entries(r.relationFields).forEach( rf => {
         const fieldSource = dbs.fields[rf[1].fieldSource];
-        const lName = {en: {name: rf[0]}};
-        const required = rf[1].notNull || fieldSource.notNull;
-        const defaultValue = rf[1].defaultValue || fieldSource.defaultValue;
-        const adapter = {relation: r.name};
+        const lName: LName = {en: {name: rf[0]}};
+        const required: boolean = rf[1].notNull || fieldSource.notNull;
+        const defaultValue: string | null = rf[1].defaultValue || fieldSource.defaultValue;
+        const adapter: rdbadapter.Attribute2FieldMap = {relation: r.name};
 
         const attr = ( () => {
           switch (rf[1].fieldSource) {
+            case 'DEDITIONDATE':
+              return new erm.TimeStampAttribute(rf[0], {ru: {name: 'Изменено'}}, true,
+                new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'
+              );
+            case 'DCREATIONDATE':
+              return new erm.TimeStampAttribute(rf[0], {ru: {name: 'Создано'}}, true,
+                new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'
+              );
+            case 'DDOCUMENTDATE':
+              return new erm.TimeStampAttribute(rf[0], {ru: {name: 'Дата документа'}}, true,
+                new Date('1900-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'
+              );
+            case 'DQUANTITY': return new erm.NumericAttribute(rf[0], lName, false, 15, 4, undefined, undefined, undefined, adapter);
+            case 'DLAT': return new erm.NumericAttribute(rf[0], lName, false, 10, 8, -90, +90, undefined, adapter);
+            case 'DLON': return new erm.NumericAttribute(rf[0], lName, false, 11, 8, -180, +180, undefined, adapter);
+            case 'DCURRENCY': return new erm.NumericAttribute(rf[0], lName, false, 15, 4, undefined, undefined, undefined, adapter);
+            case 'DPOSITIVE': return new erm.NumericAttribute(rf[0], lName, false, 15, 8, 0, undefined, undefined, adapter);
+            case 'DPERCENT': return new erm.NumericAttribute(rf[0], lName, false, 7, 4, undefined, undefined, undefined, adapter);
+            case 'DTAX': return new erm.NumericAttribute(rf[0], lName, false, 7, 4, 0, 99, undefined, adapter);
+            case 'DDECDIGITS': return new erm.IntegerAttribute(rf[0], lName, false, 0, 16, undefined, adapter);
             case 'DACCOUNTTYPE': return new erm.EnumAttribute(rf[0], lName, false, [{value: 'D'}, {value: 'K'}], undefined, adapter);
+            case 'DGENDER': return new erm.EnumAttribute(rf[0], lName, false, [{value: 'M'}, {value: 'F'}, {value: 'N'}], undefined, adapter);
+            case 'DTEXTALIGNMENT': return new erm.EnumAttribute(rf[0], lName, false,
+              [{value: 'L'}, {value: 'R'}, {value: 'C'}, {value: 'J'}], 'L', adapter);
             case 'DSECURITY': return new erm.IntegerAttribute(rf[0], lName, true, undefined, undefined, -1, adapter);
             case 'DDISABLED': return new erm.BooleanAttribute(rf[0], lName, false, false, adapter);
             case 'DBOOLEAN': return new erm.BooleanAttribute(rf[0], lName, false, false, adapter);
             case 'DBOOLEAN_NOTNULL': return new erm.BooleanAttribute(rf[0], lName, true, false, adapter);
+            // следующие домены надо проверить, возможно уже нигде и не используются
+            case 'DTYPETRANSPORT': return new erm.EnumAttribute(rf[0], lName, false,
+              [{value: 'C'}, {value: 'S'}, {value: 'R'}, {value: 'O'}, {value: 'W'}], undefined, adapter);
+            case 'DGOLDQUANTITY': return new erm.NumericAttribute(rf[0], lName, false, 15, 8, undefined, undefined, undefined, adapter);
           }
 
           if (fieldSource.fieldScale < 0) {
@@ -478,6 +523,7 @@ export function erExport(dbs: DBStructure, erModel: erm.ERModel) {
             }
 
             return new erm.NumericAttribute(rf[0], lName, required,
+              fieldSource.fieldPrecision,
               fieldSource.fieldScale,
               MinValue, MaxValue,
               default2Number(defaultValue),

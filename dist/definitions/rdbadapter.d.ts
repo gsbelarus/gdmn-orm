@@ -14,7 +14,7 @@ export interface EntitySelector {
     value: number | string;
 }
 export interface Relation {
-    relation: string;
+    relationName: string;
     structure?: RelationStructure;
     weak?: boolean;
     selector?: EntitySelector;
