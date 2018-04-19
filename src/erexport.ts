@@ -52,8 +52,6 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
     return fields;
   });
 
-  console.log(JSON.stringify(fields));
-
   /**
    * Если имя генератора совпадает с именем объекта в БД, то адаптер можем не указывать.
    */
