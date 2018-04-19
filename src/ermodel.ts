@@ -250,6 +250,10 @@ export class SetAttribute extends EntityAttribute {
     return this._attributes[attribute.name] = attribute;
   }
 
+  get attributes() {
+    return this._attributes;
+  }
+
   serialize(): IAttribute {
     return {
       ...super.serialize(),

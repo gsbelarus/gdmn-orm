@@ -92,6 +92,7 @@ export declare class SetAttribute extends EntityAttribute {
     private _attributes;
     attribute(name: string): Attribute;
     add(attribute: Attribute): Attribute;
+    readonly attributes: Attributes;
     serialize(): IAttribute;
 }
 export declare class Entity {

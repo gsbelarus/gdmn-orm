@@ -179,6 +179,9 @@ class SetAttribute extends EntityAttribute {
         }
         return this._attributes[attribute.name] = attribute;
     }
+    get attributes() {
+        return this._attributes;
+    }
     serialize() {
         return Object.assign({}, super.serialize(), { attributes: Object.entries(this._attributes).map(a => a[1].serialize()) });
     }
