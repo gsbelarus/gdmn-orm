@@ -49,30 +49,11 @@ async function erExport(dbs, transaction, erModel) {
         }
         return fields;
     });
-    console.log(JSON.stringify(fields));
     /**
      * Если имя генератора совпадает с именем объекта в БД, то адаптер можем не указывать.
      */
     const GDGUnique = erModel.addSequence(new erm.Sequence('GD_G_UNIQUE'));
     const GDGOffset = erModel.addSequence(new erm.Sequence('Offset', { sequence: 'GD_G_OFFSET' }));
-    /**
-     * Простейший случай таблицы. Никаких ссылок.
-     * -- Если имя Entity совпадает с именем таблицы и ее структура PLAIN, то можем не указывать адаптер.
-     * -- Первое добавляемое поле в Entity автоматом становится PK.
-     * -- Если имя атрибута совпадает с именем поля, то в адаптере имя поля можно не указывать.
-     */
-    const Holiday = erModel.add(new erm.Entity(undefined, 'WG_HOLIDAY', { ru: { name: 'Государственный праздник' } }, false, {
-        relation: {
-            relationName: 'WG_HOLIDAY'
-        }
-    }));
-    Holiday.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
-    Holiday.addUnique([
-        Holiday.add(new erm.DateAttribute('HOLIDAYDATE', { ru: { name: 'Дата праздника' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), undefined))
-    ]);
-    Holiday.add(new erm.StringAttribute('NAME', { ru: { name: 'Наименование' } }, true, undefined, 60, undefined, true, undefined));
-    Holiday.add(new erm.TimeStampAttribute('EDITIONDATE', { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'));
-    Holiday.add(new erm.BooleanAttribute('DISABLED', { ru: { name: 'Отключено' } }, true, false));
     /**
      * Папка из справочника контактов.
      * Основывается на таблице GD_CONTACT, но использует только несколько полей из нее.
@@ -330,6 +311,24 @@ async function erExport(dbs, transaction, erModel) {
         }));
     }
     ;
+    /**
+     * Простейший случай таблицы. Никаких ссылок.
+     * -- Если имя Entity совпадает с именем таблицы и ее структура PLAIN, то можем не указывать адаптер.
+     * -- Первое добавляемое поле в Entity автоматом становится PK.
+     * -- Если имя атрибута совпадает с именем поля, то в адаптере имя поля можно не указывать.
+     */
+    const Holiday = erModel.add(new erm.Entity(undefined, 'WG_HOLIDAY', { ru: { name: 'Государственный праздник' } }, false, {
+        relation: {
+            relationName: 'WG_HOLIDAY'
+        }
+    }));
+    Holiday.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
+    Holiday.addUnique([
+        Holiday.add(new erm.DateAttribute('HOLIDAYDATE', { ru: { name: 'Дата праздника' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), undefined))
+    ]);
+    Holiday.add(new erm.StringAttribute('NAME', { ru: { name: 'Наименование' } }, true, undefined, 60, undefined, true, undefined));
+    Holiday.add(new erm.TimeStampAttribute('EDITIONDATE', { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'));
+    Holiday.add(new erm.BooleanAttribute('DISABLED', { ru: { name: 'Отключено' } }, true, false));
     /**
      * @todo Parse fields CHECK constraint and extract min and max allowed values.
      */
