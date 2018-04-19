@@ -3,7 +3,54 @@ import * as erm from './ermodel';
 import * as rdbadapter from './rdbadapter';
 import { LName } from './types';
 
-export function erExport(dbs: DBStructure, transaction: ATransaction, erModel: erm.ERModel): erm.ERModel {
+interface atField {
+  ruName: string;
+}
+
+interface atFields {
+  [fieldName: string]: atField;
+}
+
+export async function erExport(dbs: DBStructure, transaction: ATransaction, erModel: erm.ERModel): Promise<erm.ERModel> {
+
+  const fields = await ATransaction.executeResultSet(transaction, `
+    SELECT
+      ID,
+      FIELDNAME,
+      LNAME,
+      DESCRIPTION,
+      REFTABLE,
+      REFLISTFIELD,
+      REFCONDITION,
+      REFTABLEKEY,
+      REFLISTFIELDKEY,
+      SETTABLE,
+      SETLISTFIELD,
+      SETCONDITION,
+      SETTABLEKEY,
+      SETLISTFIELDKEY,
+      ALIGNMENT,
+      FORMAT,
+      VISIBLE,
+      COLWIDTH,
+      READONLY,
+      GDCLASSNAME,
+      GDSUBTYPE,
+      NUMERATION,
+      DISABLED,
+      EDITIONDATE,
+      EDITORKEY,
+      RESERVED
+    FROM
+      AT_FIELDS   `, async (resultSet) => {
+    const fields: atFields = {};
+    while (await resultSet.next()) {
+        fields[await resultSet.getString('FIELDNAME')] = {
+          ruName: await resultSet.getString('LNAME')
+        };
+    }
+    return fields;
+  });
 
   /**
    * Если имя генератора совпадает с именем объекта в БД, то адаптер можем не указывать.
