@@ -43,8 +43,8 @@ async function erExport(dbs, transaction, erModel) {
       AT_FIELDS   `, async (resultSet) => {
         const fields = {};
         while (await resultSet.next()) {
-            fields[await resultSet.getString('FIELDNAME')] = {
-                lName: { ru: { name: await resultSet.getString('LNAME') } }
+            fields[await resultSet.getString(1)] = {
+                lName: { ru: { name: await resultSet.getString(2) } }
             };
         }
         return fields;

@@ -45,8 +45,8 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
       AT_FIELDS   `, async (resultSet) => {
     const fields: atFields = {};
     while (await resultSet.next()) {
-        fields[await resultSet.getString('FIELDNAME')] = {
-          lName: {ru: {name: await resultSet.getString('LNAME')}}
+        fields[await resultSet.getString(1)] = {
+          lName: {ru: {name: await resultSet.getString(2)}}
         };
     }
     return fields;
