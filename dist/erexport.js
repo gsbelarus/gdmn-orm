@@ -10,7 +10,46 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const gdmn_db_1 = require("gdmn-db");
 const erm = __importStar(require("./ermodel"));
 const rdbadapter = __importStar(require("./rdbadapter"));
-function erExport(dbs, transaction, erModel) {
+async function erExport(dbs, transaction, erModel) {
+    const fields = await gdmn_db_1.ATransaction.executeResultSet(transaction, `
+    SELECT
+      ID,
+      FIELDNAME,
+      LNAME,
+      DESCRIPTION,
+      REFTABLE,
+      REFLISTFIELD,
+      REFCONDITION,
+      REFTABLEKEY,
+      REFLISTFIELDKEY,
+      SETTABLE,
+      SETLISTFIELD,
+      SETCONDITION,
+      SETTABLEKEY,
+      SETLISTFIELDKEY,
+      ALIGNMENT,
+      FORMAT,
+      VISIBLE,
+      COLWIDTH,
+      READONLY,
+      GDCLASSNAME,
+      GDSUBTYPE,
+      NUMERATION,
+      DISABLED,
+      EDITIONDATE,
+      EDITORKEY,
+      RESERVED
+    FROM
+      AT_FIELDS   `, async (resultSet) => {
+        const fields = {};
+        while (await resultSet.next()) {
+            fields[await resultSet.getString('FIELDNAME')] = {
+                lName: { ru: { name: await resultSet.getString('LNAME') } }
+            };
+        }
+        return fields;
+    });
+    console.log(JSON.stringify(fields));
     /**
      * Если имя генератора совпадает с именем объекта в БД, то адаптер можем не указывать.
      */

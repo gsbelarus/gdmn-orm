@@ -4,7 +4,7 @@ import * as rdbadapter from './rdbadapter';
 import { LName } from './types';
 
 interface atField {
-  ruName: string;
+  lName: LName;
 }
 
 interface atFields {
@@ -46,11 +46,13 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
     const fields: atFields = {};
     while (await resultSet.next()) {
         fields[await resultSet.getString('FIELDNAME')] = {
-          ruName: await resultSet.getString('LNAME')
+          lName: {ru: {name: await resultSet.getString('LNAME')}}
         };
     }
     return fields;
   });
+
+  console.log(JSON.stringify(fields));
 
   /**
    * Если имя генератора совпадает с именем объекта в БД, то адаптер можем не указывать.
