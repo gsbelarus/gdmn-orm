@@ -156,6 +156,14 @@ export class BooleanAttribute extends ScalarAttribute {
     super(name, lName, required, adapter);
     this._defaultValue = defaultValue;
   }
+
+  get defaultValue() {
+    return this._defaultValue;
+  }
+
+  set defaultValue(value) {
+    this._defaultValue = value;
+  }
 }
 
 export interface EnumValue {
@@ -174,6 +182,22 @@ export class EnumAttribute extends ScalarAttribute {
     super(name, lName, required, adapter);
     this._values = values;
     this._defaultValue = defaultValue;
+  }
+
+  get values() {
+    return this._values;
+  }
+
+  set values(value) {
+    this._values = value;
+  }
+
+  get defaultValue() {
+    return this._defaultValue;
+  }
+
+  set defaultValue(value) {
+    this._defaultValue = value;
   }
 }
 
