@@ -293,8 +293,6 @@ async function erExport(dbs, transaction, erModel) {
         if (found) {
             return found[1];
         }
-        if (!relation.primaryKey)
-            throw 'No primary key found';
         const pkFields = relation.primaryKey.fields.join();
         const parent = Object.entries(relation.foreignKeys).reduce((p, fk) => {
             if (!p && fk[1].fields.join() === pkFields) {

@@ -428,9 +428,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
       return found[1];
     }
 
-    if (!relation.primaryKey) throw 'No primary key found';
-
-    const pkFields = relation.primaryKey.fields.join();
+    const pkFields = relation.primaryKey!.fields.join();
 
     const parent = Object.entries(relation.foreignKeys).reduce(
       (p: erm.Entity | undefined, fk) => {
