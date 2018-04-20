@@ -12,9 +12,7 @@ const erm = __importStar(require("../ermodel"));
 const rdbadapter = __importStar(require("../rdbadapter"));
 const atdata_1 = require("./atdata");
 async function erExport(dbs, transaction, erModel) {
-    const { atfields } = await atdata_1.load(transaction);
-    console.log('123');
-    console.log(JSON.stringify(atfields));
+    const { atfields, atrelations } = await atdata_1.load(transaction);
     /**
      * Если имя генератора совпадает с именем объекта в БД, то адаптер можем не указывать.
      */
@@ -268,7 +266,7 @@ async function erExport(dbs, transaction, erModel) {
                 return p;
             }
         }, undefined);
-        return erModel.add(new erm.Entity(parent, relation.name, { en: { name: relation.name } }, false, {
+        return erModel.add(new erm.Entity(parent, relation.name, atrelations[relation.name].lName, false, {
             relation: {
                 relationName: relation.name
             }

@@ -6,10 +6,7 @@ import { load } from './atdata';
 
 export async function erExport(dbs: DBStructure, transaction: ATransaction, erModel: erm.ERModel): Promise<erm.ERModel> {
 
-  const { atfields } = await load(transaction);
-
-  console.log('123');
-  console.log(JSON.stringify(atfields));
+  const { atfields, atrelations } = await load(transaction);
 
   /**
    * Если имя генератора совпадает с именем объекта в БД, то адаптер можем не указывать.
@@ -403,7 +400,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
     return erModel.add(new erm.Entity(
       parent,
       relation.name,
-      {en: {name: relation.name}},
+      atrelations[relation.name].lName,
       false,
       {
         relation: {
