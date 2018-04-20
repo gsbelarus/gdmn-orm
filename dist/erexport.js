@@ -332,8 +332,10 @@ async function erExport(dbs, transaction, erModel) {
      */
     dbs.forEachRelation(r => {
         console.log(r.name);
+        if (r.primaryKey) {
+            console.log(r.primaryKey.fields.join());
+        }
         if (r.primaryKey && r.primaryKey.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)) {
-            console.log(r.name);
             const entity = createEntity(r);
             entity.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
             Object.entries(r.relationFields).forEach(rf => {
