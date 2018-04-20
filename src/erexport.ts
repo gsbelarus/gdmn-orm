@@ -496,7 +496,12 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
    */
 
   dbs.forEachRelation( r => {
+    console.log(r.name);
+
     if (r.primaryKey && r.primaryKey.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)) {
+
+      console.log(r.name);
+
       const entity = createEntity(r);
 
       entity.add(
