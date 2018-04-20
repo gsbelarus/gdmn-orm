@@ -13,7 +13,7 @@ interface atFields {
 
 export async function erExport(dbs: DBStructure, transaction: ATransaction, erModel: erm.ERModel): Promise<erm.ERModel> {
 
-  const fields = await ATransaction.executeResultSet(transaction, `
+  const fields = await ATransaction.executeQueryResultSet(transaction, `
     SELECT
       ID,
       FIELDNAME,

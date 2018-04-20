@@ -11,7 +11,7 @@ const gdmn_db_1 = require("gdmn-db");
 const erm = __importStar(require("./ermodel"));
 const rdbadapter = __importStar(require("./rdbadapter"));
 async function erExport(dbs, transaction, erModel) {
-    const fields = await gdmn_db_1.ATransaction.executeResultSet(transaction, `
+    const fields = await gdmn_db_1.ATransaction.executeQueryResultSet(transaction, `
     SELECT
       ID,
       FIELDNAME,
