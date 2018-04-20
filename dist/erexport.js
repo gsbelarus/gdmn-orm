@@ -331,10 +331,6 @@ async function erExport(dbs, transaction, erModel) {
      * @todo Parse fields CHECK constraint and extract min and max allowed values.
      */
     dbs.forEachRelation(r => {
-        console.log(r.name);
-        if (r.primaryKey) {
-            console.log(r.primaryKey.fields.join());
-        }
         if (r.primaryKey && r.primaryKey.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)) {
             const entity = createEntity(r);
             entity.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
