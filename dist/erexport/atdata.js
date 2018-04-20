@@ -49,7 +49,7 @@ async function load(transaction) {
       LNAME,
       DESCRIPTION
     FROM
-      AT_RELATIONS
+      AT_RELATION_FIELDS
     ORDER BY
       RELATIONNAME`, async (resultSet) => {
         let relationName = '';

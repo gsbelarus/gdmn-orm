@@ -92,7 +92,7 @@ export async function load(transaction: ATransaction) {
       LNAME,
       DESCRIPTION
     FROM
-      AT_RELATIONS
+      AT_RELATION_FIELDS
     ORDER BY
       RELATIONNAME`,
     async (resultSet) =>
