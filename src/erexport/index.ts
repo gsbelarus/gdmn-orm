@@ -1,56 +1,14 @@
 import { DBStructure, IRefConstraints, FKConstraint, Relation, FieldType, ATransaction } from 'gdmn-db';
-import * as erm from './ermodel';
-import * as rdbadapter from './rdbadapter';
-import { LName } from './types';
-
-interface atField {
-  lName: LName;
-}
-
-interface atFields {
-  [fieldName: string]: atField;
-}
+import * as erm from '../ermodel';
+import * as rdbadapter from '../rdbadapter';
+import { LName } from '../types';
+import { load } from './atdata';
 
 export async function erExport(dbs: DBStructure, transaction: ATransaction, erModel: erm.ERModel): Promise<erm.ERModel> {
 
-  const fields = await ATransaction.executeQueryResultSet(transaction, `
-    SELECT
-      ID,
-      FIELDNAME,
-      LNAME,
-      DESCRIPTION,
-      REFTABLE,
-      REFLISTFIELD,
-      REFCONDITION,
-      REFTABLEKEY,
-      REFLISTFIELDKEY,
-      SETTABLE,
-      SETLISTFIELD,
-      SETCONDITION,
-      SETTABLEKEY,
-      SETLISTFIELDKEY,
-      ALIGNMENT,
-      FORMAT,
-      VISIBLE,
-      COLWIDTH,
-      READONLY,
-      GDCLASSNAME,
-      GDSUBTYPE,
-      NUMERATION,
-      DISABLED,
-      EDITIONDATE,
-      EDITORKEY,
-      RESERVED
-    FROM
-      AT_FIELDS   `, async (resultSet) => {
-    const fields: atFields = {};
-    while (await resultSet.next()) {
-        fields[await resultSet.getString(1)] = {
-          lName: {ru: {name: await resultSet.getString(2)}}
-        };
-    }
-    return fields;
-  });
+  const { atfields } = await load(transaction);
+
+  console.log(JSON.stringify(atfields));
 
   /**
    * Если имя генератора совпадает с именем объекта в БД, то адаптер можем не указывать.
