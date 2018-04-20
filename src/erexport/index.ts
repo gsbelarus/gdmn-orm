@@ -8,6 +8,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
 
   const { atfields } = await load(transaction);
 
+  console.log('123');
   console.log(JSON.stringify(atfields));
 
   /**

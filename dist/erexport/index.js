@@ -13,6 +13,7 @@ const rdbadapter = __importStar(require("../rdbadapter"));
 const atdata_1 = require("./atdata");
 async function erExport(dbs, transaction, erModel) {
     const { atfields } = await atdata_1.load(transaction);
+    console.log('123');
     console.log(JSON.stringify(atfields));
     /**
      * Если имя генератора совпадает с именем объекта в БД, то адаптер можем не указывать.
