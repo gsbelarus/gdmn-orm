@@ -430,22 +430,32 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
    * @todo Parse fields CHECK constraint and extract min and max allowed values.
    */
 
-  dbs.forEachRelation( r => {
-    if (r.primaryKey && r.primaryKey.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)) {
-      const entity = createEntity(r);
+  function createAttributes(entity: erm.Entity) {
+    const relations: Relation[] = [];
 
-      entity.add(
-        new erm.SequenceAttribute('ID', {ru: {name: 'Идентификатор'}}, GDGUnique)
-      );
+    if (!entity.adapter) {
+      relations.push(dbs.relations[entity.name]);
+    } else {
+      if (Array.isArray(entity.adapter.relation)) {
+        entity.adapter.relation.forEach(
+          ar => relations.push(dbs.relations[ar.relationName])
+        );
+      } else {
+        relations.push(dbs.relations[entity.adapter.relation.relationName]);
+      }
+    }
 
+    relations.forEach( r => {
       Object.entries(r.relationFields).forEach( rf => {
         const fieldSource = dbs.fields[rf[1].fieldSource];
-        const lName: LName = {en: {name: rf[0]}};
+        const lName = atrelations[r.name].relationFields[rf[1].name].lName;
         const required: boolean = rf[1].notNull || fieldSource.notNull;
         const defaultValue: string | null = rf[1].defaultValue || fieldSource.defaultValue;
         const adapter: rdbadapter.Attribute2FieldMap = {relation: r.name};
 
         const attr = ( () => {
+          if (rf[0] === 'ID') return new erm.SequenceAttribute('ID', lName, GDGUnique);
+
           switch (rf[1].fieldSource) {
             case 'DEDITIONDATE':
               return new erm.TimeStampAttribute(rf[0], {ru: {name: 'Изменено'}}, true,
@@ -597,6 +607,12 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
         })();
         if (attr && !entity.attributes[attr.name]) entity.add(attr);
       });
+    });
+  }
+
+  dbs.forEachRelation( r => {
+    if (r.primaryKey && r.primaryKey.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)) {
+      createAttributes(createEntity(r));
     }
   });
 

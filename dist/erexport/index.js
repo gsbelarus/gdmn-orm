@@ -275,17 +275,29 @@ async function erExport(dbs, transaction, erModel) {
     /**
      * @todo Parse fields CHECK constraint and extract min and max allowed values.
      */
-    dbs.forEachRelation(r => {
-        if (r.primaryKey && r.primaryKey.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)) {
-            const entity = createEntity(r);
-            entity.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
+    function createAttributes(entity) {
+        const relations = [];
+        if (!entity.adapter) {
+            relations.push(dbs.relations[entity.name]);
+        }
+        else {
+            if (Array.isArray(entity.adapter.relation)) {
+                entity.adapter.relation.forEach(ar => relations.push(dbs.relations[ar.relationName]));
+            }
+            else {
+                relations.push(dbs.relations[entity.adapter.relation.relationName]);
+            }
+        }
+        relations.forEach(r => {
             Object.entries(r.relationFields).forEach(rf => {
                 const fieldSource = dbs.fields[rf[1].fieldSource];
-                const lName = { en: { name: rf[0] } };
+                const lName = atrelations[r.name].relationFields[rf[1].name].lName;
                 const required = rf[1].notNull || fieldSource.notNull;
                 const defaultValue = rf[1].defaultValue || fieldSource.defaultValue;
                 const adapter = { relation: r.name };
                 const attr = (() => {
+                    if (rf[0] === 'ID')
+                        return new erm.SequenceAttribute('ID', lName, GDGUnique);
                     switch (rf[1].fieldSource) {
                         case 'DEDITIONDATE':
                             return new erm.TimeStampAttribute(rf[0], { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)');
@@ -391,6 +403,11 @@ async function erExport(dbs, transaction, erModel) {
                 if (attr && !entity.attributes[attr.name])
                     entity.add(attr);
             });
+        });
+    }
+    dbs.forEachRelation(r => {
+        if (r.primaryKey && r.primaryKey.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)) {
+            createAttributes(createEntity(r));
         }
     });
     return erModel;
