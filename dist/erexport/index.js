@@ -11,6 +11,7 @@ const gdmn_db_1 = require("gdmn-db");
 const erm = __importStar(require("../ermodel"));
 const rdbadapter = __importStar(require("../rdbadapter"));
 const atdata_1 = require("./atdata");
+const util_1 = require("./util");
 async function erExport(dbs, transaction, erModel) {
     const { atfields, atrelations } = await atdata_1.load(transaction);
     /**
@@ -218,28 +219,7 @@ async function erExport(dbs, transaction, erModel) {
     Document.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
     Document.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в' } }, [Document]));
     Document.add(new erm.TimeStampAttribute('EDITIONDATE', { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'));
-    function default2Int(defaultValue) {
-        const num = Number(defaultValue);
-        return (num || num === 0) && Number.isInteger(num) ? num : undefined;
-    }
-    function default2Number(defaultValue) {
-        const num = Number(defaultValue);
-        return (num || num === 0) ? num : undefined;
-    }
-    function default2Date(defaultValue) {
-        if (defaultValue === 'CURRENT_TIMESTAMP(0)')
-            return 'CURRENT_TIMESTAMP(0)';
-        if (defaultValue === 'CURRENT_TIMESTAMP')
-            return 'CURRENT_TIMESTAMP';
-        if (defaultValue === 'CURRENT_TIME')
-            return 'CURRENT_TIME';
-        if (defaultValue === 'CURRENT_DATE')
-            return 'CURRENT_DATE';
-        if (defaultValue && Date.parse(defaultValue))
-            return new Date(defaultValue);
-        return undefined;
-    }
-    function createEntity(relation) {
+    function createEntity(relation, entityName) {
         const found = Object.entries(erModel.entities).find(e => {
             const adapter = e[1].adapter;
             if (adapter) {
@@ -266,11 +246,16 @@ async function erExport(dbs, transaction, erModel) {
                 return p;
             }
         }, undefined);
-        return erModel.add(new erm.Entity(parent, relation.name, atrelations[relation.name].lName, false, {
+        const rf = relation.relationFields;
+        const structure = rf['PARENT'] ?
+            (rf['LB'] && rf['RB'] ? 'LBRB' : 'TREE') : 'PLAIN';
+        const adapter = {
             relation: {
-                relationName: relation.name
+                relationName: relation.name,
+                structure
             }
-        }));
+        };
+        return erModel.add(new erm.Entity(parent, entityName ? entityName : relation.name, atrelations[relation.name].lName, false, adapter));
     }
     ;
     /**
@@ -279,11 +264,7 @@ async function erExport(dbs, transaction, erModel) {
      * -- Первое добавляемое поле в Entity автоматом становится PK.
      * -- Если имя атрибута совпадает с именем поля, то в адаптере имя поля можно не указывать.
      */
-    const Holiday = erModel.add(new erm.Entity(undefined, 'WG_HOLIDAY', { ru: { name: 'Государственный праздник' } }, false, {
-        relation: {
-            relationName: 'WG_HOLIDAY'
-        }
-    }));
+    const Holiday = createEntity(dbs.relations['WG_HOLIDAY']);
     Holiday.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
     Holiday.addUnique([
         Holiday.add(new erm.DateAttribute('HOLIDAYDATE', { ru: { name: 'Дата праздника' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), undefined))
@@ -348,7 +329,7 @@ async function erExport(dbs, transaction, erModel) {
                                 MaxValue = rdbadapter.MAX_64BIT_INT * factor;
                                 MinValue = rdbadapter.MIN_64BIT_INT * factor;
                         }
-                        return new erm.NumericAttribute(rf[0], lName, required, fieldSource.fieldPrecision, fieldSource.fieldScale, MinValue, MaxValue, default2Number(defaultValue), adapter);
+                        return new erm.NumericAttribute(rf[0], lName, required, fieldSource.fieldPrecision, fieldSource.fieldScale, MinValue, MaxValue, util_1.default2Number(defaultValue), adapter);
                     }
                     switch (fieldSource.fieldType) {
                         case gdmn_db_1.FieldType.INTEGER:
@@ -358,7 +339,7 @@ async function erExport(dbs, transaction, erModel) {
                                     return new erm.EntityAttribute(rf[0], lName, required, [createEntity(dbs.relationByUqConstraint(fk[1].constNameUq))], adapter);
                                 }
                                 else {
-                                    return new erm.IntegerAttribute(rf[0], lName, required, rdbadapter.MIN_32BIT_INT, rdbadapter.MAX_32BIT_INT, default2Int(defaultValue), adapter);
+                                    return new erm.IntegerAttribute(rf[0], lName, required, rdbadapter.MIN_32BIT_INT, rdbadapter.MAX_32BIT_INT, util_1.default2Int(defaultValue), adapter);
                                 }
                             }
                         case gdmn_db_1.FieldType.CHAR:
@@ -385,18 +366,18 @@ async function erExport(dbs, transaction, erModel) {
                                 return new erm.StringAttribute(rf[0], lName, required, undefined, fieldSource.fieldLength, undefined, true, undefined);
                             }
                         case gdmn_db_1.FieldType.TIMESTAMP:
-                            return new erm.TimeStampAttribute(rf[0], lName, required, undefined, undefined, default2Date(defaultValue));
+                            return new erm.TimeStampAttribute(rf[0], lName, required, undefined, undefined, util_1.default2Date(defaultValue));
                         case gdmn_db_1.FieldType.DATE:
-                            return new erm.DateAttribute(rf[0], lName, required, undefined, undefined, default2Date(defaultValue));
+                            return new erm.DateAttribute(rf[0], lName, required, undefined, undefined, util_1.default2Date(defaultValue));
                         case gdmn_db_1.FieldType.TIME:
-                            return new erm.TimeAttribute(rf[0], lName, required, undefined, undefined, default2Date(defaultValue));
+                            return new erm.TimeAttribute(rf[0], lName, required, undefined, undefined, util_1.default2Date(defaultValue));
                         case gdmn_db_1.FieldType.FLOAT:
                         case gdmn_db_1.FieldType.DOUBLE:
-                            return new erm.FloatAttribute(rf[0], lName, required, undefined, undefined, default2Number(defaultValue), adapter);
+                            return new erm.FloatAttribute(rf[0], lName, required, undefined, undefined, util_1.default2Number(defaultValue), adapter);
                         case gdmn_db_1.FieldType.SMALL_INTEGER:
-                            return new erm.IntegerAttribute(rf[0], lName, required, rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT, default2Int(defaultValue), adapter);
+                            return new erm.IntegerAttribute(rf[0], lName, required, rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT, util_1.default2Int(defaultValue), adapter);
                         case gdmn_db_1.FieldType.BIG_INTEGER:
-                            return new erm.IntegerAttribute(rf[0], lName, required, rdbadapter.MIN_64BIT_INT, rdbadapter.MAX_64BIT_INT, default2Int(defaultValue), adapter);
+                            return new erm.IntegerAttribute(rf[0], lName, required, rdbadapter.MIN_64BIT_INT, rdbadapter.MAX_64BIT_INT, util_1.default2Int(defaultValue), adapter);
                         case gdmn_db_1.FieldType.BLOB:
                             if (fieldSource.fieldSubType === 1) {
                                 return new erm.StringAttribute(rf[0], lName, required, undefined, undefined, undefined, false, undefined);

@@ -3,6 +3,7 @@ import * as erm from '../ermodel';
 import * as rdbadapter from '../rdbadapter';
 import { LName } from '../types';
 import { load } from './atdata';
+import { default2Int, default2Number, default2Date } from './util';
 
 export async function erExport(dbs: DBStructure, transaction: ATransaction, erModel: erm.ERModel): Promise<erm.ERModel> {
 
@@ -344,26 +345,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
     )
   );
 
-  function default2Int(defaultValue: string | null): number | undefined {
-    const num = Number(defaultValue);
-    return (num || num === 0) && Number.isInteger(num) ? num : undefined;
-  }
-
-  function default2Number(defaultValue: string | null): number | undefined {
-    const num = Number(defaultValue);
-    return (num || num === 0) ? num : undefined;
-  }
-
-  function default2Date(defaultValue: string | null): Date | erm.ContextVariables | undefined {
-    if (defaultValue === 'CURRENT_TIMESTAMP(0)') return 'CURRENT_TIMESTAMP(0)';
-    if (defaultValue === 'CURRENT_TIMESTAMP') return 'CURRENT_TIMESTAMP';
-    if (defaultValue === 'CURRENT_TIME') return 'CURRENT_TIME';
-    if (defaultValue === 'CURRENT_DATE') return 'CURRENT_DATE';
-    if (defaultValue && Date.parse(defaultValue)) return new Date(defaultValue);
-    return undefined;
-  }
-
-  function createEntity(relation: Relation): erm.Entity {
+  function createEntity(relation: Relation, entityName?: string): erm.Entity {
 
     const found = Object.entries(erModel.entities).find( e => {
       const adapter = e[1].adapter;
@@ -397,16 +379,22 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
       undefined
     );
 
+    const rf = relation.relationFields;
+    const structure: rdbadapter.RelationStructure = rf['PARENT'] ?
+      (rf['LB'] && rf['RB'] ? 'LBRB' : 'TREE' ) : 'PLAIN';
+    const adapter: rdbadapter.Entity2RelationMap = {
+      relation: {
+        relationName: relation.name,
+        structure
+      }
+    };
+
     return erModel.add(new erm.Entity(
       parent,
-      relation.name,
+      entityName ? entityName : relation.name,
       atrelations[relation.name].lName,
       false,
-      {
-        relation: {
-          relationName: relation.name
-        }
-      }
+      adapter
     ));
   };
 
@@ -417,16 +405,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
    * -- Если имя атрибута совпадает с именем поля, то в адаптере имя поля можно не указывать.
    */
 
-  const Holiday = erModel.add(
-    new erm.Entity(undefined, 'WG_HOLIDAY', {ru: {name: 'Государственный праздник'}}, false,
-      {
-        relation:
-          {
-            relationName: 'WG_HOLIDAY'
-          }
-      }
-    )
-  );
+  const Holiday = createEntity(dbs.relations['WG_HOLIDAY']);
   Holiday.add(
     new erm.SequenceAttribute('ID', {ru: {name: 'Идентификатор'}}, GDGUnique)
   );
