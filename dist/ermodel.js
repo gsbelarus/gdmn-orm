@@ -230,7 +230,7 @@ class Entity {
     }
     add(attribute) {
         if (this._attributes[attribute.name]) {
-            throw new Error(`Attribute ${attribute.name} already exists`);
+            throw new Error(`Attribute ${attribute.name} of entity ${this.name} already exists`);
         }
         if (!this._pk.length && !this.parent) {
             this._pk.push(attribute);
