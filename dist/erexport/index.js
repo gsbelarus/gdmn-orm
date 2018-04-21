@@ -270,7 +270,6 @@ async function erExport(dbs, transaction, erModel) {
      * -- Если имя атрибута совпадает с именем поля, то в адаптере имя поля можно не указывать.
      */
     const Holiday = createEntity(dbs.relations['WG_HOLIDAY']);
-    Holiday.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
     Holiday.addUnique([
         Holiday.add(new erm.DateAttribute('HOLIDAYDATE', { ru: { name: 'Дата праздника' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), undefined))
     ]);

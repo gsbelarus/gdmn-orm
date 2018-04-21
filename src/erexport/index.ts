@@ -414,9 +414,6 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
    */
 
   const Holiday = createEntity(dbs.relations['WG_HOLIDAY']);
-  Holiday.add(
-    new erm.SequenceAttribute('ID', {ru: {name: 'Идентификатор'}}, GDGUnique)
-  );
   Holiday.addUnique([
     Holiday.add(
       new erm.DateAttribute('HOLIDAYDATE', {ru: {name: 'Дата праздника'}}, true, new Date('2000-01-01'), new Date('2100-12-31'), undefined)
