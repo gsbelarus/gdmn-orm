@@ -201,6 +201,12 @@ class Entity {
     get pk() {
         return this._pk;
     }
+    get unique() {
+        return this._unique;
+    }
+    addUnique(value) {
+        this._unique.push(value);
+    }
     get attributes() {
         if (this.parent) {
             return Object.assign({}, this.parent.attributes, this._attributes);
@@ -209,14 +215,14 @@ class Entity {
             return this._attributes;
         }
     }
-    get unique() {
-        return this._unique;
-    }
-    addUnique(value) {
-        this._unique.push(value);
+    hasAttribute(name) {
+        return (this.parent && this.parent.hasAttribute(name)) || !!this._attributes[name];
     }
     attribute(name) {
-        const found = this.attributes[name];
+        let found = this._attributes[name];
+        if (!found && this.parent) {
+            found = this.parent.attribute(name);
+        }
         if (!found) {
             throw new Error(`Unknown attribute ${name}`);
         }
@@ -226,7 +232,7 @@ class Entity {
         if (this._attributes[attribute.name]) {
             throw new Error(`Attribute ${attribute.name} already exists`);
         }
-        if (!this._pk.length) {
+        if (!this._pk.length && !this.parent) {
             this._pk.push(attribute);
         }
         return this._attributes[attribute.name] = attribute;

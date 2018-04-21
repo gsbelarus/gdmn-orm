@@ -455,7 +455,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
 
     relations.forEach( r => {
       Object.entries(r.relationFields).forEach( rf => {
-        if (entity.attributes[rf[0]]) return;
+        if (entity.hasAttribute(rf[0])) return;
 
         const fieldSource = dbs.fields[rf[1].fieldSource];
         const lName = atrelations[r.name].relationFields[rf[1].name].lName;

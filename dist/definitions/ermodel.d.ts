@@ -106,9 +106,10 @@ export declare class Entity {
     private _unique;
     constructor(parent: Entity | undefined, name: string, lName: LName, isAbstract: boolean, adapter?: Entity2RelationMap);
     readonly pk: Attribute[];
-    readonly attributes: Attributes;
     readonly unique: Attribute[][];
     addUnique(value: Attribute[]): void;
+    readonly attributes: Attributes;
+    hasAttribute(name: string): boolean;
     attribute(name: string): Attribute;
     add(attribute: Attribute): Attribute;
     serialize(): IEntity;

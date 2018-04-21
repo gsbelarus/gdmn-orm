@@ -286,14 +286,6 @@ export class Entity {
     return this._pk;
   }
 
-  get attributes(): Attributes {
-    if (this.parent) {
-      return {...this.parent.attributes, ...this._attributes};
-    } else {
-      return this._attributes;
-    }
-  }
-
   get unique() {
     return this._unique;
   }
@@ -302,8 +294,23 @@ export class Entity {
     this._unique.push(value);
   }
 
+  get attributes(): Attributes {
+    if (this.parent) {
+      return {...this.parent.attributes, ...this._attributes};
+    } else {
+      return this._attributes;
+    }
+  }
+
+  hasAttribute(name: string): boolean {
+    return (this.parent && this.parent.hasAttribute(name)) || !!this._attributes[name];
+  }
+
   attribute(name: string) {
-    const found = this.attributes[name];
+    let found = this._attributes[name];
+    if (!found && this.parent) {
+      found = this.parent.attribute(name);
+    }
     if (!found) {
       throw new Error(`Unknown attribute ${name}`);
     }
@@ -315,7 +322,7 @@ export class Entity {
       throw new Error(`Attribute ${attribute.name} already exists`);
     }
 
-    if (!this._pk.length) {
+    if (!this._pk.length && !this.parent) {
       this._pk.push(attribute);
     }
 

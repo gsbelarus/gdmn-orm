@@ -295,7 +295,7 @@ async function erExport(dbs, transaction, erModel) {
         }
         relations.forEach(r => {
             Object.entries(r.relationFields).forEach(rf => {
-                if (entity.attributes[rf[0]])
+                if (entity.hasAttribute(rf[0]))
                     return;
                 const fieldSource = dbs.fields[rf[1].fieldSource];
                 const lName = atrelations[r.name].relationFields[rf[1].name].lName;
