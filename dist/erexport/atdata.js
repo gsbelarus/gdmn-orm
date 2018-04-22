@@ -61,7 +61,12 @@ async function load(transaction) {
                     throw `Unknown relation ${resultSet.getString(2)}`;
             }
             rel.relationFields[resultSet.getString(1)] = {
-                lName: { ru: { name: resultSet.getString(3), fullName: resultSet.getString(4) } }
+                lName: {
+                    ru: {
+                        name: resultSet.getString(3),
+                        fullName: resultSet.getString(3) !== resultSet.getString(4) ? resultSet.getString(4) : undefined
+                    }
+                }
             };
         }
     });

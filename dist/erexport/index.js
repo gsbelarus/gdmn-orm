@@ -269,13 +269,7 @@ async function erExport(dbs, transaction, erModel) {
      * -- Первое добавляемое поле в Entity автоматом становится PK.
      * -- Если имя атрибута совпадает с именем поля, то в адаптере имя поля можно не указывать.
      */
-    const Holiday = createEntity(dbs.relations['WG_HOLIDAY']);
-    Holiday.addUnique([
-        Holiday.add(new erm.DateAttribute('HOLIDAYDATE', { ru: { name: 'Дата праздника' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), undefined))
-    ]);
-    Holiday.add(new erm.StringAttribute('NAME', { ru: { name: 'Наименование' } }, true, undefined, 60, undefined, true, undefined));
-    Holiday.add(new erm.TimeStampAttribute('EDITIONDATE', { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'));
-    Holiday.add(new erm.BooleanAttribute('DISABLED', { ru: { name: 'Отключено' } }, true, false));
+    createAttributes(createEntity(dbs.relations['WG_HOLIDAY']));
     /**
      * @todo Parse fields CHECK constraint and extract min and max allowed values.
      */
@@ -293,40 +287,43 @@ async function erExport(dbs, transaction, erModel) {
             }
         }
         relations.forEach(r => {
+            if (!r.primaryKey)
+                return;
             Object.entries(r.relationFields).forEach(rf => {
-                if (entity.hasAttribute(rf[0]))
+                if (r.primaryKey.fields.find(f => f === rf[0]))
                     return;
+                const attributeName = entity.hasAttribute(rf[0]) ? `${r.name}.${rf[0]}` : rf[0];
                 const fieldSource = dbs.fields[rf[1].fieldSource];
                 const lName = atrelations[r.name].relationFields[rf[1].name].lName;
                 const required = rf[1].notNull || fieldSource.notNull;
                 const defaultValue = rf[1].defaultValue || fieldSource.defaultValue;
-                const adapter = { relation: r.name };
+                const adapter = relations.length > 1 ? { relation: r.name, field: rf[0] } : undefined;
                 const attr = (() => {
                     switch (rf[1].fieldSource) {
                         case 'DEDITIONDATE':
-                            return new erm.TimeStampAttribute(rf[0], { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)', adapter);
+                            return new erm.TimeStampAttribute(attributeName, { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)', adapter);
                         case 'DCREATIONDATE':
-                            return new erm.TimeStampAttribute(rf[0], { ru: { name: 'Создано' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)', adapter);
+                            return new erm.TimeStampAttribute(attributeName, { ru: { name: 'Создано' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)', adapter);
                         case 'DDOCUMENTDATE':
-                            return new erm.TimeStampAttribute(rf[0], { ru: { name: 'Дата документа' } }, true, new Date('1900-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)', adapter);
-                        case 'DQUANTITY': return new erm.NumericAttribute(rf[0], lName, false, 15, 4, undefined, undefined, undefined, adapter);
-                        case 'DLAT': return new erm.NumericAttribute(rf[0], lName, false, 10, 8, -90, +90, undefined, adapter);
-                        case 'DLON': return new erm.NumericAttribute(rf[0], lName, false, 11, 8, -180, +180, undefined, adapter);
-                        case 'DCURRENCY': return new erm.NumericAttribute(rf[0], lName, false, 15, 4, undefined, undefined, undefined, adapter);
-                        case 'DPOSITIVE': return new erm.NumericAttribute(rf[0], lName, false, 15, 8, 0, undefined, undefined, adapter);
-                        case 'DPERCENT': return new erm.NumericAttribute(rf[0], lName, false, 7, 4, undefined, undefined, undefined, adapter);
-                        case 'DTAX': return new erm.NumericAttribute(rf[0], lName, false, 7, 4, 0, 99, undefined, adapter);
-                        case 'DDECDIGITS': return new erm.IntegerAttribute(rf[0], lName, false, 0, 16, undefined, adapter);
-                        case 'DACCOUNTTYPE': return new erm.EnumAttribute(rf[0], lName, false, [{ value: 'D' }, { value: 'K' }], undefined, adapter);
-                        case 'DGENDER': return new erm.EnumAttribute(rf[0], lName, false, [{ value: 'M' }, { value: 'F' }, { value: 'N' }], undefined, adapter);
-                        case 'DTEXTALIGNMENT': return new erm.EnumAttribute(rf[0], lName, false, [{ value: 'L' }, { value: 'R' }, { value: 'C' }, { value: 'J' }], 'L', adapter);
-                        case 'DSECURITY': return new erm.IntegerAttribute(rf[0], lName, true, undefined, undefined, -1, adapter);
-                        case 'DDISABLED': return new erm.BooleanAttribute(rf[0], lName, false, false, adapter);
-                        case 'DBOOLEAN': return new erm.BooleanAttribute(rf[0], lName, false, false, adapter);
-                        case 'DBOOLEAN_NOTNULL': return new erm.BooleanAttribute(rf[0], lName, true, false, adapter);
+                            return new erm.TimeStampAttribute(attributeName, { ru: { name: 'Дата документа' } }, true, new Date('1900-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)', adapter);
+                        case 'DQUANTITY': return new erm.NumericAttribute(attributeName, lName, false, 15, 4, undefined, undefined, undefined, adapter);
+                        case 'DLAT': return new erm.NumericAttribute(attributeName, lName, false, 10, 8, -90, +90, undefined, adapter);
+                        case 'DLON': return new erm.NumericAttribute(attributeName, lName, false, 11, 8, -180, +180, undefined, adapter);
+                        case 'DCURRENCY': return new erm.NumericAttribute(attributeName, lName, false, 15, 4, undefined, undefined, undefined, adapter);
+                        case 'DPOSITIVE': return new erm.NumericAttribute(attributeName, lName, false, 15, 8, 0, undefined, undefined, adapter);
+                        case 'DPERCENT': return new erm.NumericAttribute(attributeName, lName, false, 7, 4, undefined, undefined, undefined, adapter);
+                        case 'DTAX': return new erm.NumericAttribute(attributeName, lName, false, 7, 4, 0, 99, undefined, adapter);
+                        case 'DDECDIGITS': return new erm.IntegerAttribute(attributeName, lName, false, 0, 16, undefined, adapter);
+                        case 'DACCOUNTTYPE': return new erm.EnumAttribute(attributeName, lName, false, [{ value: 'D' }, { value: 'K' }], undefined, adapter);
+                        case 'DGENDER': return new erm.EnumAttribute(attributeName, lName, false, [{ value: 'M' }, { value: 'F' }, { value: 'N' }], undefined, adapter);
+                        case 'DTEXTALIGNMENT': return new erm.EnumAttribute(attributeName, lName, false, [{ value: 'L' }, { value: 'R' }, { value: 'C' }, { value: 'J' }], 'L', adapter);
+                        case 'DSECURITY': return new erm.IntegerAttribute(attributeName, lName, true, undefined, undefined, -1, adapter);
+                        case 'DDISABLED': return new erm.BooleanAttribute(attributeName, lName, false, false, adapter);
+                        case 'DBOOLEAN': return new erm.BooleanAttribute(attributeName, lName, false, false, adapter);
+                        case 'DBOOLEAN_NOTNULL': return new erm.BooleanAttribute(attributeName, lName, true, false, adapter);
                         // следующие домены надо проверить, возможно уже нигде и не используются
-                        case 'DTYPETRANSPORT': return new erm.EnumAttribute(rf[0], lName, false, [{ value: 'C' }, { value: 'S' }, { value: 'R' }, { value: 'O' }, { value: 'W' }], undefined, adapter);
-                        case 'DGOLDQUANTITY': return new erm.NumericAttribute(rf[0], lName, false, 15, 8, undefined, undefined, undefined, adapter);
+                        case 'DTYPETRANSPORT': return new erm.EnumAttribute(attributeName, lName, false, [{ value: 'C' }, { value: 'S' }, { value: 'R' }, { value: 'O' }, { value: 'W' }], undefined, adapter);
+                        case 'DGOLDQUANTITY': return new erm.NumericAttribute(attributeName, lName, false, 15, 8, undefined, undefined, undefined, adapter);
                     }
                     if (fieldSource.fieldScale < 0) {
                         const factor = Math.pow(10, fieldSource.fieldScale);
@@ -345,17 +342,17 @@ async function erExport(dbs, transaction, erModel) {
                                 MaxValue = rdbadapter.MAX_64BIT_INT * factor;
                                 MinValue = rdbadapter.MIN_64BIT_INT * factor;
                         }
-                        return new erm.NumericAttribute(rf[0], lName, required, fieldSource.fieldPrecision, fieldSource.fieldScale, MinValue, MaxValue, util_1.default2Number(defaultValue), adapter);
+                        return new erm.NumericAttribute(attributeName, lName, required, fieldSource.fieldPrecision, fieldSource.fieldScale, MinValue, MaxValue, util_1.default2Number(defaultValue), adapter);
                     }
                     switch (fieldSource.fieldType) {
                         case gdmn_db_1.FieldType.INTEGER:
                             {
-                                const fk = Object.entries(r.foreignKeys).find(f => !!f[1].fields.find(fld => fld === rf[0]));
+                                const fk = Object.entries(r.foreignKeys).find(f => !!f[1].fields.find(fld => fld === attributeName));
                                 if (fk && fk[1].fields.length === 1) {
-                                    return new erm.EntityAttribute(rf[0], lName, required, [createEntity(dbs.relationByUqConstraint(fk[1].constNameUq))], adapter);
+                                    return new erm.EntityAttribute(attributeName, lName, required, [createEntity(dbs.relationByUqConstraint(fk[1].constNameUq))], adapter);
                                 }
                                 else {
-                                    return new erm.IntegerAttribute(rf[0], lName, required, rdbadapter.MIN_32BIT_INT, rdbadapter.MAX_32BIT_INT, util_1.default2Int(defaultValue), adapter);
+                                    return new erm.IntegerAttribute(attributeName, lName, required, rdbadapter.MIN_32BIT_INT, rdbadapter.MAX_32BIT_INT, util_1.default2Int(defaultValue), adapter);
                                 }
                             }
                         case gdmn_db_1.FieldType.CHAR:
@@ -373,43 +370,46 @@ async function erExport(dbs, transaction, erModel) {
                                         }
                                     }
                                     if (enumValues.length) {
-                                        return new erm.EnumAttribute(rf[0], lName, required, enumValues, undefined, adapter);
+                                        return new erm.EnumAttribute(attributeName, lName, required, enumValues, undefined, adapter);
                                     }
                                     else {
                                         console.log(JSON.stringify(fieldSource.validationSource));
                                     }
                                 }
-                                return new erm.StringAttribute(rf[0], lName, required, undefined, fieldSource.fieldLength, undefined, true, undefined, adapter);
+                                return new erm.StringAttribute(attributeName, lName, required, undefined, fieldSource.fieldLength, undefined, true, undefined, adapter);
                             }
                         case gdmn_db_1.FieldType.TIMESTAMP:
-                            return new erm.TimeStampAttribute(rf[0], lName, required, undefined, undefined, util_1.default2Date(defaultValue), adapter);
+                            return new erm.TimeStampAttribute(attributeName, lName, required, undefined, undefined, util_1.default2Date(defaultValue), adapter);
                         case gdmn_db_1.FieldType.DATE:
-                            return new erm.DateAttribute(rf[0], lName, required, undefined, undefined, util_1.default2Date(defaultValue), adapter);
+                            return new erm.DateAttribute(attributeName, lName, required, undefined, undefined, util_1.default2Date(defaultValue), adapter);
                         case gdmn_db_1.FieldType.TIME:
-                            return new erm.TimeAttribute(rf[0], lName, required, undefined, undefined, util_1.default2Date(defaultValue), adapter);
+                            return new erm.TimeAttribute(attributeName, lName, required, undefined, undefined, util_1.default2Date(defaultValue), adapter);
                         case gdmn_db_1.FieldType.FLOAT:
                         case gdmn_db_1.FieldType.DOUBLE:
-                            return new erm.FloatAttribute(rf[0], lName, required, undefined, undefined, util_1.default2Number(defaultValue), adapter);
+                            return new erm.FloatAttribute(attributeName, lName, required, undefined, undefined, util_1.default2Number(defaultValue), adapter);
                         case gdmn_db_1.FieldType.SMALL_INTEGER:
-                            return new erm.IntegerAttribute(rf[0], lName, required, rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT, util_1.default2Int(defaultValue), adapter);
+                            return new erm.IntegerAttribute(attributeName, lName, required, rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT, util_1.default2Int(defaultValue), adapter);
                         case gdmn_db_1.FieldType.BIG_INTEGER:
-                            return new erm.IntegerAttribute(rf[0], lName, required, rdbadapter.MIN_64BIT_INT, rdbadapter.MAX_64BIT_INT, util_1.default2Int(defaultValue), adapter);
+                            return new erm.IntegerAttribute(attributeName, lName, required, rdbadapter.MIN_64BIT_INT, rdbadapter.MAX_64BIT_INT, util_1.default2Int(defaultValue), adapter);
                         case gdmn_db_1.FieldType.BLOB:
                             if (fieldSource.fieldSubType === 1) {
-                                return new erm.StringAttribute(rf[0], lName, required, undefined, undefined, undefined, false, undefined, adapter);
+                                return new erm.StringAttribute(attributeName, lName, required, undefined, undefined, undefined, false, undefined, adapter);
                             }
                             else {
-                                return new erm.BLOBAttribute(rf[0], lName, required, adapter);
+                                return new erm.BLOBAttribute(attributeName, lName, required, adapter);
                             }
                         default:
-                            console.log(`Unknown data type ${fieldSource}=${fieldSource.fieldType} for field ${r.name}.${rf[0]}`);
+                            console.log(`Unknown data type ${fieldSource}=${fieldSource.fieldType} for field ${r.name}.${attributeName}`);
                             return undefined;
-                        // throw new Error('Unknown data type for field ' + r.name + '.' + rf[0]);
+                        // throw new Error('Unknown data type for field ' + r.name + '.' + attributeName);
                     }
                 })();
                 if (attr) {
                     entity.add(attr);
                 }
+            });
+            Object.entries(r.unique).forEach(uq => {
+                entity.addUnique(uq[1].fields.map(f => entity.attribute(f)));
             });
         });
     }

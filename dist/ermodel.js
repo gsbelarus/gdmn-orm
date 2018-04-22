@@ -227,7 +227,7 @@ class Entity {
             found = this.parent.attribute(name);
         }
         if (!found) {
-            throw new Error(`Unknown attribute ${name}`);
+            throw new Error(`Unknown attribute ${name} of entity ${this.name}`);
         }
         return found;
     }

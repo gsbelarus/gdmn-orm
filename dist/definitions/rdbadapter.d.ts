@@ -1,4 +1,4 @@
-import { AttributeAdapter, SequenceAdapter } from './types';
+import { AttributeAdapter, SequenceAdapter, EntityAdapter } from './types';
 export declare const MIN_64BIT_INT = -9223372036854776000;
 export declare const MAX_64BIT_INT = 9223372036854776000;
 export declare const MIN_32BIT_INT = -2147483648;
@@ -19,13 +19,13 @@ export interface Relation {
     weak?: boolean;
     selector?: EntitySelector;
 }
-export interface Entity2RelationMap {
+export interface Entity2RelationMap extends EntityAdapter {
     relation: Relation | Relation[];
     refresh?: boolean;
 }
 export interface Attribute2FieldMap extends AttributeAdapter {
-    relation?: string;
-    field?: string;
+    relation: string;
+    field: string;
 }
 export interface SetAttribute2CrossMap extends AttributeAdapter {
     crossRelation: string;
