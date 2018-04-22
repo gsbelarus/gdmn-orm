@@ -255,7 +255,8 @@ async function erExport(dbs, transaction, erModel) {
                 structure
             }
         };
-        const entity = new erm.Entity(parent, entityName ? entityName : relation.name, atrelations[relation.name].lName, false, adapter);
+        const setEntityName = entityName ? entityName : relation.name;
+        const entity = new erm.Entity(parent, setEntityName, atrelations[relation.name].lName, false, setEntityName !== relation.name || structure !== 'PLAIN' ? adapter : undefined);
         if (!parent) {
             entity.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
         }

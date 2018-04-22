@@ -388,13 +388,14 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
         structure
       }
     };
+    const setEntityName = entityName ? entityName : relation.name;
 
     const entity = new erm.Entity(
       parent,
-      entityName ? entityName : relation.name,
+      setEntityName,
       atrelations[relation.name].lName,
       false,
-      adapter
+      setEntityName !== relation.name || structure !== 'PLAIN' ? adapter : undefined
     );
 
     if (!parent) {
