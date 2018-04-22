@@ -166,6 +166,8 @@ export class BooleanAttribute extends ScalarAttribute {
   }
 }
 
+export class BLOBAttribute extends ScalarAttribute { }
+
 export interface EnumValue {
   value: string | number;
   lName?: LName;

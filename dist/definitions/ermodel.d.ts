@@ -64,6 +64,8 @@ export declare class BooleanAttribute extends ScalarAttribute {
     constructor(name: string, lName: LName, required: boolean, defaultValue: boolean, adapter?: AttributeAdapter);
     defaultValue: boolean;
 }
+export declare class BLOBAttribute extends ScalarAttribute {
+}
 export interface EnumValue {
     value: string | number;
     lName?: LName;

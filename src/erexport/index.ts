@@ -464,15 +464,18 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
           switch (rf[1].fieldSource) {
             case 'DEDITIONDATE':
               return new erm.TimeStampAttribute(rf[0], {ru: {name: 'Изменено'}}, true,
-                new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'
+                new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)',
+                adapter
               );
             case 'DCREATIONDATE':
               return new erm.TimeStampAttribute(rf[0], {ru: {name: 'Создано'}}, true,
-                new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'
+                new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)',
+                adapter
               );
             case 'DDOCUMENTDATE':
               return new erm.TimeStampAttribute(rf[0], {ru: {name: 'Дата документа'}}, true,
-                new Date('1900-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'
+                new Date('1900-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)',
+                adapter
               );
             case 'DQUANTITY': return new erm.NumericAttribute(rf[0], lName, false, 15, 4, undefined, undefined, undefined, adapter);
             case 'DLAT': return new erm.NumericAttribute(rf[0], lName, false, 10, 8, -90, +90, undefined, adapter);
@@ -567,45 +570,62 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
               }
 
               return new erm.StringAttribute(rf[0], lName, required, undefined,
-                fieldSource.fieldLength, undefined, true, undefined);
+                fieldSource.fieldLength, undefined, true, undefined, adapter);
             }
 
             case FieldType.TIMESTAMP:
-              return new erm.TimeStampAttribute(rf[0], lName, required, undefined, undefined, default2Date(defaultValue));
+              return new erm.TimeStampAttribute(
+                rf[0], lName, required, undefined, undefined, default2Date(defaultValue), adapter
+              );
 
             case FieldType.DATE:
-              return new erm.DateAttribute(rf[0], lName, required, undefined, undefined, default2Date(defaultValue));
+              return new erm.DateAttribute(
+                rf[0], lName, required, undefined, undefined, default2Date(defaultValue), adapter
+              );
 
             case FieldType.TIME:
-              return new erm.TimeAttribute(rf[0], lName, required, undefined, undefined, default2Date(defaultValue));
+              return new erm.TimeAttribute(
+                rf[0], lName, required, undefined, undefined, default2Date(defaultValue), adapter
+              );
 
             case FieldType.FLOAT:
             case FieldType.DOUBLE:
-              return new erm.FloatAttribute(rf[0], lName, required,
-                  undefined, undefined,
-                  default2Number(defaultValue),
-                  adapter);
+              return new erm.FloatAttribute(
+                rf[0], lName, required,
+                undefined, undefined,
+                default2Number(defaultValue),
+                adapter
+              );
 
             case FieldType.SMALL_INTEGER:
-              return new erm.IntegerAttribute(rf[0], lName, required,
-                  rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT,
-                  default2Int(defaultValue),
-                  adapter);
+              return new erm.IntegerAttribute(
+                rf[0], lName, required,
+                rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT,
+                default2Int(defaultValue),
+                adapter
+              );
 
             case FieldType.BIG_INTEGER:
-              return new erm.IntegerAttribute(rf[0], lName, required,
+              return new erm.IntegerAttribute(
+                rf[0], lName, required,
                 rdbadapter.MIN_64BIT_INT, rdbadapter.MAX_64BIT_INT,
                 default2Int(defaultValue),
-                adapter);
+                adapter
+              );
 
             case FieldType.BLOB:
               if (fieldSource.fieldSubType === 1) {
-                return new erm.StringAttribute(rf[0], lName, required, undefined,
-                  undefined, undefined, false, undefined);
+                return new erm.StringAttribute(
+                  rf[0], lName, required, undefined,
+                  undefined, undefined, false, undefined,
+                  adapter
+                );
+              } else {
+                return new erm.BLOBAttribute(rf[0], lName, required, adapter);
               }
 
             default:
-              console.log(`Unknown data type ${fieldSource.fieldType} for field ${r.name}.${rf[0]}`);
+              console.log(`Unknown data type ${fieldSource}=${fieldSource.fieldType} for field ${r.name}.${rf[0]}`);
               return undefined;
               // throw new Error('Unknown data type for field ' + r.name + '.' + rf[0]);
           }
