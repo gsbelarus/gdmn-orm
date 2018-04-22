@@ -1,5 +1,5 @@
 export interface TName {
-    name?: string;
+    name: string;
     fullName?: string;
 }
 export interface LName {

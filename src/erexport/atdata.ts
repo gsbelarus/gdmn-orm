@@ -108,7 +108,9 @@ export async function load(transaction: ATransaction) {
           lName: {
             ru: {
               name: resultSet.getString(3),
-              fullName: resultSet.getString(3) !== resultSet.getString(4) ? resultSet.getString(4) : undefined
+              fullName:
+                resultSet.getString(3) !== resultSet.getString(4) && resultSet.getString(4) !== resultSet.getString(1) ?
+                resultSet.getString(4) : undefined
             }
           }
         };
