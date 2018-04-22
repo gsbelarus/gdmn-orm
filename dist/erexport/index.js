@@ -269,7 +269,7 @@ async function erExport(dbs, transaction, erModel) {
      * -- Первое добавляемое поле в Entity автоматом становится PK.
      * -- Если имя атрибута совпадает с именем поля, то в адаптере имя поля можно не указывать.
      */
-    createAttributes(createEntity(dbs.relations['WG_HOLIDAY']));
+    createEntity(dbs.relations.WG_HOLIDAY);
     /**
      * @todo Parse fields CHECK constraint and extract min and max allowed values.
      */
