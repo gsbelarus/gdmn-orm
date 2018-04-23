@@ -221,6 +221,9 @@ class Entity {
     hasAttribute(name) {
         return (this.parent && this.parent.hasAttribute(name)) || !!this._attributes[name];
     }
+    hasOwnAttribute(name) {
+        return !!this._attributes[name];
+    }
     attribute(name) {
         let found = this._attributes[name];
         if (!found && this.parent) {

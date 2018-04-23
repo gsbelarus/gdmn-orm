@@ -112,6 +112,7 @@ export declare class Entity {
     addUnique(value: Attribute[]): void;
     readonly attributes: Attributes;
     hasAttribute(name: string): boolean;
+    hasOwnAttribute(name: string): boolean;
     attribute(name: string): Attribute;
     add(attribute: Attribute): Attribute;
     serialize(): IEntity;

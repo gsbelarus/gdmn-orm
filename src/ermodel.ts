@@ -308,6 +308,10 @@ export class Entity {
     return (this.parent && this.parent.hasAttribute(name)) || !!this._attributes[name];
   }
 
+  hasOwnAttribute(name: string): boolean {
+    return !!this._attributes[name];
+  }
+
   attribute(name: string) {
     let found = this._attributes[name];
     if (!found && this.parent) {

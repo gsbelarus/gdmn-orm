@@ -110,6 +110,10 @@ async function erExport(dbs, transaction, erModel) {
             Object.entries(r.relationFields).forEach(rf => {
                 if (r.primaryKey.fields.find(f => f === rf[0]))
                     return;
+                if (rf[0] === 'LB' || rf[0] === 'RB')
+                    return;
+                if (entity.hasOwnAttribute(rf[0]))
+                    return;
                 const attributeName = entity.hasAttribute(rf[0]) ? `${r.name}.${rf[0]}` : rf[0];
                 const fieldSource = dbs.fields[rf[1].fieldSource];
                 const lName = atrelations[r.name].relationFields[rf[1].name].lName;
