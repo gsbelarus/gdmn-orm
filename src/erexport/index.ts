@@ -612,11 +612,13 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
     });
   }
 
+  /*
   dbs.forEachRelation( r => {
     if (r.primaryKey && r.primaryKey.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)) {
       createEntity(r);
     }
   });
+  */
 
   Object.entries(erModel.entities).forEach( e => createAttributes(e[1]) );
 
