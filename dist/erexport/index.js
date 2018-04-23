@@ -189,24 +189,16 @@ async function erExport(dbs, transaction, erModel) {
      * Административно-территориальная единица.
      * Тут исключительно для иллюстрации типа данных Перечисление.
      */
-    const Place = erModel.add(new erm.Entity(undefined, 'Place', { ru: { name: 'Папка' } }, false, {
-        relation: {
-            relationName: 'GD_PLACE',
-            structure: 'LBRB'
-        }
-    }));
-    Place.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
-    Place.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в' } }, [Place]));
-    Place.add(new erm.StringAttribute('NAME', { ru: { name: 'Наименование' } }, true, undefined, 60, undefined, true, undefined));
-    Place.add(new erm.EnumAttribute('PLACETYPE', { ru: { name: 'Тип' } }, true, [
-        {
-            value: 'Область'
-        },
-        {
-            value: 'Район'
-        },
-    ], 'Область'));
-    Place.add(new erm.TimeStampAttribute('EDITIONDATE', { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'));
+    createEntity(dbs.relations.GD_PLACE, undefined, [
+        new erm.EnumAttribute('PLACETYPE', { ru: { name: 'Тип' } }, true, [
+            {
+                value: 'Область'
+            },
+            {
+                value: 'Район'
+            },
+        ], 'Область')
+    ]);
     /**
      * Документ.
      */
@@ -219,7 +211,7 @@ async function erExport(dbs, transaction, erModel) {
     Document.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
     Document.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в' } }, [Document]));
     Document.add(new erm.TimeStampAttribute('EDITIONDATE', { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'));
-    function createEntity(relation, entityName) {
+    function createEntity(relation, entityName, attributes) {
         const found = Object.entries(erModel.entities).find(e => {
             const adapter = e[1].adapter;
             if (adapter) {
@@ -261,6 +253,9 @@ async function erExport(dbs, transaction, erModel) {
             entity.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
         }
         ;
+        if (attributes) {
+            attributes.forEach(attr => entity.add(attr));
+        }
         return erModel.add(entity);
     }
     ;

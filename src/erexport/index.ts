@@ -284,25 +284,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
    * Административно-территориальная единица.
    * Тут исключительно для иллюстрации типа данных Перечисление.
    */
-  const Place = erModel.add(new erm.Entity(undefined, 'Place', {ru: {name: 'Папка'}},
-    false,
-    {
-      relation: {
-        relationName: 'GD_PLACE',
-        structure: 'LBRB'
-      }
-    }
-  ));
-  Place.add(
-    new erm.SequenceAttribute('ID', {ru: {name: 'Идентификатор'}}, GDGUnique)
-  );
-  Place.add(
-    new erm.ParentAttribute('PARENT', {ru: {name: 'Входит в'}}, [Place])
-  );
-  Place.add(
-    new erm.StringAttribute('NAME', {ru: {name: 'Наименование'}}, true, undefined, 60, undefined, true, undefined)
-  );
-  Place.add(
+  createEntity(dbs.relations.GD_PLACE, undefined, [
     new erm.EnumAttribute('PLACETYPE', {ru: {name: 'Тип'}}, true,
       [
         {
@@ -314,12 +296,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
       ],
       'Область'
     )
-  );
-  Place.add(
-    new erm.TimeStampAttribute('EDITIONDATE', {ru: {name: 'Изменено'}}, true,
-      new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'
-    )
-  );
+  ]);
 
   /**
    * Документ.
@@ -345,7 +322,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
     )
   );
 
-  function createEntity(relation: Relation, entityName?: string): erm.Entity {
+  function createEntity(relation: Relation, entityName?: string, attributes?: erm.Attribute[]): erm.Entity {
 
     const found = Object.entries(erModel.entities).find( e => {
       const adapter = e[1].adapter;
@@ -403,6 +380,10 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
         new erm.SequenceAttribute('ID', {ru: {name: 'Идентификатор'}}, GDGUnique)
       );
     };
+
+    if (attributes) {
+      attributes.forEach( attr => entity.add(attr) );
+    }
 
     return erModel.add(entity);
   };
