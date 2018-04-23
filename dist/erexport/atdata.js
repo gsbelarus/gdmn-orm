@@ -34,8 +34,17 @@ async function load(transaction) {
       AT_RELATIONS`, async (resultSet) => {
         const relations = {};
         while (await resultSet.next()) {
+            const ru = resultSet.getString(2) !== resultSet.getString(3) ?
+                {
+                    name: resultSet.getString(2),
+                    fullName: resultSet.getString(3)
+                }
+                :
+                    {
+                        name: resultSet.getString(2),
+                    };
             relations[resultSet.getString(1)] = {
-                lName: { ru: { name: resultSet.getString(2), fullName: resultSet.getString(3) } },
+                lName: { ru },
                 relationFields: {}
             };
         }
@@ -60,7 +69,7 @@ async function load(transaction) {
                 if (!rel)
                     throw `Unknown relation ${resultSet.getString(2)}`;
             }
-            const ruName = resultSet.getString(4) !== resultSet.getString(3) && resultSet.getString(4) !== resultSet.getString(1) ?
+            const ru = resultSet.getString(4) !== resultSet.getString(3) && resultSet.getString(4) !== resultSet.getString(1) ?
                 {
                     name: resultSet.getString(3),
                     fullName: resultSet.getString(4)
@@ -69,7 +78,7 @@ async function load(transaction) {
                     {
                         name: resultSet.getString(3)
                     };
-            rel.relationFields[resultSet.getString(1)] = { lName: { ru: ruName } };
+            rel.relationFields[resultSet.getString(1)] = { lName: { ru } };
         }
     });
     return { atfields, atrelations };

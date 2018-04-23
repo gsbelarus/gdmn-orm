@@ -110,6 +110,43 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
   ]);
 
   /**
+   * Папка из справочника контактов.
+   * Основывается на таблице GD_CONTACT, но использует только несколько полей из нее.
+   * Записи имеют признак CONTACTTYPE = 0.
+   * Имеет древовидную структуру.
+   */
+  const Folder = erModel.add(new erm.Entity(undefined, 'Folder', {ru: {name: 'Папка'}},
+    false,
+    {
+      relation: {
+        relationName: 'GD_CONTACT',
+        structure: 'LBRB',
+        selector: {
+          field: 'CONTACTTYPE',
+          value: 0
+        }
+      }
+    }
+  ));
+  Folder.add(
+    new erm.SequenceAttribute('ID', {ru: {name: 'Идентификатор'}}, GDGUnique)
+  );
+  Folder.add(
+    new erm.ParentAttribute('PARENT', {ru: {name: 'Входит в папку'}}, [Folder])
+  );
+  Folder.add(
+    new erm.StringAttribute('NAME', {ru: {name: 'Наименование'}}, true, undefined, 60, undefined, true, undefined)
+  );
+  Folder.add(
+    new erm.TimeStampAttribute('EDITIONDATE', {ru: {name: 'Изменено'}}, true,
+      new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'
+    )
+  );
+  Folder.add(
+    new erm.BooleanAttribute('DISABLED', {ru: {name: 'Отключено'}}, true, false)
+  );
+
+  /**
    * @todo Parse fields CHECK constraint and extract min and max allowed values.
    */
 

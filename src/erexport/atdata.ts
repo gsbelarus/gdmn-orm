@@ -75,8 +75,17 @@ export async function load(transaction: ATransaction) {
     {
       const relations: atRelations = {};
       while (await resultSet.next()) {
+        const ru = resultSet.getString(2) !== resultSet.getString(3) ?
+          {
+            name: resultSet.getString(2),
+            fullName: resultSet.getString(3)
+          }
+          :
+          {
+            name: resultSet.getString(2),
+          };
         relations[resultSet.getString(1)] = {
-          lName: {ru: {name: resultSet.getString(2), fullName: resultSet.getString(3)}},
+          lName: {ru},
           relationFields: {}
         };
       }
@@ -104,7 +113,7 @@ export async function load(transaction: ATransaction) {
           rel = atrelations[resultSet.getString(2)];
           if (!rel) throw `Unknown relation ${resultSet.getString(2)}`;
         }
-        const ruName = resultSet.getString(4) !== resultSet.getString(3) && resultSet.getString(4) !== resultSet.getString(1) ?
+        const ru = resultSet.getString(4) !== resultSet.getString(3) && resultSet.getString(4) !== resultSet.getString(1) ?
           {
             name: resultSet.getString(3),
             fullName: resultSet.getString(4)
@@ -113,7 +122,7 @@ export async function load(transaction: ATransaction) {
           {
             name: resultSet.getString(3)
           };
-        rel!.relationFields[resultSet.getString(1)] = { lName: { ru: ruName } };
+        rel!.relationFields[resultSet.getString(1)] = { lName: { ru } };
       }
     }
   );
