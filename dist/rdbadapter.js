@@ -56,4 +56,8 @@ function hasField(em, rn, fn) {
     return !r.fields || !!r.fields.find(f => f === fn);
 }
 exports.hasField = hasField;
+function isUserDefined(name) {
+    return name.substring(0, 4) === 'USR$';
+}
+exports.isUserDefined = isUserDefined;
 //# sourceMappingURL=rdbadapter.js.map

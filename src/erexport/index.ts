@@ -365,7 +365,10 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
 
         if (entity.hasOwnAttribute(rf[0])) return;
 
-        if (!rdbadapter.hasField(entity.adapter, r.name, rf[0]) && !rdbadapter.systemFields.find( sf => sf === rf[0] )) {
+        if (!rdbadapter.hasField(entity.adapter, r.name, rf[0])
+          && !rdbadapter.systemFields.find( sf => sf === rf[0] )
+          && !rdbadapter.isUserDefined(rf[0]))
+        {
           return;
         }
 

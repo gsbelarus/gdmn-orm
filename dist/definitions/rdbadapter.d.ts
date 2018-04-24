@@ -35,3 +35,4 @@ export declare function relationName2Adapter(relationName: string): Entity2Relat
 export declare function adapter2relationNames(em: Entity2RelationMap): string[];
 export declare function sameAdapter(a: Entity2RelationMap, b: Entity2RelationMap): boolean;
 export declare function hasField(em: Entity2RelationMap, rn: string, fn: string): boolean;
+export declare function isUserDefined(name: string): boolean;

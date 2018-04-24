@@ -247,7 +247,9 @@ async function erExport(dbs, transaction, erModel) {
                     return;
                 if (entity.hasOwnAttribute(rf[0]))
                     return;
-                if (!rdbadapter.hasField(entity.adapter, r.name, rf[0]) && !rdbadapter.systemFields.find(sf => sf === rf[0])) {
+                if (!rdbadapter.hasField(entity.adapter, r.name, rf[0])
+                    && !rdbadapter.systemFields.find(sf => sf === rf[0])
+                    && !rdbadapter.isUserDefined(rf[0])) {
                     return;
                 }
                 const attributeName = entity.hasAttribute(rf[0]) ? `${r.name}.${rf[0]}` : rf[0];

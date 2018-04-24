@@ -92,3 +92,7 @@ export function hasField(em: Entity2RelationMap, rn: string, fn: string): boolea
   return !r.fields || !!r.fields.find( f => f === fn );
 }
 
+export function isUserDefined(name: string) {
+  return name.substring(0, 4) === 'USR$';
+}
+
