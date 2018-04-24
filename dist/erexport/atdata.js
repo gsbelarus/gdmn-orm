@@ -69,7 +69,7 @@ async function load(transaction) {
             const fieldName = resultSet.getString('FIELDNAME');
             const name = resultSet.getString('LNAME');
             const fullName = resultSet.getString('DESCRIPTION');
-            const ru = fullName !== name && fullName !== fieldName ? { name, fullName } : { name };
+            const ru = fullName && fullName !== name && fullName !== fieldName ? { name, fullName } : { name };
             rel.relationFields[fieldName] = { lName: { ru } };
         }
     });

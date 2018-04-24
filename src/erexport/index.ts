@@ -57,7 +57,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
       setEntityName,
       lName ? lName : atrelations[relation.name].lName,
       false,
-      adapter
+      JSON.stringify(adapter) !== JSON.stringify(rdbadapter.relationName2Adapter(setEntityName)) ? adapter : undefined
     );
 
     if (!parent) {
