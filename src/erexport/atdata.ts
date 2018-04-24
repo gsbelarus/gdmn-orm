@@ -109,20 +109,16 @@ export async function load(transaction: ATransaction) {
       let relationName: string = '';
       let rel: atRelation;
       while (await resultSet.next()) {
-        if (relationName !== resultSet.getString(2)) {
-          rel = atrelations[resultSet.getString(2)];
-          if (!rel) throw `Unknown relation ${resultSet.getString(2)}`;
+        if (relationName !== resultSet.getString('RELATIONNAME')) {
+          relationName = resultSet.getString('RELATIONNAME');
+          rel = atrelations[relationName];
+          if (!rel) throw `Unknown relation ${relationName}`;
         }
-        const ru = resultSet.getString(4) !== resultSet.getString(3) && resultSet.getString(4) !== resultSet.getString(1) ?
-          {
-            name: resultSet.getString(3),
-            fullName: resultSet.getString(4)
-          }
-          :
-          {
-            name: resultSet.getString(3)
-          };
-        rel!.relationFields[resultSet.getString(1)] = { lName: { ru } };
+        const fieldName = resultSet.getString('FIELDNAME');
+        const name = resultSet.getString('LNAME');
+        const fullName = resultSet.getString('DESCRIPTION');
+        const ru = fullName !== name && fullName !== fieldName ? {name, fullName} : {name};
+        rel!.relationFields[fieldName] = {lName: {ru}};
       }
     }
   );
