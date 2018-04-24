@@ -16,20 +16,20 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
   const GDGUnique = erModel.addSequence(new erm.Sequence('GD_G_UNIQUE'));
   const GDGOffset = erModel.addSequence(new erm.Sequence('Offset', { sequence: 'GD_G_OFFSET' }));
 
-  function createEntity(em: rdbadapter.Entity2RelationMap, entityName?: string,
+  function createEntity(adapter: rdbadapter.Entity2RelationMap, entityName?: string,
     lName?: LName, attributes?: erm.Attribute[]): erm.Entity
   {
 
-    const found = Object.entries(erModel.entities).find( e => rdbadapter.sameAdapter(em, e[1].adapter) );
+    const found = Object.entries(erModel.entities).find( e => rdbadapter.sameAdapter(adapter, e[1].adapter) );
 
     if (found) {
       return found[1];
     }
 
-    const relation = dbs.relations[rdbadapter.adapter2relationNames(em)[0]];
+    const relation = dbs.relations[rdbadapter.adapter2relationNames(adapter)[0]];
 
     if (!relation) {
-      throw new Error(`Unknown relation ${rdbadapter.adapter2relationNames(em)[0]}`);
+      throw new Error(`Unknown relation ${rdbadapter.adapter2relationNames(adapter)[0]}`);
     }
 
     const pkFields = relation.primaryKey!.fields.join();
@@ -50,14 +50,6 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
     );
 
     const rf = relation.relationFields;
-    const structure: rdbadapter.RelationStructure = rf['PARENT'] ?
-      (rf['LB'] && rf['RB'] ? 'LBRB' : 'TREE' ) : 'PLAIN';
-    const adapter: rdbadapter.Entity2RelationMap = {
-      relation: {
-        relationName: relation.name,
-        structure
-      }
-    };
     const setEntityName = entityName ? entityName : relation.name;
 
     const entity = new erm.Entity(
@@ -65,7 +57,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
       setEntityName,
       lName ? lName : atrelations[relation.name].lName,
       false,
-      setEntityName !== relation.name || structure !== 'PLAIN' ? adapter : undefined
+      adapter
     );
 
     if (!parent) {
@@ -118,7 +110,6 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
     {
       relation: {
         relationName: 'GD_CONTACT',
-        structure: 'LBRB',
         selector: {
           field: 'CONTACTTYPE',
           value: 0,
@@ -153,7 +144,6 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
       relation: [
         {
           relationName: 'GD_CONTACT',
-          structure: 'LBRB',
           selector: {
             field: 'CONTACTTYPE',
             value: 3
@@ -238,7 +228,6 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
     {
       relation: {
         relationName: 'GD_CONTACT',
-        structure: 'LBRB',
         selector: {
           field: 'CONTACTTYPE',
           value: 4
@@ -273,7 +262,6 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
       relation: [
         {
           relationName: 'GD_CONTACT',
-          structure: 'LBRB',
           selector: {
             field: 'CONTACTTYPE',
             value:2
@@ -332,7 +320,6 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
       relation:
         {
           relationName: 'GD_CONTACT',
-          structure: 'LBRB',
           selector: {
             field: 'CONTACTTYPE',
             value: 1

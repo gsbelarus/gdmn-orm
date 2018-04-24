@@ -53,13 +53,7 @@ function hasField(em, rn, fn) {
     if (!r) {
         throw new Error(`Can't find relation ${rn} in adapter`);
     }
-    const result = !r.fields || !r.fields.length || !!r.fields.find(f => f === fn);
-    if (r.fields) {
-        console.log(r.fields.join());
-        console.log(fn);
-        console.log(result);
-    }
-    return result;
+    return !r.fields || !!r.fields.find(f => f === fn);
 }
 exports.hasField = hasField;
 //# sourceMappingURL=rdbadapter.js.map

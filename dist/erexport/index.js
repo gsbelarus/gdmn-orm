@@ -19,14 +19,14 @@ async function erExport(dbs, transaction, erModel) {
      */
     const GDGUnique = erModel.addSequence(new erm.Sequence('GD_G_UNIQUE'));
     const GDGOffset = erModel.addSequence(new erm.Sequence('Offset', { sequence: 'GD_G_OFFSET' }));
-    function createEntity(em, entityName, lName, attributes) {
-        const found = Object.entries(erModel.entities).find(e => rdbadapter.sameAdapter(em, e[1].adapter));
+    function createEntity(adapter, entityName, lName, attributes) {
+        const found = Object.entries(erModel.entities).find(e => rdbadapter.sameAdapter(adapter, e[1].adapter));
         if (found) {
             return found[1];
         }
-        const relation = dbs.relations[rdbadapter.adapter2relationNames(em)[0]];
+        const relation = dbs.relations[rdbadapter.adapter2relationNames(adapter)[0]];
         if (!relation) {
-            throw new Error(`Unknown relation ${rdbadapter.adapter2relationNames(em)[0]}`);
+            throw new Error(`Unknown relation ${rdbadapter.adapter2relationNames(adapter)[0]}`);
         }
         const pkFields = relation.primaryKey.fields.join();
         const parent = Object.entries(relation.foreignKeys).reduce((p, fk) => {
@@ -38,16 +38,8 @@ async function erExport(dbs, transaction, erModel) {
             }
         }, undefined);
         const rf = relation.relationFields;
-        const structure = rf['PARENT'] ?
-            (rf['LB'] && rf['RB'] ? 'LBRB' : 'TREE') : 'PLAIN';
-        const adapter = {
-            relation: {
-                relationName: relation.name,
-                structure
-            }
-        };
         const setEntityName = entityName ? entityName : relation.name;
-        const entity = new erm.Entity(parent, setEntityName, lName ? lName : atrelations[relation.name].lName, false, setEntityName !== relation.name || structure !== 'PLAIN' ? adapter : undefined);
+        const entity = new erm.Entity(parent, setEntityName, lName ? lName : atrelations[relation.name].lName, false, adapter);
         if (!parent) {
             entity.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
         }
@@ -88,7 +80,6 @@ async function erExport(dbs, transaction, erModel) {
     const Folder = createEntity({
         relation: {
             relationName: 'GD_CONTACT',
-            structure: 'LBRB',
             selector: {
                 field: 'CONTACTTYPE',
                 value: 0,
@@ -116,7 +107,6 @@ async function erExport(dbs, transaction, erModel) {
         relation: [
             {
                 relationName: 'GD_CONTACT',
-                structure: 'LBRB',
                 selector: {
                     field: 'CONTACTTYPE',
                     value: 3
@@ -176,7 +166,6 @@ async function erExport(dbs, transaction, erModel) {
     const Department = erModel.add(new erm.Entity(undefined, 'Department', { ru: { name: 'Подразделение' } }, false, {
         relation: {
             relationName: 'GD_CONTACT',
-            structure: 'LBRB',
             selector: {
                 field: 'CONTACTTYPE',
                 value: 4
@@ -195,7 +184,6 @@ async function erExport(dbs, transaction, erModel) {
         relation: [
             {
                 relationName: 'GD_CONTACT',
-                structure: 'LBRB',
                 selector: {
                     field: 'CONTACTTYPE',
                     value: 2
@@ -231,7 +219,6 @@ async function erExport(dbs, transaction, erModel) {
     const Group = erModel.add(new erm.Entity(undefined, 'Group', { ru: { name: 'Группа' } }, false, {
         relation: {
             relationName: 'GD_CONTACT',
-            structure: 'LBRB',
             selector: {
                 field: 'CONTACTTYPE',
                 value: 1

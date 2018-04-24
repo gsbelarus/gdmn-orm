@@ -24,8 +24,6 @@ export interface Sequence2SequenceMap extends SequenceAdapter {
   sequence: string;
 }
 
-export type RelationStructure = 'PLAIN' | 'TREE' | 'LBRB';
-
 export interface EntitySelector {
   field: string;
   value: number | string;
@@ -33,7 +31,6 @@ export interface EntitySelector {
 
 export interface Relation {
   relationName: string,
-  structure?: RelationStructure;
   weak?: boolean;
   selector?: EntitySelector;
   fields?: string[];
@@ -92,14 +89,6 @@ export function hasField(em: Entity2RelationMap, rn: string, fn: string): boolea
     throw new Error(`Can't find relation ${rn} in adapter`);
   }
 
-  const result = !r.fields || !r.fields.length || !!r.fields.find( f => f === fn );
-
-  if (r.fields) {
-    console.log(r.fields.join());
-    console.log(fn);
-    console.log(result);
-  }
-
-  return result;
+  return !r.fields || !!r.fields.find( f => f === fn );
 }
 

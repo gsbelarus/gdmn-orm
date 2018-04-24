@@ -9,14 +9,12 @@ export declare const systemFields: string[];
 export interface Sequence2SequenceMap extends SequenceAdapter {
     sequence: string;
 }
-export declare type RelationStructure = 'PLAIN' | 'TREE' | 'LBRB';
 export interface EntitySelector {
     field: string;
     value: number | string;
 }
 export interface Relation {
     relationName: string;
-    structure?: RelationStructure;
     weak?: boolean;
     selector?: EntitySelector;
     fields?: string[];
