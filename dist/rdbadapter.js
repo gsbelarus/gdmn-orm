@@ -40,4 +40,20 @@ function sameAdapter(a, b) {
     return adapter2relationNames(a).join() === adapter2relationNames(b).join();
 }
 exports.sameAdapter = sameAdapter;
+function hasField(em, rn, fn) {
+    let r;
+    if (Array.isArray(em.relation)) {
+        r = em.relation.find(rel => rel.relationName === rn);
+    }
+    else {
+        if (em.relation.relationName === rn) {
+            r = em.relation;
+        }
+    }
+    if (!r) {
+        throw new Error(`Can't find relation ${rn} in adapter`);
+    }
+    return !r.fields || !!r.fields.find(f => f === fn);
+}
+exports.hasField = hasField;
 //# sourceMappingURL=rdbadapter.js.map

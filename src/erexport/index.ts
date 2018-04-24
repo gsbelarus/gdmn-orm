@@ -366,22 +366,10 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
    */
 
   function createAttributes(entity: erm.Entity) {
-    const relations: Relation[] = [];
-
-    if (!entity.adapter) {
-      relations.push(dbs.relations[entity.name]);
-    } else {
-      if (Array.isArray(entity.adapter.relation)) {
-        entity.adapter.relation.forEach(
-          ar => relations.push(dbs.relations[ar.relationName])
-        );
-      } else {
-        relations.push(dbs.relations[entity.adapter.relation.relationName]);
-      }
-    }
+    const relations = rdbadapter.adapter2relationNames(entity.adapter).map( rn => dbs.relations[rn] );
 
     relations.forEach( r => {
-      if (!r.primaryKey) return;
+      if (!r || !r.primaryKey) return;
 
       Object.entries(r.relationFields).forEach( rf => {
         if (r.primaryKey!.fields.find( f => f === rf[0] )) return;
@@ -389,6 +377,10 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
         if (rf[0] === 'LB' || rf[0] === 'RB') return;
 
         if (entity.hasOwnAttribute(rf[0])) return;
+
+        if (!rdbadapter.hasField(entity.adapter, r.name, rf[0]) && !rdbadapter.systemFields.find( sf => sf === rf[0] )) {
+          return;
+        }
 
         const attributeName = entity.hasAttribute(rf[0]) ? `${r.name}.${rf[0]}` : rf[0];
         const fieldSource = dbs.fields[rf[1].fieldSource];

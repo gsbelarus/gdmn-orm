@@ -249,20 +249,9 @@ async function erExport(dbs, transaction, erModel) {
      * @todo Parse fields CHECK constraint and extract min and max allowed values.
      */
     function createAttributes(entity) {
-        const relations = [];
-        if (!entity.adapter) {
-            relations.push(dbs.relations[entity.name]);
-        }
-        else {
-            if (Array.isArray(entity.adapter.relation)) {
-                entity.adapter.relation.forEach(ar => relations.push(dbs.relations[ar.relationName]));
-            }
-            else {
-                relations.push(dbs.relations[entity.adapter.relation.relationName]);
-            }
-        }
+        const relations = rdbadapter.adapter2relationNames(entity.adapter).map(rn => dbs.relations[rn]);
         relations.forEach(r => {
-            if (!r.primaryKey)
+            if (!r || !r.primaryKey)
                 return;
             Object.entries(r.relationFields).forEach(rf => {
                 if (r.primaryKey.fields.find(f => f === rf[0]))
@@ -271,6 +260,9 @@ async function erExport(dbs, transaction, erModel) {
                     return;
                 if (entity.hasOwnAttribute(rf[0]))
                     return;
+                if (!rdbadapter.hasField(entity.adapter, r.name, rf[0]) && !rdbadapter.systemFields.find(sf => sf === rf[0])) {
+                    return;
+                }
                 const attributeName = entity.hasAttribute(rf[0]) ? `${r.name}.${rf[0]}` : rf[0];
                 const fieldSource = dbs.fields[rf[1].fieldSource];
                 const lName = atrelations[r.name].relationFields[rf[1].name].lName;

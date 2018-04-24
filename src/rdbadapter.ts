@@ -77,3 +77,21 @@ export function sameAdapter(a: Entity2RelationMap, b: Entity2RelationMap): boole
   return adapter2relationNames(a).join() === adapter2relationNames(b).join();
 }
 
+export function hasField(em: Entity2RelationMap, rn: string, fn: string): boolean {
+  let r: Relation | undefined;
+
+  if (Array.isArray(em.relation)) {
+    r = em.relation.find( rel => rel.relationName === rn );
+  } else {
+    if (em.relation.relationName === rn) {
+      r = em.relation;
+    }
+  }
+
+  if (!r) {
+    throw new Error(`Can't find relation ${rn} in adapter`);
+  }
+
+  return !r.fields || !!r.fields.find( f => f === fn );
+}
+
