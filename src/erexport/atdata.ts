@@ -95,11 +95,7 @@ export async function load(transaction: ATransaction) {
 
   await ATransaction.executeQueryResultSet(transaction, `
     SELECT
-      ID,
-      FIELDNAME,
-      RELATIONNAME,
-      LNAME,
-      DESCRIPTION
+      FIELDNAME, RELATIONNAME, LNAME, DESCRIPTION
     FROM
       AT_RELATION_FIELDS
     ORDER BY

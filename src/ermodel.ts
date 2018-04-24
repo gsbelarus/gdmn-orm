@@ -4,7 +4,7 @@
 
 import { LName, AttributeAdapter, SequenceAdapter } from './types';
 import { IEntity, IAttribute, IERModel } from './interfaces';
-import { Entity2RelationMap } from './rdbadapter';
+import { Entity2RelationMap, relationName2Adapter } from './rdbadapter';
 
 export type ContextVariables = 'CURRENT_TIMESTAMP' | 'CURRENT_TIMESTAMP(0)' | 'CURRENT_DATE' | 'CURRENT_TIME';
 
@@ -269,7 +269,7 @@ export class Entity {
   readonly name: string;
   readonly lName: LName;
   readonly isAbstract: boolean;
-  readonly adapter?: Entity2RelationMap;
+  private _adapter?: Entity2RelationMap;
   private _pk: Attribute[] = [];
   private _attributes: Attributes = {};
   private _unique: Attribute[][] = [];
@@ -281,11 +281,19 @@ export class Entity {
     this.name = name;
     this.lName = lName;
     this.isAbstract = isAbstract;
-    this.adapter = adapter;
+    this._adapter = adapter;
   }
 
   get pk() {
     return this._pk;
+  }
+
+  get adapter(): Entity2RelationMap {
+    if (this._adapter) {
+      return this._adapter;
+    } else {
+      return relationName2Adapter(this.name);
+    }
   }
 
   get unique() {

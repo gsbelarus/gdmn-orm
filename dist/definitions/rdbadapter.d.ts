@@ -12,13 +12,13 @@ export declare type RelationStructure = 'PLAIN' | 'TREE' | 'LBRB';
 export interface EntitySelector {
     field: string;
     value: number | string;
-    fields?: string[];
 }
 export interface Relation {
     relationName: string;
     structure?: RelationStructure;
     weak?: boolean;
     selector?: EntitySelector;
+    fields?: string[];
 }
 export interface Entity2RelationMap extends EntityAdapter {
     relation: Relation | Relation[];
@@ -32,3 +32,10 @@ export interface SetAttribute2CrossMap extends AttributeAdapter {
     crossRelation: string;
     presentationField?: string;
 }
+export declare function relationName2Adapter(relationName: string): {
+    relation: {
+        relationName: string;
+    };
+};
+export declare function adapter2relationNames(a: Entity2RelationMap): string[];
+export declare function sameAdapter(a: Entity2RelationMap, b: Entity2RelationMap): boolean;

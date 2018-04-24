@@ -102,12 +102,13 @@ export declare class Entity {
     readonly name: string;
     readonly lName: LName;
     readonly isAbstract: boolean;
-    readonly adapter?: Entity2RelationMap;
+    private _adapter?;
     private _pk;
     private _attributes;
     private _unique;
     constructor(parent: Entity | undefined, name: string, lName: LName, isAbstract: boolean, adapter?: Entity2RelationMap);
     readonly pk: Attribute[];
+    readonly adapter: Entity2RelationMap;
     readonly unique: Attribute[][];
     addUnique(value: Attribute[]): void;
     readonly attributes: Attributes;

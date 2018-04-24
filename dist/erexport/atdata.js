@@ -52,11 +52,7 @@ async function load(transaction) {
     });
     await gdmn_db_1.ATransaction.executeQueryResultSet(transaction, `
     SELECT
-      ID,
-      FIELDNAME,
-      RELATIONNAME,
-      LNAME,
-      DESCRIPTION
+      FIELDNAME, RELATIONNAME, LNAME, DESCRIPTION
     FROM
       AT_RELATION_FIELDS
     ORDER BY

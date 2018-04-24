@@ -3,6 +3,7 @@
  *
  */
 Object.defineProperty(exports, "__esModule", { value: true });
+const rdbadapter_1 = require("./rdbadapter");
 class Attribute {
     constructor(name, lName, required, adapter) {
         this._calculated = false;
@@ -199,10 +200,18 @@ class Entity {
         this.name = name;
         this.lName = lName;
         this.isAbstract = isAbstract;
-        this.adapter = adapter;
+        this._adapter = adapter;
     }
     get pk() {
         return this._pk;
+    }
+    get adapter() {
+        if (this._adapter) {
+            return this._adapter;
+        }
+        else {
+            return rdbadapter_1.relationName2Adapter(this.name);
+        }
     }
     get unique() {
         return this._unique;

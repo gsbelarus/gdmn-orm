@@ -1,5 +1,5 @@
 
-import { AttributeAdapter, SequenceAdapter, EntityAdapter } from './types';
+import { AttributeAdapter, SequenceAdapter, EntityAdapter, LName } from './types';
 import { Entity, Attribute } from './ermodel';
 
 export const MIN_64BIT_INT = -9223372036854775808;
@@ -18,7 +18,6 @@ export type RelationStructure = 'PLAIN' | 'TREE' | 'LBRB';
 export interface EntitySelector {
   field: string;
   value: number | string;
-  fields?: string[];
 }
 
 export interface Relation {
@@ -26,6 +25,7 @@ export interface Relation {
   structure?: RelationStructure;
   weak?: boolean;
   selector?: EntitySelector;
+  fields?: string[];
 }
 
 export interface Entity2RelationMap extends EntityAdapter {
@@ -43,4 +43,23 @@ export interface SetAttribute2CrossMap extends AttributeAdapter {
   presentationField?: string;
 }
 
+export function relationName2Adapter(relationName: string) {
+  return {
+    relation: {
+      relationName
+    }
+  };
+}
+
+export function adapter2relationNames(a: Entity2RelationMap): string[] {
+  if (Array.isArray(a.relation)) {
+    return a.relation.map( r => r.relationName );
+  } else {
+    return [a.relation.relationName];
+  }
+}
+
+export function sameAdapter(a: Entity2RelationMap, b: Entity2RelationMap): boolean {
+  return adapter2relationNames(a).join() === adapter2relationNames(b).join();
+}
 
