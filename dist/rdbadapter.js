@@ -14,12 +14,15 @@ function relationName2Adapter(relationName) {
     };
 }
 exports.relationName2Adapter = relationName2Adapter;
-function adapter2relationNames(a) {
-    if (Array.isArray(a.relation)) {
-        return a.relation.map(r => r.relationName);
+function adapter2relationNames(em) {
+    if (Array.isArray(em.relation)) {
+        if (!em.relation.length) {
+            throw new Error('Invalid entity 2 relation adapter');
+        }
+        return em.relation.map(r => r.relationName);
     }
     else {
-        return [a.relation.relationName];
+        return [em.relation.relationName];
     }
 }
 exports.adapter2relationNames = adapter2relationNames;

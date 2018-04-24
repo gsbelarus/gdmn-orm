@@ -19,28 +19,19 @@ async function erExport(dbs, transaction, erModel) {
      */
     const GDGUnique = erModel.addSequence(new erm.Sequence('GD_G_UNIQUE'));
     const GDGOffset = erModel.addSequence(new erm.Sequence('Offset', { sequence: 'GD_G_OFFSET' }));
-    function createEntity(relation, entityName, attributes) {
-        const found = Object.entries(erModel.entities).find(e => {
-            const adapter = e[1].adapter;
-            if (adapter) {
-                if (Array.isArray(adapter.relation)) {
-                    return !!adapter.relation.find((r) => r.relationName === relation.name && !r.weak);
-                }
-                else {
-                    return adapter.relation.relationName === relation.name;
-                }
-            }
-            else {
-                return e[0] === relation.name;
-            }
-        });
+    function createEntity(em, entityName, attributes) {
+        const found = Object.entries(erModel.entities).find(e => rdbadapter.sameAdapter(em, e[1].adapter));
         if (found) {
             return found[1];
+        }
+        const relation = dbs.relations[rdbadapter.adapter2relationNames(em)[0]];
+        if (!relation) {
+            throw new Error(`Unknown relation ${rdbadapter.adapter2relationNames(em)[0]}`);
         }
         const pkFields = relation.primaryKey.fields.join();
         const parent = Object.entries(relation.foreignKeys).reduce((p, fk) => {
             if (!p && fk[1].fields.join() === pkFields) {
-                return createEntity(dbs.relationByUqConstraint(fk[1].constNameUq));
+                return createEntity(rdbadapter.relationName2Adapter(dbs.relationByUqConstraint(fk[1].constNameUq).name));
             }
             else {
                 return p;
@@ -73,12 +64,12 @@ async function erExport(dbs, transaction, erModel) {
      * -- Первое добавляемое поле в Entity автоматом становится PK.
      * -- Если имя атрибута совпадает с именем поля, то в адаптере имя поля можно не указывать.
      */
-    createEntity(dbs.relations.WG_HOLIDAY);
+    createEntity(rdbadapter.relationName2Adapter('WG_HOLIDAY'));
     /**
      * Административно-территориальная единица.
      * Тут исключительно для иллюстрации типа данных Перечисление.
      */
-    createEntity(dbs.relations.GD_PLACE, undefined, [
+    createEntity(rdbadapter.relationName2Adapter('GD_PLACE'), undefined, [
         new erm.EnumAttribute('PLACETYPE', { ru: { name: 'Тип' } }, true, [
             {
                 value: 'Область'
@@ -346,7 +337,9 @@ async function erExport(dbs, transaction, erModel) {
                             {
                                 const fk = Object.entries(r.foreignKeys).find(f => !!f[1].fields.find(fld => fld === attributeName));
                                 if (fk && fk[1].fields.length === 1) {
-                                    return new erm.EntityAttribute(attributeName, lName, required, [createEntity(dbs.relationByUqConstraint(fk[1].constNameUq))], adapter);
+                                    return new erm.EntityAttribute(attributeName, lName, required, [
+                                        createEntity(rdbadapter.relationName2Adapter(dbs.relationByUqConstraint(fk[1].constNameUq).name))
+                                    ], adapter);
                                 }
                                 else {
                                     return new erm.IntegerAttribute(attributeName, lName, required, rdbadapter.MIN_32BIT_INT, rdbadapter.MAX_32BIT_INT, util_1.default2Int(defaultValue), adapter);

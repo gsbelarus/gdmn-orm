@@ -64,7 +64,7 @@ async function load(transaction) {
                 relationName = resultSet.getString('RELATIONNAME');
                 rel = atrelations[relationName];
                 if (!rel)
-                    throw `Unknown relation ${relationName}`;
+                    throw new Error(`Unknown relation ${relationName}`);
             }
             const fieldName = resultSet.getString('FIELDNAME');
             const name = resultSet.getString('LNAME');

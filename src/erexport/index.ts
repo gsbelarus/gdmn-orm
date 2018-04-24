@@ -16,25 +16,18 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
   const GDGUnique = erModel.addSequence(new erm.Sequence('GD_G_UNIQUE'));
   const GDGOffset = erModel.addSequence(new erm.Sequence('Offset', { sequence: 'GD_G_OFFSET' }));
 
-  function createEntity(relation: Relation, entityName?: string, attributes?: erm.Attribute[]): erm.Entity {
+  function createEntity(em: rdbadapter.Entity2RelationMap, entityName?: string, attributes?: erm.Attribute[]): erm.Entity {
 
-    const found = Object.entries(erModel.entities).find( e => {
-      const adapter = e[1].adapter;
-      if (adapter) {
-        if (Array.isArray(adapter.relation)) {
-          return !!adapter.relation.find(
-            (r: rdbadapter.Relation) => r.relationName === relation.name && !r.weak
-          );
-        } else {
-          return adapter.relation.relationName === relation.name;
-        }
-      } else {
-        return e[0] === relation.name;
-      }
-    });
+    const found = Object.entries(erModel.entities).find( e => rdbadapter.sameAdapter(em, e[1].adapter) );
 
     if (found) {
       return found[1];
+    }
+
+    const relation = dbs.relations[rdbadapter.adapter2relationNames(em)[0]];
+
+    if (!relation) {
+      throw new Error(`Unknown relation ${rdbadapter.adapter2relationNames(em)[0]}`);
     }
 
     const pkFields = relation.primaryKey!.fields.join();
@@ -42,7 +35,11 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
     const parent = Object.entries(relation.foreignKeys).reduce(
       (p: erm.Entity | undefined, fk) => {
         if (!p && fk[1].fields.join() === pkFields) {
-          return createEntity(dbs.relationByUqConstraint(fk[1].constNameUq));
+          return createEntity(
+            rdbadapter.relationName2Adapter(
+              dbs.relationByUqConstraint(fk[1].constNameUq).name
+            )
+          );
         } else {
           return p;
         }
@@ -89,13 +86,13 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
    * -- Если имя атрибута совпадает с именем поля, то в адаптере имя поля можно не указывать.
    */
 
-  createEntity(dbs.relations.WG_HOLIDAY);
+  createEntity(rdbadapter.relationName2Adapter('WG_HOLIDAY'));
 
   /**
    * Административно-территориальная единица.
    * Тут исключительно для иллюстрации типа данных Перечисление.
    */
-  createEntity(dbs.relations.GD_PLACE, undefined, [
+  createEntity(rdbadapter.relationName2Adapter('GD_PLACE'), undefined, [
     new erm.EnumAttribute('PLACETYPE', {ru: {name: 'Тип'}}, true,
       [
         {
@@ -495,7 +492,13 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
 
               if (fk && fk[1].fields.length === 1) {
                 return new erm.EntityAttribute(attributeName, lName, required,
-                  [createEntity(dbs.relationByUqConstraint(fk[1].constNameUq))],
+                  [
+                    createEntity(
+                      rdbadapter.relationName2Adapter(
+                        dbs.relationByUqConstraint(fk[1].constNameUq).name
+                      )
+                    )
+                  ],
                   adapter);
               } else {
                 return new erm.IntegerAttribute(attributeName, lName, required,

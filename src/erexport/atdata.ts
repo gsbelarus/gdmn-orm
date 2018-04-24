@@ -108,7 +108,7 @@ export async function load(transaction: ATransaction) {
         if (relationName !== resultSet.getString('RELATIONNAME')) {
           relationName = resultSet.getString('RELATIONNAME');
           rel = atrelations[relationName];
-          if (!rel) throw `Unknown relation ${relationName}`;
+          if (!rel) throw new Error(`Unknown relation ${relationName}`);
         }
         const fieldName = resultSet.getString('FIELDNAME');
         const name = resultSet.getString('LNAME');
