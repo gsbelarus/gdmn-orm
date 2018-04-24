@@ -113,11 +113,11 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
         selector: {
           field: 'CONTACTTYPE',
           value: 0,
-          fields: [
-            'PARENT',
-            'NAME'
-          ]
-        }
+        },
+        fields: [
+          'PARENT',
+          'NAME'
+        ]
       }
     },
     'Folder', {ru: {name: 'Папка'}}

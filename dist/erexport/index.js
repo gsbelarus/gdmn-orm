@@ -83,11 +83,11 @@ async function erExport(dbs, transaction, erModel) {
             selector: {
                 field: 'CONTACTTYPE',
                 value: 0,
-                fields: [
-                    'PARENT',
-                    'NAME'
-                ]
-            }
+            },
+            fields: [
+                'PARENT',
+                'NAME'
+            ]
         }
     }, 'Folder', { ru: { name: 'Папка' } });
     Folder.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в папку' } }, [Folder]));
