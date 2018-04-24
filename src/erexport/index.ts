@@ -123,7 +123,16 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
         structure: 'LBRB',
         selector: {
           field: 'CONTACTTYPE',
-          value: 0
+          value: 0,
+          fields: [
+            'PARENT',
+            'NAME',
+            'EDITIONDATE',
+            'EDITORKEY',
+            'CREATIONDATE',
+            'CREATORKEY',
+            'DISABLED'
+          ]
         }
       }
     }

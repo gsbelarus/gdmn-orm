@@ -18,6 +18,7 @@ export type RelationStructure = 'PLAIN' | 'TREE' | 'LBRB';
 export interface EntitySelector {
   field: string;
   value: number | string;
+  fields?: string[];
 }
 
 export interface Relation {

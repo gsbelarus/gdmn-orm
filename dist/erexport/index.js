@@ -100,7 +100,16 @@ async function erExport(dbs, transaction, erModel) {
             structure: 'LBRB',
             selector: {
                 field: 'CONTACTTYPE',
-                value: 0
+                value: 0,
+                fields: [
+                    'PARENT',
+                    'NAME',
+                    'EDITIONDATE',
+                    'EDITORKEY',
+                    'CREATIONDATE',
+                    'CREATORKEY',
+                    'DISABLED'
+                ]
             }
         }
     }));
