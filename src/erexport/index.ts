@@ -16,7 +16,9 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
   const GDGUnique = erModel.addSequence(new erm.Sequence('GD_G_UNIQUE'));
   const GDGOffset = erModel.addSequence(new erm.Sequence('Offset', { sequence: 'GD_G_OFFSET' }));
 
-  function createEntity(em: rdbadapter.Entity2RelationMap, entityName?: string, attributes?: erm.Attribute[]): erm.Entity {
+  function createEntity(em: rdbadapter.Entity2RelationMap, entityName?: string,
+    lName?: LName, attributes?: erm.Attribute[]): erm.Entity
+  {
 
     const found = Object.entries(erModel.entities).find( e => rdbadapter.sameAdapter(em, e[1].adapter) );
 
@@ -61,7 +63,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
     const entity = new erm.Entity(
       parent,
       setEntityName,
-      atrelations[relation.name].lName,
+      lName ? lName : atrelations[relation.name].lName,
       false,
       setEntityName !== relation.name || structure !== 'PLAIN' ? adapter : undefined
     );
@@ -92,7 +94,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
    * Административно-территориальная единица.
    * Тут исключительно для иллюстрации типа данных Перечисление.
    */
-  createEntity(rdbadapter.relationName2Adapter('GD_PLACE'), undefined, [
+  createEntity(rdbadapter.relationName2Adapter('GD_PLACE'), undefined, undefined, [
     new erm.EnumAttribute('PLACETYPE', {ru: {name: 'Тип'}}, true,
       [
         {
@@ -112,8 +114,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
    * Записи имеют признак CONTACTTYPE = 0.
    * Имеет древовидную структуру.
    */
-  const Folder = erModel.add(new erm.Entity(undefined, 'Folder', {ru: {name: 'Папка'}},
-    false,
+  const Folder = createEntity(
     {
       relation: {
         relationName: 'GD_CONTACT',
@@ -123,33 +124,15 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
           value: 0,
           fields: [
             'PARENT',
-            'NAME',
-            'EDITIONDATE',
-            'EDITORKEY',
-            'CREATIONDATE',
-            'CREATORKEY',
-            'DISABLED'
+            'NAME'
           ]
         }
       }
-    }
-  ));
-  Folder.add(
-    new erm.SequenceAttribute('ID', {ru: {name: 'Идентификатор'}}, GDGUnique)
+    },
+    'Folder', {ru: {name: 'Папка'}}
   );
   Folder.add(
     new erm.ParentAttribute('PARENT', {ru: {name: 'Входит в папку'}}, [Folder])
-  );
-  Folder.add(
-    new erm.StringAttribute('NAME', {ru: {name: 'Наименование'}}, true, undefined, 60, undefined, true, undefined)
-  );
-  Folder.add(
-    new erm.TimeStampAttribute('EDITIONDATE', {ru: {name: 'Изменено'}}, true,
-      new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'
-    )
-  );
-  Folder.add(
-    new erm.BooleanAttribute('DISABLED', {ru: {name: 'Отключено'}}, true, false)
   );
 
   /**

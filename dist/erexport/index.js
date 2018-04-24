@@ -19,7 +19,7 @@ async function erExport(dbs, transaction, erModel) {
      */
     const GDGUnique = erModel.addSequence(new erm.Sequence('GD_G_UNIQUE'));
     const GDGOffset = erModel.addSequence(new erm.Sequence('Offset', { sequence: 'GD_G_OFFSET' }));
-    function createEntity(em, entityName, attributes) {
+    function createEntity(em, entityName, lName, attributes) {
         const found = Object.entries(erModel.entities).find(e => rdbadapter.sameAdapter(em, e[1].adapter));
         if (found) {
             return found[1];
@@ -47,7 +47,7 @@ async function erExport(dbs, transaction, erModel) {
             }
         };
         const setEntityName = entityName ? entityName : relation.name;
-        const entity = new erm.Entity(parent, setEntityName, atrelations[relation.name].lName, false, setEntityName !== relation.name || structure !== 'PLAIN' ? adapter : undefined);
+        const entity = new erm.Entity(parent, setEntityName, lName ? lName : atrelations[relation.name].lName, false, setEntityName !== relation.name || structure !== 'PLAIN' ? adapter : undefined);
         if (!parent) {
             entity.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
         }
@@ -69,7 +69,7 @@ async function erExport(dbs, transaction, erModel) {
      * Административно-территориальная единица.
      * Тут исключительно для иллюстрации типа данных Перечисление.
      */
-    createEntity(rdbadapter.relationName2Adapter('GD_PLACE'), undefined, [
+    createEntity(rdbadapter.relationName2Adapter('GD_PLACE'), undefined, undefined, [
         new erm.EnumAttribute('PLACETYPE', { ru: { name: 'Тип' } }, true, [
             {
                 value: 'Область'
@@ -85,7 +85,7 @@ async function erExport(dbs, transaction, erModel) {
      * Записи имеют признак CONTACTTYPE = 0.
      * Имеет древовидную структуру.
      */
-    const Folder = erModel.add(new erm.Entity(undefined, 'Folder', { ru: { name: 'Папка' } }, false, {
+    const Folder = createEntity({
         relation: {
             relationName: 'GD_CONTACT',
             structure: 'LBRB',
@@ -94,21 +94,12 @@ async function erExport(dbs, transaction, erModel) {
                 value: 0,
                 fields: [
                     'PARENT',
-                    'NAME',
-                    'EDITIONDATE',
-                    'EDITORKEY',
-                    'CREATIONDATE',
-                    'CREATORKEY',
-                    'DISABLED'
+                    'NAME'
                 ]
             }
         }
-    }));
-    Folder.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
+    }, 'Folder', { ru: { name: 'Папка' } });
     Folder.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в папку' } }, [Folder]));
-    Folder.add(new erm.StringAttribute('NAME', { ru: { name: 'Наименование' } }, true, undefined, 60, undefined, true, undefined));
-    Folder.add(new erm.TimeStampAttribute('EDITIONDATE', { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)'));
-    Folder.add(new erm.BooleanAttribute('DISABLED', { ru: { name: 'Отключено' } }, true, false));
     /**
      * Компания хранится в трех таблицах.
      * Две обязательные GD_CONTACT - GD_COMPANY. В адаптере они указываются

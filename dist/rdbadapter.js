@@ -6,6 +6,16 @@ exports.MIN_32BIT_INT = -2147483648;
 exports.MAX_32BIT_INT = +2147483647;
 exports.MIN_16BIT_INT = -32768;
 exports.MAX_16BIT_INT = +32767;
+exports.systemFields = [
+    'AVIEW',
+    'ACHAG',
+    'AFULL',
+    'DISABLED',
+    'CREATIONDATE',
+    'CREATORKEY',
+    'EDITIONDATE',
+    'EDITORKEY'
+];
 function relationName2Adapter(relationName) {
     return {
         relation: {

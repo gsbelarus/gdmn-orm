@@ -5,6 +5,7 @@ export declare const MIN_32BIT_INT = -2147483648;
 export declare const MAX_32BIT_INT = 2147483647;
 export declare const MIN_16BIT_INT = -32768;
 export declare const MAX_16BIT_INT = 32767;
+export declare const systemFields: string[];
 export interface Sequence2SequenceMap extends SequenceAdapter {
     sequence: string;
 }

@@ -9,6 +9,17 @@ export const MAX_32BIT_INT = +2147483647;
 export const MIN_16BIT_INT = -32768;
 export const MAX_16BIT_INT = +32767;
 
+export const systemFields = [
+  'AVIEW',
+  'ACHAG',
+  'AFULL',
+  'DISABLED',
+  'CREATIONDATE',
+  'CREATORKEY',
+  'EDITIONDATE',
+  'EDITORKEY'
+];
+
 export interface Sequence2SequenceMap extends SequenceAdapter {
   sequence: string;
 }
