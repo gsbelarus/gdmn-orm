@@ -76,7 +76,7 @@ export function adapter2relationNames(em: Entity2RelationMap): string[] {
 
 export function sameAdapter(a: Entity2RelationMap, b: Entity2RelationMap): boolean {
   const arrA = adapter2array(a);
-  const arrB = adapter2array(a);
+  const arrB = adapter2array(b);
   return arrA.length === arrB.length
     && arrA.every( (a, idx) => idx < arrB.length && a.relationName === arrB[idx].relationName
       && JSON.stringify(a.selector) === JSON.stringify(arrB[idx].selector));

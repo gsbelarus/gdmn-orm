@@ -42,7 +42,7 @@ function adapter2relationNames(em) {
 exports.adapter2relationNames = adapter2relationNames;
 function sameAdapter(a, b) {
     const arrA = adapter2array(a);
-    const arrB = adapter2array(a);
+    const arrB = adapter2array(b);
     return arrA.length === arrB.length
         && arrA.every((a, idx) => idx < arrB.length && a.relationName === arrB[idx].relationName
             && JSON.stringify(a.selector) === JSON.stringify(arrB[idx].selector));
