@@ -24,20 +24,28 @@ function relationName2Adapter(relationName) {
     };
 }
 exports.relationName2Adapter = relationName2Adapter;
-function adapter2relationNames(em) {
+function adapter2array(em) {
     if (Array.isArray(em.relation)) {
         if (!em.relation.length) {
             throw new Error('Invalid entity 2 relation adapter');
         }
-        return em.relation.map(r => r.relationName);
+        return em.relation;
     }
     else {
-        return [em.relation.relationName];
+        return [em.relation];
     }
+}
+exports.adapter2array = adapter2array;
+function adapter2relationNames(em) {
+    return adapter2array(em).map(r => r.relationName);
 }
 exports.adapter2relationNames = adapter2relationNames;
 function sameAdapter(a, b) {
-    return adapter2relationNames(a).join() === adapter2relationNames(b).join();
+    const arrA = adapter2array(a);
+    const arrB = adapter2array(a);
+    return arrA.length === arrB.length
+        && arrA.every((a, idx) => idx < arrB.length && a.relationName === arrB[idx].relationName
+            && JSON.stringify(a.selector) === JSON.stringify(arrB[idx].selector));
 }
 exports.sameAdapter = sameAdapter;
 function hasField(em, rn, fn) {

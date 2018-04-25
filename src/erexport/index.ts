@@ -75,9 +75,6 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
 
   /**
    * Простейший случай таблицы. Никаких ссылок.
-   * -- Если имя Entity совпадает с именем таблицы и ее структура PLAIN, то можем не указывать адаптер.
-   * -- Первое добавляемое поле в Entity автоматом становится PK.
-   * -- Если имя атрибута совпадает с именем поля, то в адаптере имя поля можно не указывать.
    */
 
   createEntity(rdbadapter.relationName2Adapter('WG_HOLIDAY'));
@@ -138,8 +135,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
    * совпадает с именем поля.
    * Флаг refresh означает, что после вставки/изменения записи ее надо перечитать.
    */
-  const Company = erModel.add(new erm.Entity(undefined, 'Company', {ru: {name: 'Организация'}},
-    false,
+  const Company = createEntity(
     {
       relation: [
         {
@@ -158,32 +154,12 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
         }
       ],
       refresh: true
-    }
-  ));
-  Company.add(
-    new erm.SequenceAttribute('ID', {ru: {name: 'Идентификатор'}}, GDGUnique)
+    },
+    'Company', {ru: {name: 'Организация'}}, [
+      new erm.ParentAttribute('PARENT', {ru: {name: 'Входит в папку'}}, [Folder]),
+      new erm.StringAttribute('NAME', {ru: {name: 'Краткое наименование'}}, true, undefined, 60, undefined, true, undefined)
+    ]
   );
-  Company.add(
-    new erm.ParentAttribute('PARENT', {ru: {name: 'Входит в папку'}}, [Folder])
-  );
-  Company.add(
-    new erm.StringAttribute('NAME', {ru: {name: 'Краткое наименование'}}, true, undefined, 60, undefined, true, undefined)
-  );
-  Company.add(
-    new erm.StringAttribute('PHONE', {ru: {name: 'Номер телефона'}}, true, undefined, 40, undefined, true, /^[\d+-,]{7,40}$/)
-  );
-  Company.add(
-    new erm.StringAttribute('FULLNAME', {ru: {name: 'Полное наименование'}}, true, undefined, 180, undefined, true, undefined,
-    {
-      relation: 'GD_COMPANY'
-    }
-  ));
-  Company.add(
-    new erm.StringAttribute('TAXID', {ru: {name: 'УНП'}}, false, undefined, 9, undefined, true, /^[\d]{9}$/,
-    {
-      relation: 'GD_COMPANYCODE'
-    }
-  ));
 
   /**
    * Банк является частным случаем компании (наследуется от компании).

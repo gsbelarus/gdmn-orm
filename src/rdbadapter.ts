@@ -59,19 +59,27 @@ export function relationName2Adapter(relationName: string): Entity2RelationMap {
   };
 }
 
-export function adapter2relationNames(em: Entity2RelationMap): string[] {
+export function adapter2array(em: Entity2RelationMap): Relation[] {
   if (Array.isArray(em.relation)) {
     if (!em.relation.length) {
       throw new Error('Invalid entity 2 relation adapter');
     }
-    return em.relation.map( r => r.relationName );
+    return em.relation;
   } else {
-    return [em.relation.relationName];
+    return [em.relation];
   }
 }
 
+export function adapter2relationNames(em: Entity2RelationMap): string[] {
+  return adapter2array(em).map( r => r.relationName );
+}
+
 export function sameAdapter(a: Entity2RelationMap, b: Entity2RelationMap): boolean {
-  return adapter2relationNames(a).join() === adapter2relationNames(b).join();
+  const arrA = adapter2array(a);
+  const arrB = adapter2array(a);
+  return arrA.length === arrB.length
+    && arrA.every( (a, idx) => idx < arrB.length && a.relationName === arrB[idx].relationName
+      && JSON.stringify(a.selector) === JSON.stringify(arrB[idx].selector));
 }
 
 export function hasField(em: Entity2RelationMap, rn: string, fn: string): boolean {
