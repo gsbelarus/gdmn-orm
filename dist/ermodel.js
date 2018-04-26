@@ -31,7 +31,7 @@ class Attribute {
         };
     }
     inspect() {
-        return [`    ${this._name}`];
+        return [`  ${this._name}: ${this.constructor.name}`];
     }
 }
 exports.Attribute = Attribute;
@@ -266,9 +266,11 @@ class Entity {
         };
     }
     inspect() {
-        return Object.entries(this.attributes).reduce((p, a) => {
-            return [...p, `${this.name}${this.parent ? '(' + this.parent.name + ')' : ''}:`, ...a[1].inspect()];
-        }, []);
+        return [`${this.name}${this.parent ? '(' + this.parent.name + ')' : ''}:`,
+            ...Object.entries(this.attributes).reduce((p, a) => {
+                return [...p, ...a[1].inspect()];
+            }, [])
+        ];
     }
 }
 exports.Entity = Entity;
