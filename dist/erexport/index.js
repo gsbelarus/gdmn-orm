@@ -24,7 +24,12 @@ async function erExport(dbs, transaction, erModel) {
             if (e[1].adapter) {
                 rdbadapter.adapter2array(e[1].adapter).forEach(r => {
                     if (r.relationName === relationName && !rdbadapter.isWeakRelation(r)) {
-                        if (!r.selector || selectors.find(s => s.field === r.selector.field && s.value === r.selector.value)) {
+                        if (r.selector && selectors.length) {
+                            if (selectors.find(s => s.field === r.selector.field && s.value === r.selector.value)) {
+                                p.push(e[1]);
+                            }
+                        }
+                        else {
                             p.push(e[1]);
                         }
                     }
