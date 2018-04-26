@@ -174,8 +174,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
    * в повторном определении, за тем исключением, если мы хотим что-то
    * поменять в параметрах атрибута.
    */
-  const Bank = erModel.add(new erm.Entity(Company, 'Bank', {ru: {name: 'Банк'}},
-    false,
+  const Bank = createEntity(Company,
     {
       relation: [
         {
@@ -197,15 +196,15 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
         }
       ],
       refresh: true
-    }
-  ));
+    },
+    'Bank', {ru: {name: 'Банк'}},
+  );
 
   /**
    * Подразделение организации может входить (через поле Parent) в
    * организацию (компания, банк) или в другое подразделение.
    */
-  const Department = erModel.add(new erm.Entity(undefined, 'Department', {ru: {name: 'Подразделение'}},
-    false,
+  const Department = createEntity(undefined,
     {
       relation: {
         relationName: 'GD_CONTACT',
@@ -214,8 +213,9 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
           value: 4
         }
       }
-    }
-  ));
+    },
+    'Department', {ru: {name: 'Подразделение'}}
+  );
   Department.add(
     new erm.ParentAttribute('PARENT', {ru: {name: 'Входит в организацию (подразделение)'}}, [Company, Department])
   );
@@ -226,8 +226,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
   /**
    * Физическое лицо хранится в двух таблицах GD_CONTACT - GD_PEOPLE.
    */
-  const Person = erModel.add(new erm.Entity(undefined, 'Person', {ru: {name: 'Физическое лицо'}},
-    false,
+  const Person = createEntity(undefined,
     {
       relation: [
         {
@@ -242,8 +241,9 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
         }
       ],
       refresh: true
-    }
-  ));
+    },
+    'Person', {ru: {name: 'Физическое лицо'}}
+  );
   Person.add(
     new erm.ParentAttribute('PARENT', {ru: {name: 'Входит в папку'}}, [Folder])
   );
@@ -255,8 +255,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
    * Сотрудник, частный случай физического лица.
    * Добавляется таблица GD_EMPLOYEE.
    */
-  const Employee = erModel.add(new erm.Entity(Person, 'Employee', {ru: {name: 'Сотрудник предприятия'}},
-    false,
+  const Employee = createEntity(Person,
     {
       relation: [
         {
@@ -273,8 +272,9 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
           relationName: 'GD_EMPLOYEE'
         }
       ]
-    }
-  ));
+    },
+    'Employee', {ru: {name: 'Сотрудник предприятия'}}
+  );
   Employee.add(
     new erm.ParentAttribute('PARENT', {ru: {name: 'Организация или подразделение'}}, [Company, Department])
   );
@@ -283,8 +283,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
    * Группа контактов.
    * CONTACTLIST -- множество, которое хранится в кросс-таблице.
    */
-  const Group = erModel.add(new erm.Entity(undefined, 'Group', {ru: {name: 'Группа'}},
-    false,
+  const Group = createEntity(undefined,
     {
       relation:
         {
@@ -294,8 +293,9 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
             value: 1
           }
         }
-    }
-  ));
+    },
+    'Group', {ru: {name: 'Группа'}},
+  );
   Group.add(
     new erm.ParentAttribute('PARENT', {ru: {name: 'Входит в папку'}}, [Folder])
   );

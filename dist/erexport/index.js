@@ -141,7 +141,7 @@ async function erExport(dbs, transaction, erModel) {
      * в повторном определении, за тем исключением, если мы хотим что-то
      * поменять в параметрах атрибута.
      */
-    const Bank = erModel.add(new erm.Entity(Company, 'Bank', { ru: { name: 'Банк' } }, false, {
+    const Bank = createEntity(Company, {
         relation: [
             {
                 relationName: 'GD_CONTACT',
@@ -162,12 +162,12 @@ async function erExport(dbs, transaction, erModel) {
             }
         ],
         refresh: true
-    }));
+    }, 'Bank', { ru: { name: 'Банк' } });
     /**
      * Подразделение организации может входить (через поле Parent) в
      * организацию (компания, банк) или в другое подразделение.
      */
-    const Department = erModel.add(new erm.Entity(undefined, 'Department', { ru: { name: 'Подразделение' } }, false, {
+    const Department = createEntity(undefined, {
         relation: {
             relationName: 'GD_CONTACT',
             selector: {
@@ -175,13 +175,13 @@ async function erExport(dbs, transaction, erModel) {
                 value: 4
             }
         }
-    }));
+    }, 'Department', { ru: { name: 'Подразделение' } });
     Department.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в организацию (подразделение)' } }, [Company, Department]));
     Department.add(new erm.StringAttribute('NAME', { ru: { name: 'Наименование' } }, true, undefined, 60, undefined, true, undefined));
     /**
      * Физическое лицо хранится в двух таблицах GD_CONTACT - GD_PEOPLE.
      */
-    const Person = erModel.add(new erm.Entity(undefined, 'Person', { ru: { name: 'Физическое лицо' } }, false, {
+    const Person = createEntity(undefined, {
         relation: [
             {
                 relationName: 'GD_CONTACT',
@@ -195,14 +195,14 @@ async function erExport(dbs, transaction, erModel) {
             }
         ],
         refresh: true
-    }));
+    }, 'Person', { ru: { name: 'Физическое лицо' } });
     Person.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в папку' } }, [Folder]));
     Person.add(new erm.StringAttribute('NAME', { ru: { name: 'ФИО' } }, true, undefined, 60, undefined, true, undefined));
     /**
      * Сотрудник, частный случай физического лица.
      * Добавляется таблица GD_EMPLOYEE.
      */
-    const Employee = erModel.add(new erm.Entity(Person, 'Employee', { ru: { name: 'Сотрудник предприятия' } }, false, {
+    const Employee = createEntity(Person, {
         relation: [
             {
                 relationName: 'GD_CONTACT',
@@ -218,13 +218,13 @@ async function erExport(dbs, transaction, erModel) {
                 relationName: 'GD_EMPLOYEE'
             }
         ]
-    }));
+    }, 'Employee', { ru: { name: 'Сотрудник предприятия' } });
     Employee.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Организация или подразделение' } }, [Company, Department]));
     /**
      * Группа контактов.
      * CONTACTLIST -- множество, которое хранится в кросс-таблице.
      */
-    const Group = erModel.add(new erm.Entity(undefined, 'Group', { ru: { name: 'Группа' } }, false, {
+    const Group = createEntity(undefined, {
         relation: {
             relationName: 'GD_CONTACT',
             selector: {
@@ -232,7 +232,7 @@ async function erExport(dbs, transaction, erModel) {
                 value: 1
             }
         }
-    }));
+    }, 'Group', { ru: { name: 'Группа' } });
     Group.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в папку' } }, [Folder]));
     const ContactList = Group.add(new erm.SetAttribute('CONTACTLIST', { ru: { name: 'Контакты' } }, false, [Company, Person], {
         crossRelation: 'GD_CONTACTLIST'
