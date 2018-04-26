@@ -116,6 +116,7 @@ export declare class Entity {
     hasOwnAttribute(name: string): boolean;
     attribute(name: string): Attribute;
     add(attribute: Attribute): Attribute;
+    hasAncestor(a: Entity): boolean;
     serialize(): IEntity;
 }
 export interface Entities {

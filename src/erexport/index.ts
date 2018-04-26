@@ -17,7 +17,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
   const GDGOffset = erModel.addSequence(new erm.Sequence('Offset', { sequence: 'GD_G_OFFSET' }));
 
   function findEntities(relationName: string, selectors: rdbadapter.EntitySelector[] = []): erm.Entity[] {
-    return Object.entries(erModel.entities).reduce( (p, e) => {
+    const found = Object.entries(erModel.entities).reduce( (p, e) => {
       if (e[1].adapter) {
         rdbadapter.adapter2array(e[1].adapter).forEach( r => {
           if (r.relationName === relationName && !rdbadapter.isWeakRelation(r)) {
@@ -30,6 +30,14 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
 
       return p;
     }, [] as erm.Entity[]);
+
+    while (found.length) {
+      const descendant = found.findIndex( d => !!found.find( a => a !== d && d.hasAncestor(a) ) );
+      if (descendant === -1) break;
+      found.splice(descendant, 1);
+    }
+
+    return found;
   }
 
   function createEntity(parent: erm.Entity | undefined, adapter: rdbadapter.Entity2RelationMap,

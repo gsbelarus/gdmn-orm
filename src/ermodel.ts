@@ -343,6 +343,10 @@ export class Entity {
     return this._attributes[attribute.name] = attribute;
   }
 
+  hasAncestor(a: Entity): boolean {
+    return this.parent ? (this.parent === a ? true : this.parent.hasAncestor(a)) : false;
+  }
+
   serialize(): IEntity {
     return {
       parent: this.parent ? this.parent.name : undefined,

@@ -20,7 +20,7 @@ async function erExport(dbs, transaction, erModel) {
     const GDGUnique = erModel.addSequence(new erm.Sequence('GD_G_UNIQUE'));
     const GDGOffset = erModel.addSequence(new erm.Sequence('Offset', { sequence: 'GD_G_OFFSET' }));
     function findEntities(relationName, selectors = []) {
-        return Object.entries(erModel.entities).reduce((p, e) => {
+        const found = Object.entries(erModel.entities).reduce((p, e) => {
             if (e[1].adapter) {
                 rdbadapter.adapter2array(e[1].adapter).forEach(r => {
                     if (r.relationName === relationName && !rdbadapter.isWeakRelation(r)) {
@@ -32,6 +32,13 @@ async function erExport(dbs, transaction, erModel) {
             }
             return p;
         }, []);
+        while (found.length) {
+            const descendant = found.findIndex(d => !!found.find(a => a !== d && d.hasAncestor(a)));
+            if (descendant === -1)
+                break;
+            found.splice(descendant, 1);
+        }
+        return found;
     }
     function createEntity(parent, adapter, entityName, lName, attributes) {
         const found = Object.entries(erModel.entities).find(e => rdbadapter.sameAdapter(adapter, e[1].adapter));

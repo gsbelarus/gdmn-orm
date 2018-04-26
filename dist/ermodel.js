@@ -252,6 +252,9 @@ class Entity {
         }
         return this._attributes[attribute.name] = attribute;
     }
+    hasAncestor(a) {
+        return this.parent ? (this.parent === a ? true : this.parent.hasAncestor(a)) : false;
+    }
     serialize() {
         return {
             parent: this.parent ? this.parent.name : undefined,
