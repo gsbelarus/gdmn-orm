@@ -30,6 +30,9 @@ class Attribute {
             type: this.constructor.name
         };
     }
+    inspect() {
+        return [`    ${this._name}`];
+    }
 }
 exports.Attribute = Attribute;
 class ScalarAttribute extends Attribute {
@@ -262,6 +265,11 @@ class Entity {
             attributes: Object.entries(this.attributes).map(a => a[1].serialize())
         };
     }
+    inspect() {
+        return Object.entries(this.attributes).reduce((p, a) => {
+            return [...p, `${this.name}${this.parent ? '(' + this.parent.name + ')' : ''}:`, ...a[1].inspect()];
+        }, []);
+    }
 }
 exports.Entity = Entity;
 class Sequence {
@@ -306,6 +314,11 @@ class ERModel {
     }
     serialize() {
         return { entities: Object.entries(this._entities).map(e => e[1].serialize()) };
+    }
+    inspect() {
+        return Object.entries(this._entities).reduce((p, e) => {
+            return [...e[1].inspect(), ...p];
+        }, []);
     }
 }
 exports.ERModel = ERModel;

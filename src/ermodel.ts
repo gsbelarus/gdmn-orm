@@ -45,6 +45,10 @@ export class Attribute {
       type: this.constructor.name
     }
   }
+
+  inspect(): string[] {
+    return [`    ${this._name}`];
+  }
 }
 
 export interface Attributes {
@@ -354,6 +358,12 @@ export class Entity {
       attributes: Object.entries(this.attributes).map( a => a[1].serialize() )
     };
   }
+
+  inspect(): string[] {
+    return Object.entries(this.attributes).reduce( (p, a) => {
+      return [...p, `${this.name}${this.parent ? '(' + this.parent.name + ')': ''}:`, ...a[1].inspect()];
+    }, [] as string[]);
+  }
 }
 
 export interface Entities {
@@ -414,5 +424,11 @@ export class ERModel {
 
   serialize(): IERModel {
     return { entities: Object.entries(this._entities).map( e => e[1].serialize() ) };
+  }
+
+  inspect(): string[] {
+    return Object.entries(this._entities).reduce( (p, e) => {
+      return [...e[1].inspect(), ...p];
+    }, [] as string[]);
   }
 }

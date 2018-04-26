@@ -17,6 +17,7 @@ export declare class Attribute {
     readonly required: boolean;
     readonly calculated: boolean;
     serialize(): IAttribute;
+    inspect(): string[];
 }
 export interface Attributes {
     [name: string]: Attribute;
@@ -118,6 +119,7 @@ export declare class Entity {
     add(attribute: Attribute): Attribute;
     hasAncestor(a: Entity): boolean;
     serialize(): IEntity;
+    inspect(): string[];
 }
 export interface Entities {
     [name: string]: Entity;
@@ -139,4 +141,5 @@ export declare class ERModel {
     add(entity: Entity): Entity;
     addSequence(sequence: Sequence): Sequence;
     serialize(): IERModel;
+    inspect(): string[];
 }
