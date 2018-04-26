@@ -129,10 +129,120 @@ async function erExport(dbs, transaction, erModel) {
         new erm.StringAttribute('NAME', { ru: { name: 'Краткое наименование' } }, true, undefined, 60, undefined, true, undefined)
     ]);
     /**
+     * Банк является частным случаем компании (наследуется от компании).
+     * Все атрибуты компании являются и атрибутами банка и не нуждаются
+     * в повторном определении, за тем исключением, если мы хотим что-то
+     * поменять в параметрах атрибута.
+     */
+    const Bank = erModel.add(new erm.Entity(Company, 'Bank', { ru: { name: 'Банк' } }, false, {
+        relation: [
+            {
+                relationName: 'GD_CONTACT',
+                selector: {
+                    field: 'CONTACTTYPE',
+                    value: 5
+                }
+            },
+            {
+                relationName: 'GD_COMPANY'
+            },
+            {
+                relationName: 'GD_COMPANYCODE',
+                weak: true
+            },
+            {
+                relationName: 'GD_BANK'
+            }
+        ],
+        refresh: true
+    }));
+    /**
+     * Подразделение организации может входить (через поле Parent) в
+     * организацию (компания, банк) или в другое подразделение.
+     */
+    const Department = erModel.add(new erm.Entity(undefined, 'Department', { ru: { name: 'Подразделение' } }, false, {
+        relation: {
+            relationName: 'GD_CONTACT',
+            selector: {
+                field: 'CONTACTTYPE',
+                value: 4
+            }
+        }
+    }));
+    Department.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в организацию (подразделение)' } }, [Company, Department]));
+    Department.add(new erm.StringAttribute('NAME', { ru: { name: 'Наименование' } }, true, undefined, 60, undefined, true, undefined));
+    /**
+     * Физическое лицо хранится в двух таблицах GD_CONTACT - GD_PEOPLE.
+     */
+    const Person = erModel.add(new erm.Entity(undefined, 'Person', { ru: { name: 'Физическое лицо' } }, false, {
+        relation: [
+            {
+                relationName: 'GD_CONTACT',
+                selector: {
+                    field: 'CONTACTTYPE',
+                    value: 2
+                }
+            },
+            {
+                relationName: 'GD_PEOPLE'
+            }
+        ],
+        refresh: true
+    }));
+    Person.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в папку' } }, [Folder]));
+    Person.add(new erm.StringAttribute('NAME', { ru: { name: 'ФИО' } }, true, undefined, 60, undefined, true, undefined));
+    /**
+     * Сотрудник, частный случай физического лица.
+     * Добавляется таблица GD_EMPLOYEE.
+     */
+    const Employee = erModel.add(new erm.Entity(Person, 'Employee', { ru: { name: 'Сотрудник предприятия' } }, false, {
+        relation: [
+            {
+                relationName: 'GD_CONTACT',
+                selector: {
+                    field: 'CONTACTTYPE',
+                    value: 2
+                }
+            },
+            {
+                relationName: 'GD_PEOPLE'
+            },
+            {
+                relationName: 'GD_EMPLOYEE'
+            }
+        ]
+    }));
+    Employee.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Организация или подразделение' } }, [Company, Department]));
+    /**
+     * Группа контактов.
+     * CONTACTLIST -- множество, которое хранится в кросс-таблице.
+     */
+    const Group = erModel.add(new erm.Entity(undefined, 'Group', { ru: { name: 'Группа' } }, false, {
+        relation: {
+            relationName: 'GD_CONTACT',
+            selector: {
+                field: 'CONTACTTYPE',
+                value: 1
+            }
+        }
+    }));
+    Group.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в папку' } }, [Folder]));
+    const ContactList = Group.add(new erm.SetAttribute('CONTACTLIST', { ru: { name: 'Контакты' } }, false, [Company, Person], {
+        crossRelation: 'GD_CONTACTLIST'
+    }));
+    /*
+    dbs.forEachRelation( r => {
+      if (r.primaryKey && r.primaryKey.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)) {
+        createEntity(r);
+      }
+    });
+    */
+    /**
      * @todo Parse fields CHECK constraint and extract min and max allowed values.
      */
     function createAttributes(entity) {
-        const relations = rdbadapter.adapter2array(entity.adapter).map(rn => dbs.relations[rn.relationName]);
+        const adapterArr = rdbadapter.adapter2array(entity.adapter);
+        const relations = adapterArr.map(rn => dbs.relations[rn.relationName]);
         relations.forEach(r => {
             if (!r || !r.primaryKey)
                 return;
@@ -147,6 +257,9 @@ async function erExport(dbs, transaction, erModel) {
                 if (!rdbadapter.hasField(entity.adapter, r.name, rf[0])
                     && !rdbadapter.systemFields.find(sf => sf === rf[0])
                     && !rdbadapter.isUserDefined(rf[0])) {
+                    return;
+                }
+                if (adapterArr[0].selector && adapterArr[0].selector.field === rf[0]) {
                     return;
                 }
                 const atField = atfields[rf[1].fieldSource];
@@ -278,13 +391,6 @@ async function erExport(dbs, transaction, erModel) {
             });
         });
     }
-    /*
-    dbs.forEachRelation( r => {
-      if (r.primaryKey && r.primaryKey.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)) {
-        createEntity(r);
-      }
-    });
-    */
     Object.entries(erModel.entities).forEach(e => createAttributes(e[1]));
     return erModel;
 }
