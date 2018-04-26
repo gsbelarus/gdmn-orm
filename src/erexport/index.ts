@@ -334,7 +334,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
 
         if (rf[0] === 'LB' || rf[0] === 'RB') return;
 
-        if (entity.hasOwnAttribute(rf[0])) return;
+        if (entity.hasAttribute(rf[0])) return;
 
         if (!rdbadapter.hasField(entity.adapter, r.name, rf[0])
           && !rdbadapter.systemFields.find( sf => sf === rf[0] )

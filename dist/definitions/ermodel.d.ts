@@ -85,6 +85,7 @@ export declare class EntityAttribute extends Attribute {
     constructor(name: string, lName: LName, required: boolean, entity: Entity[], adapter?: AttributeAdapter);
     readonly entity: Entity[];
     serialize(): IAttribute;
+    inspect(): string[];
 }
 export declare class ParentAttribute extends EntityAttribute {
     constructor(name: string, lName: LName, entity: Entity[], adapter?: AttributeAdapter);

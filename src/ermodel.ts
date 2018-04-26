@@ -47,7 +47,7 @@ export class Attribute {
   }
 
   inspect(): string[] {
-    return [`  ${this._name}: ${this.constructor.name}`];
+    return [`    ${this._name}${this.lName.ru ? ' - ' + this.lName.ru.name: ''}: ${this.constructor.name}`];
   }
 }
 
@@ -227,6 +227,10 @@ export class EntityAttribute extends Attribute {
       references: this.entity.map( ent => ent.name )
     }
   }
+
+  inspect(): string[] {
+    return [super.inspect()[0] + ' [' + this._entity.reduce( (p, e, idx) => p + (idx ? ', ' : '') + e.name, '') + ']'];
+  }
 }
 
 export class ParentAttribute extends EntityAttribute {
@@ -360,7 +364,10 @@ export class Entity {
   }
 
   inspect(): string[] {
-    return [`${this.name}${this.parent ? '(' + this.parent.name + ')': ''}:`,
+    const lName = this.lName.ru ? ' - ' + this.lName.ru.name : '';
+    return [`${this.name}${this.parent ? '(' + this.parent.name + ')': ''}${lName}:`,
+      `  adapter: ${JSON.stringify(this.adapter)}`,
+      '  Attributes:',
       ...Object.entries(this.attributes).reduce( (p, a) => {
         return [...p, ...a[1].inspect()];
       }, [] as string[])

@@ -31,7 +31,7 @@ class Attribute {
         };
     }
     inspect() {
-        return [`  ${this._name}: ${this.constructor.name}`];
+        return [`    ${this._name}${this.lName.ru ? ' - ' + this.lName.ru.name : ''}: ${this.constructor.name}`];
     }
 }
 exports.Attribute = Attribute;
@@ -157,6 +157,9 @@ class EntityAttribute extends Attribute {
     serialize() {
         return Object.assign({}, super.serialize(), { references: this.entity.map(ent => ent.name) });
     }
+    inspect() {
+        return [super.inspect()[0] + ' [' + this._entity.reduce((p, e, idx) => p + (idx ? ', ' : '') + e.name, '') + ']'];
+    }
 }
 exports.EntityAttribute = EntityAttribute;
 class ParentAttribute extends EntityAttribute {
@@ -266,7 +269,10 @@ class Entity {
         };
     }
     inspect() {
-        return [`${this.name}${this.parent ? '(' + this.parent.name + ')' : ''}:`,
+        const lName = this.lName.ru ? ' - ' + this.lName.ru.name : '';
+        return [`${this.name}${this.parent ? '(' + this.parent.name + ')' : ''}${lName}:`,
+            `  adapter: ${JSON.stringify(this.adapter)}`,
+            '  Attributes:',
             ...Object.entries(this.attributes).reduce((p, a) => {
                 return [...p, ...a[1].inspect()];
             }, [])
