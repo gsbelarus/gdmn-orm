@@ -19,27 +19,33 @@ async function erExport(dbs, transaction, erModel) {
      */
     const GDGUnique = erModel.addSequence(new erm.Sequence('GD_G_UNIQUE'));
     const GDGOffset = erModel.addSequence(new erm.Sequence('Offset', { sequence: 'GD_G_OFFSET' }));
-    function createEntity(adapter, entityName, lName, attributes) {
+    function findEntities(relationName, selectors = []) {
+        return Object.entries(erModel.entities).reduce((p, e) => {
+            if (e[1].adapter) {
+                rdbadapter.adapter2array(e[1].adapter).forEach(r => {
+                    if (r.relationName === relationName && !rdbadapter.isWeakRelation(r)) {
+                        if (!r.selector || selectors.find(s => s.field === r.selector.field && s.value === r.selector.value)) {
+                            p.push(e[1]);
+                        }
+                    }
+                });
+            }
+            return p;
+        }, []);
+    }
+    function createEntity(parent, adapter, entityName, lName, attributes) {
         const found = Object.entries(erModel.entities).find(e => rdbadapter.sameAdapter(adapter, e[1].adapter));
         if (found) {
             return found[1];
         }
-        const relation = dbs.relations[rdbadapter.adapter2relationNames(adapter)[0]];
-        if (!relation) {
-            throw new Error(`Unknown relation ${rdbadapter.adapter2relationNames(adapter)[0]}`);
+        const relation = rdbadapter.adapter2array(adapter).filter(r => !rdbadapter.isWeakRelation(r)).reverse()[0];
+        if (!relation || !relation.relationName) {
+            throw new Error('Invalid entity adapter');
         }
-        const pkFields = relation.primaryKey.fields.join();
-        const parent = Object.entries(relation.foreignKeys).reduce((p, fk) => {
-            if (!p && fk[1].fields.join() === pkFields) {
-                return createEntity(rdbadapter.relationName2Adapter(dbs.relationByUqConstraint(fk[1].constNameUq).name));
-            }
-            else {
-                return p;
-            }
-        }, undefined);
-        const rf = relation.relationFields;
-        const setEntityName = entityName ? entityName : relation.name;
-        const entity = new erm.Entity(parent, setEntityName, lName ? lName : atrelations[relation.name].lName, false, JSON.stringify(adapter) !== JSON.stringify(rdbadapter.relationName2Adapter(setEntityName)) ? adapter : undefined);
+        const setEntityName = entityName ? entityName : relation.relationName;
+        const atRelation = atrelations[relation.relationName];
+        const fake = rdbadapter.relationName2Adapter(setEntityName);
+        const entity = new erm.Entity(parent, setEntityName, lName ? lName : (atRelation ? atRelation.lName : {}), false, JSON.stringify(adapter) !== JSON.stringify(fake) ? adapter : undefined);
         if (!parent) {
             entity.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
         }
@@ -53,12 +59,12 @@ async function erExport(dbs, transaction, erModel) {
     /**
      * Простейший случай таблицы. Никаких ссылок.
      */
-    createEntity(rdbadapter.relationName2Adapter('WG_HOLIDAY'));
+    createEntity(undefined, rdbadapter.relationName2Adapter('WG_HOLIDAY'));
     /**
      * Административно-территориальная единица.
      * Тут исключительно для иллюстрации типа данных Перечисление.
      */
-    createEntity(rdbadapter.relationName2Adapter('GD_PLACE'), undefined, undefined, [
+    createEntity(undefined, rdbadapter.relationName2Adapter('GD_PLACE'), undefined, undefined, [
         new erm.EnumAttribute('PLACETYPE', { ru: { name: 'Тип' } }, true, [
             {
                 value: 'Область'
@@ -74,7 +80,7 @@ async function erExport(dbs, transaction, erModel) {
      * Записи имеют признак CONTACTTYPE = 0.
      * Имеет древовидную структуру.
      */
-    const Folder = createEntity({
+    const Folder = createEntity(undefined, {
         relation: {
             relationName: 'GD_CONTACT',
             selector: {
@@ -100,7 +106,7 @@ async function erExport(dbs, transaction, erModel) {
      * совпадает с именем поля.
      * Флаг refresh означает, что после вставки/изменения записи ее надо перечитать.
      */
-    const Company = createEntity({
+    const Company = createEntity(undefined, {
         relation: [
             {
                 relationName: 'GD_CONTACT',
@@ -126,10 +132,11 @@ async function erExport(dbs, transaction, erModel) {
      * @todo Parse fields CHECK constraint and extract min and max allowed values.
      */
     function createAttributes(entity) {
-        const relations = rdbadapter.adapter2relationNames(entity.adapter).map(rn => dbs.relations[rn]);
+        const relations = rdbadapter.adapter2array(entity.adapter).map(rn => dbs.relations[rn.relationName]);
         relations.forEach(r => {
             if (!r || !r.primaryKey)
                 return;
+            const atRelation = atrelations[r.name];
             Object.entries(r.relationFields).forEach(rf => {
                 if (r.primaryKey.fields.find(f => f === rf[0]))
                     return;
@@ -142,9 +149,11 @@ async function erExport(dbs, transaction, erModel) {
                     && !rdbadapter.isUserDefined(rf[0])) {
                     return;
                 }
+                const atField = atfields[rf[1].fieldSource];
+                const atRelationField = atRelation ? atRelation.relationFields[rf[1].name] : undefined;
                 const attributeName = entity.hasAttribute(rf[0]) ? `${r.name}.${rf[0]}` : rf[0];
                 const fieldSource = dbs.fields[rf[1].fieldSource];
-                const lName = atrelations[r.name].relationFields[rf[1].name].lName;
+                const lName = atRelationField ? atRelationField.lName : (atField ? atField.lName : {});
                 const required = rf[1].notNull || fieldSource.notNull;
                 const defaultValue = rf[1].defaultValue || fieldSource.defaultValue;
                 const adapter = relations.length > 1 ? { relation: r.name, field: rf[0] } : undefined;
@@ -199,9 +208,13 @@ async function erExport(dbs, transaction, erModel) {
                             {
                                 const fk = Object.entries(r.foreignKeys).find(f => !!f[1].fields.find(fld => fld === attributeName));
                                 if (fk && fk[1].fields.length === 1) {
-                                    return new erm.EntityAttribute(attributeName, lName, required, [
-                                        createEntity(rdbadapter.relationName2Adapter(dbs.relationByUqConstraint(fk[1].constNameUq).name))
-                                    ], adapter);
+                                    const refRelationName = dbs.relationByUqConstraint(fk[1].constNameUq).name;
+                                    const refEntities = findEntities(refRelationName, atField && atField.refCondition ?
+                                        rdbadapter.condition2Selectors(atField.refCondition) : undefined);
+                                    if (!refEntities) {
+                                        throw new Error(`No entities for table ${refRelationName}`);
+                                    }
+                                    return new erm.EntityAttribute(attributeName, lName, required, refEntities, adapter);
                                 }
                                 else {
                                     return new erm.IntegerAttribute(attributeName, lName, required, rdbadapter.MIN_32BIT_INT, rdbadapter.MAX_32BIT_INT, util_1.default2Int(defaultValue), adapter);

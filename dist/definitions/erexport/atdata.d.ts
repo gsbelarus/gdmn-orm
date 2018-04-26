@@ -12,6 +12,8 @@ import { LName } from '../types';
  */
 export interface atField {
     lName: LName;
+    refTable: string | undefined;
+    refCondition: string | undefined;
 }
 export interface atFields {
     [fieldName: string]: atField;

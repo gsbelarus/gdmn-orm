@@ -31,13 +31,24 @@ export interface EntitySelector {
 
 export interface Relation {
   relationName: string,
-  weak?: boolean;
   selector?: EntitySelector;
   fields?: string[];
 }
 
+export type Weak = true;
+
+export interface WeakRelation extends Relation {
+  weak: Weak;
+}
+
+export type AnyRelation = Relation | WeakRelation;
+
+export function isWeakRelation(r: AnyRelation): r is WeakRelation {
+  return typeof (r as WeakRelation).weak !== 'undefined';
+}
+
 export interface Entity2RelationMap extends EntityAdapter {
-  relation: Relation | Relation[];
+  relation: Relation | AnyRelation[];
   refresh?: boolean;
 }
 
@@ -59,7 +70,7 @@ export function relationName2Adapter(relationName: string): Entity2RelationMap {
   };
 }
 
-export function adapter2array(em: Entity2RelationMap): Relation[] {
+export function adapter2array(em: Entity2RelationMap): AnyRelation[] {
   if (Array.isArray(em.relation)) {
     if (!em.relation.length) {
       throw new Error('Invalid entity 2 relation adapter');
@@ -70,28 +81,16 @@ export function adapter2array(em: Entity2RelationMap): Relation[] {
   }
 }
 
-export function adapter2relationNames(em: Entity2RelationMap): string[] {
-  return adapter2array(em).map( r => r.relationName );
-}
-
-export function sameAdapter(a: Entity2RelationMap, b: Entity2RelationMap): boolean {
-  const arrA = adapter2array(a);
-  const arrB = adapter2array(b);
+export function sameAdapter(mapA: Entity2RelationMap, mapB: Entity2RelationMap): boolean {
+  const arrA = adapter2array(mapA);
+  const arrB = adapter2array(mapB);
   return arrA.length === arrB.length
-    && arrA.every( (a, idx) => idx < arrB.length && a.relationName === arrB[idx].relationName
+    && arrA.every( (a, idx) => a.relationName === arrB[idx].relationName
       && JSON.stringify(a.selector) === JSON.stringify(arrB[idx].selector));
 }
 
 export function hasField(em: Entity2RelationMap, rn: string, fn: string): boolean {
-  let r: Relation | undefined;
-
-  if (Array.isArray(em.relation)) {
-    r = em.relation.find( rel => rel.relationName === rn );
-  } else {
-    if (em.relation.relationName === rn) {
-      r = em.relation;
-    }
-  }
+  const r = adapter2array(em).find( ar => ar.relationName === rn );
 
   if (!r) {
     throw new Error(`Can't find relation ${rn} in adapter`);
@@ -102,5 +101,34 @@ export function hasField(em: Entity2RelationMap, rn: string, fn: string): boolea
 
 export function isUserDefined(name: string) {
   return name.substring(0, 4) === 'USR$';
+}
+
+export function condition2Selectors(cond: string): EntitySelector[] {
+  // conditions like field_name = some_int_value
+  const matchA = /([A-Za-z_0-9]+)\s*=\s*([0-9]+)/.exec(cond);
+  if (matchA) {
+    return [
+      {
+        field: matchA[1],
+        value: matchA[2]
+      }
+    ];
+  }
+
+  // conditions like field_name in (some_int_value_1 [, some_int_value_2...])
+  const matchB = /([A-Za-z_0-9]+)\s+IN\s*\(([0-9,]+)\)/i.exec(cond);
+  if (matchB) {
+    const regExpC = /([0-9]+)/g;
+    const values = matchB[2];
+    const result = [];
+    let matchC = regExpC.exec(values);
+    while (matchC) {
+      result.push({ field: matchB[1], value: matchC[0] });
+      matchC = regExpC.exec(values);
+    }
+    return result;
+  }
+
+  return [];
 }
 

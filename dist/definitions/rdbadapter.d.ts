@@ -15,12 +15,17 @@ export interface EntitySelector {
 }
 export interface Relation {
     relationName: string;
-    weak?: boolean;
     selector?: EntitySelector;
     fields?: string[];
 }
+export declare type Weak = true;
+export interface WeakRelation extends Relation {
+    weak: Weak;
+}
+export declare type AnyRelation = Relation | WeakRelation;
+export declare function isWeakRelation(r: AnyRelation): r is WeakRelation;
 export interface Entity2RelationMap extends EntityAdapter {
-    relation: Relation | Relation[];
+    relation: Relation | AnyRelation[];
     refresh?: boolean;
 }
 export interface Attribute2FieldMap extends AttributeAdapter {
@@ -32,8 +37,8 @@ export interface SetAttribute2CrossMap extends AttributeAdapter {
     presentationField?: string;
 }
 export declare function relationName2Adapter(relationName: string): Entity2RelationMap;
-export declare function adapter2array(em: Entity2RelationMap): Relation[];
-export declare function adapter2relationNames(em: Entity2RelationMap): string[];
-export declare function sameAdapter(a: Entity2RelationMap, b: Entity2RelationMap): boolean;
+export declare function adapter2array(em: Entity2RelationMap): AnyRelation[];
+export declare function sameAdapter(mapA: Entity2RelationMap, mapB: Entity2RelationMap): boolean;
 export declare function hasField(em: Entity2RelationMap, rn: string, fn: string): boolean;
 export declare function isUserDefined(name: string): boolean;
+export declare function condition2Selectors(cond: string): EntitySelector[];

@@ -14,6 +14,8 @@ import { LName } from '../types';
  */
 export interface atField {
   lName: LName;
+  refTable: string | undefined;
+  refCondition: string | undefined;
 }
 
 export interface atFields {
@@ -46,17 +48,20 @@ export interface atRelations {
 export async function load(transaction: ATransaction) {
   const atfields = await ATransaction.executeQueryResultSet(transaction, `
     SELECT
-      ID,
       FIELDNAME,
-      LNAME
+      LNAME,
+      REFTABLE,
+      REFCONDITION
     FROM
       AT_FIELDS`,
     async (resultSet) =>
     {
       const fields: atFields = {};
       while (await resultSet.next()) {
-        fields[resultSet.getString(1)] = {
-          lName: {ru: {name: resultSet.getString(2)}}
+        fields[resultSet.getString('FIELDNAME')] = {
+          lName: {ru: {name: resultSet.getString('LNAME')}},
+          refTable: resultSet.isNull('REFTABLE') ? undefined : resultSet.getString('REFTABLE').trim(),
+          refCondition: resultSet.isNull('REFCONDITION') ? undefined : resultSet.getString('REFCONDITION').trim(),
         };
       }
       return fields;
