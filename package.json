@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "./dist/definitions/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "push": "tsc && git commit -a -m \"wip\" && git push"
   },
   "repository": {
@@ -23,7 +23,10 @@
     "gdmn-db": "git://github.com/gsbelarus/gdmn-db.git"
   },
   "devDependencies": {
+    "@types/jest": "^22.2.3",
     "@types/node": "^9.6.7",
+    "jest": "^22.4.3",
+    "ts-jest": "^22.4.4",
     "ts-node": "^6.0.1",
     "typescript": "^2.8.3"
   }

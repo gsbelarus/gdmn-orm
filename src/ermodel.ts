@@ -172,6 +172,10 @@ export class NumericAttribute extends NumberAttribute<number> {
     this._precision = precision;
     this._scale = scale;
   }
+
+  inspectDataType() {
+    return `${super.inspectDataType()}(${this._precision}, ${-this._scale})`;
+  }
 }
 
 export class DateAttribute extends NumberAttribute<Date, ContextVariables> { }

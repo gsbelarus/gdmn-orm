@@ -295,7 +295,11 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
           selector: {
             field: 'CONTACTTYPE',
             value: 1
-          }
+          },
+          fields: [
+            'PARENT',
+            'NAME'
+          ]
         }
     },
     'Group', {ru: {name: 'Группа'}},
@@ -312,10 +316,14 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
       )
     ) as erm.SetAttribute;
 
-  createEntity(undefined, rdbadapter.relationName2Adapter('GD_COMPANYACCOUNT'));
+  const companyAccount = createEntity(undefined, rdbadapter.relationName2Adapter('GD_COMPANYACCOUNT'));
   createEntity(undefined, rdbadapter.relationName2Adapter('GD_COMPACCTYPE'));
   createEntity(undefined, rdbadapter.relationName2Adapter('GD_CURR'));
   createEntity(undefined, rdbadapter.relationName2Adapter('WG_POSITION'));
+
+  Company.add(
+    new erm.DetailAttribute('GD_COMPANYACCOUNT', {ru: {name: 'Банковские счета'}}, false, [companyAccount])
+  );
 
   dbs.forEachRelation( r => {
     if (r.primaryKey && r.primaryKey.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)) {
@@ -425,6 +433,10 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
                 MinValue = rdbadapter.MIN_64BIT_INT * factor;
             }
 
+            if (fieldSource.validationSource) {
+              console.warn(`Not processed for ${attributeName}: ${JSON.stringify(fieldSource.validationSource)}`);
+            }
+
             return new erm.NumericAttribute(attributeName, lName, required,
               fieldSource.fieldPrecision,
               fieldSource.fieldScale,
@@ -477,12 +489,12 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
                 if (enumValues.length) {
                   return new erm.EnumAttribute(attributeName, lName, required, enumValues, undefined, adapter);
                 } else {
-                  console.warn(JSON.stringify(fieldSource.validationSource));
+                  console.warn(`Not processed for ${attributeName}: ${JSON.stringify(fieldSource.validationSource)}`);
                 }
-              }
-
-              if (fieldSource.validationSource) {
-                console.warn(JSON.stringify(fieldSource.validationSource));
+              } else {
+                if (fieldSource.validationSource) {
+                  console.warn(`Not processed for ${attributeName}: ${JSON.stringify(fieldSource.validationSource)}`);
+                }
               }
 
               return new erm.StringAttribute(attributeName, lName, required, undefined,

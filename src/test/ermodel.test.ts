@@ -12,7 +12,7 @@ interface IDBDetail<PoolOptions = any, ConnectionOptions extends IConnectionOpti
   poolInstance: AConnectionPool<PoolOptions>;
 }
 
-const test: IDBDetail<IDefaultConnectionPoolOptions> = {
+const testDB: IDBDetail<IDefaultConnectionPoolOptions> = {
   alias: "test",
   driver: Factory.FBDriver,
   poolInstance: Factory.FBDriver.newDefaultConnectionPool(),
@@ -28,7 +28,7 @@ const test: IDBDetail<IDefaultConnectionPoolOptions> = {
   }
 };
 
-(async function(dbDetail: IDBDetail) {
+async function loadERModel(dbDetail: IDBDetail) {
   const {driver, poolInstance, poolOptions, connectionOptions}: IDBDetail = dbDetail;
   await poolInstance.create(connectionOptions, poolOptions);
 
@@ -55,4 +55,12 @@ const test: IDBDetail<IDefaultConnectionPoolOptions> = {
     fs.writeFileSync("c:/temp/test/ermodel.json", result.erModel.inspect().reduce( (p, s) => `${p}${s}\n`, ""));
     console.log("ERModel has been written to c:/temp/test/ermodel.json");
   }
-})(test);
+
+  return result;
+};
+
+test('erModel', async () => {
+  const result = await loadERModel(testDB);
+  expect(result.erModel.entities['USR$TST_TABLE']).toBeDefined();
+});
+
