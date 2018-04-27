@@ -67,7 +67,7 @@ function condition2Selectors(cond) {
         return [
             {
                 field: matchA[1].toUpperCase(),
-                value: matchA[2]
+                value: Number.parseInt(matchA[2])
             }
         ];
     }
@@ -79,7 +79,7 @@ function condition2Selectors(cond) {
         const result = [];
         let matchC = regExpC.exec(values);
         while (matchC) {
-            result.push({ field: matchB[1].toUpperCase(), value: matchC[0] });
+            result.push({ field: matchB[1].toUpperCase(), value: Number.parseInt(matchC[0]) });
             matchC = regExpC.exec(values);
         }
         return result;
