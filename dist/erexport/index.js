@@ -369,6 +369,9 @@ async function erExport(dbs, transaction, erModel) {
                                         console.warn(JSON.stringify(fieldSource.validationSource));
                                     }
                                 }
+                                if (fieldSource.validationSource) {
+                                    console.warn(JSON.stringify(fieldSource.validationSource));
+                                }
                                 return new erm.StringAttribute(attributeName, lName, required, undefined, fieldSource.fieldLength, undefined, true, undefined, adapter);
                             }
                         case gdmn_db_1.FieldType.TIMESTAMP:

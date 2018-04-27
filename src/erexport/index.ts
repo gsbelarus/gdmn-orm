@@ -481,6 +481,10 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
                 }
               }
 
+              if (fieldSource.validationSource) {
+                console.warn(JSON.stringify(fieldSource.validationSource));
+              }
+
               return new erm.StringAttribute(attributeName, lName, required, undefined,
                 fieldSource.fieldLength, undefined, true, undefined, adapter);
             }
