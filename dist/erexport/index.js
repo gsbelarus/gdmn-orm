@@ -242,6 +242,7 @@ async function erExport(dbs, transaction, erModel) {
     const ContactList = Group.add(new erm.SetAttribute('CONTACTLIST', { ru: { name: 'Контакты' } }, false, [Company, Person], {
         crossRelation: 'GD_CONTACTLIST'
     }));
+    createEntity(undefined, rdbadapter.relationName2Adapter('GD_COMPANYACCOUNT'));
     dbs.forEachRelation(r => {
         if (r.primaryKey && r.primaryKey.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)) {
             createEntity(undefined, rdbadapter.relationName2Adapter(r.name));
@@ -335,7 +336,8 @@ async function erExport(dbs, transaction, erModel) {
                                     const cond = atField && atField.refCondition ? rdbadapter.condition2Selectors(atField.refCondition) : undefined;
                                     const refEntities = findEntities(refRelationName, cond);
                                     if (!refEntities.length) {
-                                        throw new Error(`No entities for table ${refRelationName}, condition: ${JSON.stringify(cond)}`);
+                                        // throw new Error(`No entities for table ${refRelationName}, condition: ${JSON.stringify(cond)}`);
+                                        console.warn(`No entities for table ${refRelationName}, condition: ${JSON.stringify(cond)}`);
                                     }
                                     return new erm.EntityAttribute(attributeName, lName, required, refEntities, adapter);
                                 }

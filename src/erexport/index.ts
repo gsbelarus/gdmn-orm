@@ -312,6 +312,8 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
       )
     ) as erm.SetAttribute;
 
+  createEntity(undefined, rdbadapter.relationName2Adapter('GD_COMPANYACCOUNT'));
+
   dbs.forEachRelation( r => {
     if (r.primaryKey && r.primaryKey.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)) {
       createEntity(undefined, rdbadapter.relationName2Adapter(r.name));
@@ -441,7 +443,8 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
                 const refEntities = findEntities(refRelationName, cond);
 
                 if (!refEntities.length) {
-                  throw new Error(`No entities for table ${refRelationName}, condition: ${JSON.stringify(cond)}`);
+                  // throw new Error(`No entities for table ${refRelationName}, condition: ${JSON.stringify(cond)}`);
+                  console.warn(`No entities for table ${refRelationName}, condition: ${JSON.stringify(cond)}`);
                 }
 
                 return new erm.EntityAttribute(attributeName, lName, required, refEntities, adapter);
