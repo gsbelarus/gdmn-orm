@@ -30,7 +30,7 @@ class Attribute {
             type: this.constructor.name
         };
     }
-    inspect() {
+    inspectDataType() {
         const sn = {
             'EntityAttribute': '->',
             'StringAttribute': 'S',
@@ -46,10 +46,13 @@ class Attribute {
             'TimeAttribute': 'TM',
             'BlobAttribute': 'BLOB'
         };
-        const cn = sn[this.constructor.name] ? sn[this.constructor.name] : this.constructor.name;
-        const adapter = this.adapter ? JSON.stringify(this.adapter) : '';
+        return sn[this.constructor.name] ? sn[this.constructor.name] : this.constructor.name;
+    }
+    inspect() {
+        const adapter = this.adapter ? ', ' + JSON.stringify(this.adapter) : '';
+        const lName = this.lName.ru ? ' - ' + this.lName.ru.name : '';
         return [
-            `    ${this._name}${this.lName.ru ? ' - ' + this.lName.ru.name : ''}: ${cn}, ${adapter}`
+            `    ${this._name}${lName}: ${this.inspectDataType()}${adapter}`
         ];
     }
 }
@@ -66,6 +69,9 @@ class StringAttribute extends ScalarAttribute {
         this._defaultValue = defaultValue;
         this._autoTrim = autoTrim;
         this._mask = mask;
+    }
+    inspectDataType() {
+        return super.inspectDataType() + this._maxLength ? '(' + this._maxLength + ')' : '';
     }
 }
 exports.StringAttribute = StringAttribute;
@@ -176,8 +182,8 @@ class EntityAttribute extends Attribute {
     serialize() {
         return Object.assign({}, super.serialize(), { references: this.entity.map(ent => ent.name) });
     }
-    inspect() {
-        return [super.inspect()[0] + ' [' + this._entity.reduce((p, e, idx) => p + (idx ? ', ' : '') + e.name, '') + ']'];
+    inspectDataType() {
+        return super.inspectDataType() + ' [' + this._entity.reduce((p, e, idx) => p + (idx ? ', ' : '') + e.name, '') + ']';
     }
 }
 exports.EntityAttribute = EntityAttribute;

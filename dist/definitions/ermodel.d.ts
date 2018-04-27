@@ -17,6 +17,7 @@ export declare class Attribute {
     readonly required: boolean;
     readonly calculated: boolean;
     serialize(): IAttribute;
+    inspectDataType(): string;
     inspect(): string[];
 }
 export interface Attributes {
@@ -31,6 +32,7 @@ export declare class StringAttribute extends ScalarAttribute {
     private _mask?;
     private _autoTrim;
     constructor(name: string, lName: LName, required: boolean, minLength: number | undefined, maxLength: number | undefined, defaultValue: string | undefined, autoTrim: boolean, mask: RegExp | undefined, adapter?: AttributeAdapter);
+    inspectDataType(): string;
 }
 export declare class SequenceAttribute extends ScalarAttribute {
     private _sequence;
@@ -85,7 +87,7 @@ export declare class EntityAttribute extends Attribute {
     constructor(name: string, lName: LName, required: boolean, entity: Entity[], adapter?: AttributeAdapter);
     readonly entity: Entity[];
     serialize(): IAttribute;
-    inspect(): string[];
+    inspectDataType(): string;
 }
 export declare class ParentAttribute extends EntityAttribute {
     constructor(name: string, lName: LName, entity: Entity[], adapter?: AttributeAdapter);
