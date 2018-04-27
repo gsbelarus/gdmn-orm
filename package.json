@@ -23,6 +23,8 @@
     "gdmn-db": "git://github.com/gsbelarus/gdmn-db.git"
   },
   "devDependencies": {
-    "@types/node": "^9.6.5"
+    "@types/node": "^9.6.7",
+    "ts-node": "^6.0.1",
+    "typescript": "^2.8.3"
   }
 }
