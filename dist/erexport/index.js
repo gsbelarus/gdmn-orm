@@ -243,6 +243,9 @@ async function erExport(dbs, transaction, erModel) {
         crossRelation: 'GD_CONTACTLIST'
     }));
     createEntity(undefined, rdbadapter.relationName2Adapter('GD_COMPANYACCOUNT'));
+    createEntity(undefined, rdbadapter.relationName2Adapter('GD_COMPACCTYPE'));
+    createEntity(undefined, rdbadapter.relationName2Adapter('GD_CURR'));
+    createEntity(undefined, rdbadapter.relationName2Adapter('WG_POSITION'));
     dbs.forEachRelation(r => {
         if (r.primaryKey && r.primaryKey.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)) {
             createEntity(undefined, rdbadapter.relationName2Adapter(r.name));
@@ -363,7 +366,7 @@ async function erExport(dbs, transaction, erModel) {
                                         return new erm.EnumAttribute(attributeName, lName, required, enumValues, undefined, adapter);
                                     }
                                     else {
-                                        console.log(JSON.stringify(fieldSource.validationSource));
+                                        console.warn(JSON.stringify(fieldSource.validationSource));
                                     }
                                 }
                                 return new erm.StringAttribute(attributeName, lName, required, undefined, fieldSource.fieldLength, undefined, true, undefined, adapter);

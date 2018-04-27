@@ -313,6 +313,9 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
     ) as erm.SetAttribute;
 
   createEntity(undefined, rdbadapter.relationName2Adapter('GD_COMPANYACCOUNT'));
+  createEntity(undefined, rdbadapter.relationName2Adapter('GD_COMPACCTYPE'));
+  createEntity(undefined, rdbadapter.relationName2Adapter('GD_CURR'));
+  createEntity(undefined, rdbadapter.relationName2Adapter('WG_POSITION'));
 
   dbs.forEachRelation( r => {
     if (r.primaryKey && r.primaryKey.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)) {
@@ -474,7 +477,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
                 if (enumValues.length) {
                   return new erm.EnumAttribute(attributeName, lName, required, enumValues, undefined, adapter);
                 } else {
-                  console.log(JSON.stringify(fieldSource.validationSource));
+                  console.warn(JSON.stringify(fieldSource.validationSource));
                 }
               }
 
