@@ -438,11 +438,10 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
               if (fk && fk[1].fields.length === 1) {
                 const refRelationName = dbs.relationByUqConstraint(fk[1].constNameUq).name;
                 const cond = atField && atField.refCondition ? rdbadapter.condition2Selectors(atField.refCondition) : undefined;
-                console.log(JSON.stringify(cond));
                 const refEntities = findEntities(refRelationName, cond);
 
-                if (!refEntities) {
-                  throw new Error(`No entities for table ${refRelationName}`);
+                if (!refEntities.length) {
+                  throw new Error(`No entities for table ${refRelationName}, condition: ${JSON.stringify(cond)}`);
                 }
 
                 return new erm.EntityAttribute(attributeName, lName, required, refEntities, adapter);

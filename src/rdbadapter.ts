@@ -109,7 +109,7 @@ export function condition2Selectors(cond: string): EntitySelector[] {
   if (matchA) {
     return [
       {
-        field: matchA[1],
+        field: matchA[1].toUpperCase(),
         value: matchA[2]
       }
     ];
@@ -123,7 +123,7 @@ export function condition2Selectors(cond: string): EntitySelector[] {
     const result = [];
     let matchC = regExpC.exec(values);
     while (matchC) {
-      result.push({ field: matchB[1], value: matchC[0] });
+      result.push({ field: matchB[1].toUpperCase(), value: matchC[0] });
       matchC = regExpC.exec(values);
     }
     return result;
