@@ -35,7 +35,7 @@ class Attribute {
             'EntityAttribute': '->',
             'StringAttribute': 'S',
             'SetAttribute': '<->',
-            'ParentAttribute': '^',
+            'ParentAttribute': '-^',
             'SequenceAttribute': 'PK',
             'IntegerAttribute': 'I',
             'NumericAttribute': 'N',
@@ -44,7 +44,8 @@ class Attribute {
             'DateAttribute': 'DT',
             'TimeStampAttribute': 'TS',
             'TimeAttribute': 'TM',
-            'BlobAttribute': 'BLOB'
+            'BlobAttribute': 'BLOB',
+            'EnumAttribute': 'E'
         };
         return sn[this.constructor.name] ? sn[this.constructor.name] : this.constructor.name;
     }
@@ -52,7 +53,7 @@ class Attribute {
         const adapter = this.adapter ? ', ' + JSON.stringify(this.adapter) : '';
         const lName = this.lName.ru ? ' - ' + this.lName.ru.name : '';
         return [
-            `    ${this._name}${lName}: ${this.inspectDataType()}${adapter}`
+            `    ${this._name}${this.required ? '*' : ''}${lName}: ${this.inspectDataType()}${adapter}`
         ];
     }
 }
@@ -71,7 +72,7 @@ class StringAttribute extends ScalarAttribute {
         this._mask = mask;
     }
     inspectDataType() {
-        return super.inspectDataType() + this._maxLength ? '(' + this._maxLength + ')' : '';
+        return super.inspectDataType() + (this._maxLength ? '(' + this._maxLength + ')' : '');
     }
 }
 exports.StringAttribute = StringAttribute;
@@ -165,6 +166,9 @@ class EnumAttribute extends ScalarAttribute {
     }
     set defaultValue(value) {
         this._defaultValue = value;
+    }
+    inspectDataType() {
+        return super.inspectDataType() + ' ' + JSON.stringify(this._values);
     }
 }
 exports.EnumAttribute = EnumAttribute;

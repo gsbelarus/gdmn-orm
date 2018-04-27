@@ -79,6 +79,7 @@ export declare class EnumAttribute extends ScalarAttribute {
     constructor(name: string, lName: LName, required: boolean, values: EnumValue[], defaultValue: string | number | undefined, adapter?: AttributeAdapter);
     values: EnumValue[];
     defaultValue: string | number | undefined;
+    inspectDataType(): string;
 }
 export declare class TimeIntervalAttribute extends ScalarAttribute {
 }

@@ -51,7 +51,7 @@ export class Attribute {
       'EntityAttribute': '->',
       'StringAttribute': 'S',
       'SetAttribute': '<->',
-      'ParentAttribute': '^',
+      'ParentAttribute': '-^',
       'SequenceAttribute': 'PK',
       'IntegerAttribute': 'I',
       'NumericAttribute': 'N',
@@ -60,7 +60,8 @@ export class Attribute {
       'DateAttribute': 'DT',
       'TimeStampAttribute': 'TS',
       'TimeAttribute': 'TM',
-      'BlobAttribute': 'BLOB'
+      'BlobAttribute': 'BLOB',
+      'EnumAttribute': 'E'
     } as {[name: string]: string};
     return sn[this.constructor.name] ? sn[this.constructor.name] : this.constructor.name;
   }
@@ -70,7 +71,7 @@ export class Attribute {
     const lName = this.lName.ru ? ' - ' + this.lName.ru.name: '';
 
     return [
-      `    ${this._name}${lName}: ${this.inspectDataType()}${adapter}`
+      `    ${this._name}${this.required ? '*' : ''}${lName}: ${this.inspectDataType()}${adapter}`
     ];
   }
 }
@@ -102,7 +103,7 @@ export class StringAttribute extends ScalarAttribute {
   }
 
   inspectDataType() {
-    return super.inspectDataType() + this._maxLength ? '(' + this._maxLength + ')' : '';
+    return super.inspectDataType() + (this._maxLength ? '(' + this._maxLength + ')' : '');
   }
 }
 
@@ -232,6 +233,10 @@ export class EnumAttribute extends ScalarAttribute {
 
   set defaultValue(value) {
     this._defaultValue = value;
+  }
+
+  inspectDataType(): string {
+    return super.inspectDataType() + ' ' + JSON.stringify(this._values);
   }
 }
 
