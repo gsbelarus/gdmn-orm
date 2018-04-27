@@ -242,13 +242,11 @@ async function erExport(dbs, transaction, erModel) {
     const ContactList = Group.add(new erm.SetAttribute('CONTACTLIST', { ru: { name: 'Контакты' } }, false, [Company, Person], {
         crossRelation: 'GD_CONTACTLIST'
     }));
-    /*
-    dbs.forEachRelation( r => {
-      if (r.primaryKey && r.primaryKey.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)) {
-        createEntity(r);
-      }
+    dbs.forEachRelation(r => {
+        if (r.primaryKey && r.primaryKey.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)) {
+            createEntity(undefined, rdbadapter.relationName2Adapter(r.name));
+        }
     });
-    */
     /**
      * @todo Parse fields CHECK constraint and extract min and max allowed values.
      */

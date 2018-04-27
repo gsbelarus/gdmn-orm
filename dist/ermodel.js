@@ -31,7 +31,26 @@ class Attribute {
         };
     }
     inspect() {
-        return [`    ${this._name}${this.lName.ru ? ' - ' + this.lName.ru.name : ''}: ${this.constructor.name}`];
+        const sn = {
+            'EntityAttribute': '->',
+            'StringAttribute': 'S',
+            'SetAttribute': '<->',
+            'ParentAttribute': '^',
+            'SequenceAttribute': 'PK',
+            'IntegerAttribute': 'I',
+            'NumericAttribute': 'N',
+            'FloatAttribute': 'F',
+            'BooleanAttribute': 'B',
+            'DateAttribute': 'DT',
+            'TimeStampAttribute': 'TS',
+            'TimeAttribute': 'TM',
+            'BlobAttribute': 'BLOB'
+        };
+        const cn = sn[this.constructor.name] ? sn[this.constructor.name] : this.constructor.name;
+        const adapter = this.adapter ? JSON.stringify(this.adapter) : '';
+        return [
+            `    ${this._name}${this.lName.ru ? ' - ' + this.lName.ru.name : ''}: ${cn}, ${adapter}`
+        ];
     }
 }
 exports.Attribute = Attribute;
