@@ -10,7 +10,10 @@ class Attribute {
         this._name = name;
         this._lName = lName;
         this._required = required;
-        this.adapter = adapter;
+        this._adapter = adapter;
+    }
+    get adapter() {
+        return this._adapter;
     }
     get name() {
         return this._name;
@@ -49,11 +52,11 @@ class Attribute {
         };
         return sn[this.constructor.name] ? sn[this.constructor.name] : this.constructor.name;
     }
-    inspect() {
+    inspect(indent = '    ') {
         const adapter = this.adapter ? ', ' + JSON.stringify(this.adapter) : '';
         const lName = this.lName.ru ? ' - ' + this.lName.ru.name : '';
         return [
-            `    ${this._name}${this.required ? '*' : ''}${lName}: ${this.inspectDataType()}${adapter}`
+            `${indent}${this._name}${this.required ? '*' : ''}${lName}: ${this.inspectDataType()}${adapter}`
         ];
     }
 }
@@ -210,6 +213,9 @@ class SetAttribute extends EntityAttribute {
         this._presLen = 0;
         this._presLen = presLen;
     }
+    get adapter() {
+        return super.adapter;
+    }
     attribute(name) {
         const found = this._attributes[name];
         if (!found) {
@@ -228,6 +234,14 @@ class SetAttribute extends EntityAttribute {
     }
     serialize() {
         return Object.assign({}, super.serialize(), { attributes: Object.entries(this._attributes).map(a => a[1].serialize()) });
+    }
+    inspect(indent = '    ') {
+        const result = super.inspect();
+        return [...result,
+            ...Object.entries(this._attributes).reduce((p, a) => {
+                return [...p, ...a[1].inspect(indent + '  ')];
+            }, [])
+        ];
     }
 }
 exports.SetAttribute = SetAttribute;

@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "./dist/definitions/index.d.ts",
   "scripts": {
-    "test": "jest",
+    "test": "tsc && jest",
     "push": "tsc && git commit -a -m \"wip\" && git push"
   },
   "repository": {

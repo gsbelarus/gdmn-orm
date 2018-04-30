@@ -4,7 +4,7 @@
 
 import { LName, AttributeAdapter, SequenceAdapter } from './types';
 import { IEntity, IAttribute, IERModel } from './interfaces';
-import { Entity2RelationMap, relationName2Adapter } from './rdbadapter';
+import { Entity2RelationMap, relationName2Adapter, SetAttribute2CrossMap } from './rdbadapter';
 
 export type ContextVariables = 'CURRENT_TIMESTAMP' | 'CURRENT_TIMESTAMP(0)' | 'CURRENT_DATE' | 'CURRENT_TIME';
 
@@ -13,14 +13,18 @@ export class Attribute {
   private _lName: LName;
   private _required: boolean;
   private _calculated: boolean = false;
-  readonly adapter?: AttributeAdapter;
+  protected _adapter?: AttributeAdapter;
 
   constructor(name: string, lName: LName, required: boolean, adapter?: AttributeAdapter)
   {
     this._name = name;
     this._lName = lName;
     this._required = required;
-    this.adapter = adapter;
+    this._adapter = adapter;
+  }
+
+  get adapter() {
+    return this._adapter;
   }
 
   get name() {
@@ -66,12 +70,12 @@ export class Attribute {
     return sn[this.constructor.name] ? sn[this.constructor.name] : this.constructor.name;
   }
 
-  inspect(): string[] {
+  inspect(indent: string = '    '): string[] {
     const adapter = this.adapter ? ', ' + JSON.stringify(this.adapter) : '';
     const lName = this.lName.ru ? ' - ' + this.lName.ru.name: '';
 
     return [
-      `    ${this._name}${this.required ? '*' : ''}${lName}: ${this.inspectDataType()}${adapter}`
+      `${indent}${this._name}${this.required ? '*' : ''}${lName}: ${this.inspectDataType()}${adapter}`
     ];
   }
 }
@@ -282,9 +286,13 @@ export class SetAttribute extends EntityAttribute {
   private _attributes: Attributes = {};
   private _presLen: number = 0;
 
-  constructor(name: string, lName: LName, required: boolean, entity: Entity[], presLen: number, adapter?: AttributeAdapter) {
+  constructor(name: string, lName: LName, required: boolean, entity: Entity[], presLen: number, adapter?: SetAttribute2CrossMap) {
     super(name, lName, required, entity, adapter);
     this._presLen = presLen;
+  }
+
+  get adapter(): SetAttribute2CrossMap | undefined {
+    return super.adapter as SetAttribute2CrossMap;
   }
 
   attribute(name: string) {
@@ -312,6 +320,15 @@ export class SetAttribute extends EntityAttribute {
       ...super.serialize(),
       attributes: Object.entries(this._attributes).map( a => a[1].serialize() )
     }
+  }
+
+  inspect(indent: string = '    '): string[] {
+    const result = super.inspect();
+    return [...result,
+      ...Object.entries(this._attributes).reduce( (p, a) => {
+        return [...p, ...a[1].inspect(indent + '  ')];
+      }, [] as string[])
+    ];
   }
 }
 

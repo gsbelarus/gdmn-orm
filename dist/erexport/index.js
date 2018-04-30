@@ -256,6 +256,133 @@ async function erExport(dbs, transaction, erModel) {
             createEntity(undefined, rdbadapter.relationName2Adapter(r.name));
         }
     }, true);
+    function createAttribute(r, rf, atRelationField, attributeName, adapter) {
+        const atField = atfields[rf.fieldSource];
+        const fieldSource = dbs.fields[rf.fieldSource];
+        const required = rf.notNull || fieldSource.notNull;
+        const defaultValue = rf.defaultValue || fieldSource.defaultValue;
+        const lName = atRelationField ? atRelationField.lName : (atField ? atField.lName : {});
+        switch (rf.fieldSource) {
+            case 'DEDITIONDATE':
+                return new erm.TimeStampAttribute(attributeName, { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)', adapter);
+            case 'DCREATIONDATE':
+                return new erm.TimeStampAttribute(attributeName, { ru: { name: 'Создано' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)', adapter);
+            case 'DDOCUMENTDATE':
+                return new erm.TimeStampAttribute(attributeName, { ru: { name: 'Дата документа' } }, true, new Date('1900-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)', adapter);
+            case 'DQUANTITY': return new erm.NumericAttribute(attributeName, lName, false, 15, 4, undefined, undefined, undefined, adapter);
+            case 'DLAT': return new erm.NumericAttribute(attributeName, lName, false, 10, 8, -90, +90, undefined, adapter);
+            case 'DLON': return new erm.NumericAttribute(attributeName, lName, false, 11, 8, -180, +180, undefined, adapter);
+            case 'DCURRENCY': return new erm.NumericAttribute(attributeName, lName, false, 15, 4, undefined, undefined, undefined, adapter);
+            case 'DPOSITIVE': return new erm.NumericAttribute(attributeName, lName, false, 15, 8, 0, undefined, undefined, adapter);
+            case 'DPERCENT': return new erm.NumericAttribute(attributeName, lName, false, 7, 4, undefined, undefined, undefined, adapter);
+            case 'DTAX': return new erm.NumericAttribute(attributeName, lName, false, 7, 4, 0, 99, undefined, adapter);
+            case 'DDECDIGITS': return new erm.IntegerAttribute(attributeName, lName, false, 0, 16, undefined, adapter);
+            case 'DACCOUNTTYPE': return new erm.EnumAttribute(attributeName, lName, false, [{ value: 'D' }, { value: 'K' }], undefined, adapter);
+            case 'DGENDER': return new erm.EnumAttribute(attributeName, lName, false, [{ value: 'M' }, { value: 'F' }, { value: 'N' }], undefined, adapter);
+            case 'DTEXTALIGNMENT': return new erm.EnumAttribute(attributeName, lName, false, [{ value: 'L' }, { value: 'R' }, { value: 'C' }, { value: 'J' }], 'L', adapter);
+            case 'DSECURITY': return new erm.IntegerAttribute(attributeName, lName, true, undefined, undefined, -1, adapter);
+            case 'DDISABLED': return new erm.BooleanAttribute(attributeName, lName, false, false, adapter);
+            case 'DBOOLEAN': return new erm.BooleanAttribute(attributeName, lName, false, false, adapter);
+            case 'DBOOLEAN_NOTNULL': return new erm.BooleanAttribute(attributeName, lName, true, false, adapter);
+            // следующие домены надо проверить, возможно уже нигде и не используются
+            case 'DTYPETRANSPORT': return new erm.EnumAttribute(attributeName, lName, false, [{ value: 'C' }, { value: 'S' }, { value: 'R' }, { value: 'O' }, { value: 'W' }], undefined, adapter);
+            case 'DGOLDQUANTITY': return new erm.NumericAttribute(attributeName, lName, false, 15, 8, undefined, undefined, undefined, adapter);
+        }
+        if (fieldSource.fieldScale < 0) {
+            const factor = Math.pow(10, fieldSource.fieldScale);
+            let MaxValue;
+            let MinValue;
+            switch (fieldSource.fieldType) {
+                case gdmn_db_1.FieldType.SMALL_INTEGER:
+                    MaxValue = rdbadapter.MAX_16BIT_INT * factor;
+                    MinValue = rdbadapter.MIN_16BIT_INT * factor;
+                    break;
+                case gdmn_db_1.FieldType.INTEGER:
+                    MaxValue = rdbadapter.MAX_32BIT_INT * factor;
+                    MinValue = rdbadapter.MIN_32BIT_INT * factor;
+                    break;
+                default:
+                    MaxValue = rdbadapter.MAX_64BIT_INT * factor;
+                    MinValue = rdbadapter.MIN_64BIT_INT * factor;
+            }
+            if (fieldSource.validationSource) {
+                console.warn(`Not processed for ${attributeName}: ${JSON.stringify(fieldSource.validationSource)}`);
+            }
+            return new erm.NumericAttribute(attributeName, lName, required, fieldSource.fieldPrecision, fieldSource.fieldScale, MinValue, MaxValue, util_1.default2Number(defaultValue), adapter);
+        }
+        switch (fieldSource.fieldType) {
+            case gdmn_db_1.FieldType.INTEGER:
+                {
+                    const fk = Object.entries(r.foreignKeys).find(([name, f]) => !!f.fields.find(fld => fld === attributeName));
+                    if (fk && fk[1].fields.length === 1) {
+                        const refRelationName = dbs.relationByUqConstraint(fk[1].constNameUq).name;
+                        const cond = atField && atField.refCondition ? rdbadapter.condition2Selectors(atField.refCondition) : undefined;
+                        const refEntities = findEntities(refRelationName, cond);
+                        if (!refEntities.length) {
+                            // throw new Error(`No entities for table ${refRelationName}, condition: ${JSON.stringify(cond)}`);
+                            console.warn(`No entities for table ${refRelationName}, condition: ${JSON.stringify(cond)}`);
+                        }
+                        return new erm.EntityAttribute(attributeName, lName, required, refEntities, adapter);
+                    }
+                    else {
+                        return new erm.IntegerAttribute(attributeName, lName, required, rdbadapter.MIN_32BIT_INT, rdbadapter.MAX_32BIT_INT, util_1.default2Int(defaultValue), adapter);
+                    }
+                }
+            case gdmn_db_1.FieldType.CHAR:
+            case gdmn_db_1.FieldType.VARCHAR:
+                {
+                    if (fieldSource.fieldLength === 1 && fieldSource.validationSource) {
+                        const enumValues = [];
+                        const reValueIn = /CHECK\s*\((\(VALUE IS NULL\) OR )?(\(VALUE\s+IN\s*\(\s*){1}((?:\'[A-Z0-9]\'(?:\,\s*)?)+)\)\)\)/;
+                        let match;
+                        if (match = reValueIn.exec(fieldSource.validationSource)) {
+                            const reEnumValue = /\'([A-Z0-9]{1})\'/g;
+                            let enumValue;
+                            while (enumValue = reEnumValue.exec(match[3])) {
+                                enumValues.push({ value: enumValue[1] });
+                            }
+                        }
+                        if (enumValues.length) {
+                            return new erm.EnumAttribute(attributeName, lName, required, enumValues, undefined, adapter);
+                        }
+                        else {
+                            console.warn(`Not processed for ${attributeName}: ${JSON.stringify(fieldSource.validationSource)}`);
+                        }
+                    }
+                    else {
+                        if (fieldSource.validationSource) {
+                            console.warn(`Not processed for ${attributeName}: ${JSON.stringify(fieldSource.validationSource)}`);
+                        }
+                    }
+                    return new erm.StringAttribute(attributeName, lName, required, undefined, fieldSource.fieldLength, undefined, true, undefined, adapter);
+                }
+            case gdmn_db_1.FieldType.TIMESTAMP:
+                return new erm.TimeStampAttribute(attributeName, lName, required, undefined, undefined, util_1.default2Date(defaultValue), adapter);
+            case gdmn_db_1.FieldType.DATE:
+                return new erm.DateAttribute(attributeName, lName, required, undefined, undefined, util_1.default2Date(defaultValue), adapter);
+            case gdmn_db_1.FieldType.TIME:
+                return new erm.TimeAttribute(attributeName, lName, required, undefined, undefined, util_1.default2Date(defaultValue), adapter);
+            case gdmn_db_1.FieldType.FLOAT:
+            case gdmn_db_1.FieldType.DOUBLE:
+                return new erm.FloatAttribute(attributeName, lName, required, undefined, undefined, util_1.default2Number(defaultValue), adapter);
+            case gdmn_db_1.FieldType.SMALL_INTEGER:
+                return new erm.IntegerAttribute(attributeName, lName, required, rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT, util_1.default2Int(defaultValue), adapter);
+            case gdmn_db_1.FieldType.BIG_INTEGER:
+                return new erm.IntegerAttribute(attributeName, lName, required, rdbadapter.MIN_64BIT_INT, rdbadapter.MAX_64BIT_INT, util_1.default2Int(defaultValue), adapter);
+            case gdmn_db_1.FieldType.BLOB:
+                if (fieldSource.fieldSubType === 1) {
+                    return new erm.StringAttribute(attributeName, lName, required, undefined, undefined, undefined, false, undefined, adapter);
+                }
+                else {
+                    return new erm.BLOBAttribute(attributeName, lName, required, adapter);
+                }
+            default:
+                throw new Error(`Unknown data type ${fieldSource}=${fieldSource.fieldType} for field ${r.name}.${attributeName}`);
+            // return undefined;
+            // throw new Error('Unknown data type for field ' + r.name + '.' + attributeName);
+        }
+    }
+    ;
     function createAttributes(entity) {
         const adapterArr = rdbadapter.adapter2array(entity.adapter);
         const relations = adapterArr.map(rn => dbs.relations[rn.relationName]);
@@ -263,152 +390,25 @@ async function erExport(dbs, transaction, erModel) {
             if (!r || !r.primaryKey)
                 return;
             const atRelation = atrelations[r.name];
-            Object.entries(r.relationFields).forEach(rf => {
-                if (r.primaryKey.fields.find(f => f === rf[0]))
+            Object.entries(r.relationFields).forEach(([fn, rf]) => {
+                if (r.primaryKey.fields.find(f => f === fn))
                     return;
-                if (rf[0] === 'LB' || rf[0] === 'RB')
+                if (fn === 'LB' || fn === 'RB')
                     return;
-                if (entity.hasAttribute(rf[0]))
+                if (entity.hasAttribute(fn))
                     return;
-                if (!rdbadapter.hasField(entity.adapter, r.name, rf[0])
-                    && !rdbadapter.systemFields.find(sf => sf === rf[0])
-                    && !rdbadapter.isUserDefined(rf[0])) {
-                    return;
-                }
-                if (adapterArr[0].selector && adapterArr[0].selector.field === rf[0]) {
+                if (!rdbadapter.hasField(entity.adapter, r.name, fn)
+                    && !rdbadapter.systemFields.find(sf => sf === fn)
+                    && !rdbadapter.isUserDefined(fn)) {
                     return;
                 }
-                const atField = atfields[rf[1].fieldSource];
-                const atRelationField = atRelation ? atRelation.relationFields[rf[1].name] : undefined;
+                if (adapterArr[0].selector && adapterArr[0].selector.field === fn) {
+                    return;
+                }
+                const atRelationField = atRelation ? atRelation.relationFields[fn] : undefined;
                 if (atRelationField && atRelationField.crossTable)
                     return;
-                const attributeName = entity.hasAttribute(rf[0]) ? `${r.name}.${rf[0]}` : rf[0];
-                const fieldSource = dbs.fields[rf[1].fieldSource];
-                const lName = atRelationField ? atRelationField.lName : (atField ? atField.lName : {});
-                const required = rf[1].notNull || fieldSource.notNull;
-                const defaultValue = rf[1].defaultValue || fieldSource.defaultValue;
-                const adapter = relations.length > 1 ? { relation: r.name, field: rf[0] } : undefined;
-                const attr = (() => {
-                    switch (rf[1].fieldSource) {
-                        case 'DEDITIONDATE':
-                            return new erm.TimeStampAttribute(attributeName, { ru: { name: 'Изменено' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)', adapter);
-                        case 'DCREATIONDATE':
-                            return new erm.TimeStampAttribute(attributeName, { ru: { name: 'Создано' } }, true, new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)', adapter);
-                        case 'DDOCUMENTDATE':
-                            return new erm.TimeStampAttribute(attributeName, { ru: { name: 'Дата документа' } }, true, new Date('1900-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)', adapter);
-                        case 'DQUANTITY': return new erm.NumericAttribute(attributeName, lName, false, 15, 4, undefined, undefined, undefined, adapter);
-                        case 'DLAT': return new erm.NumericAttribute(attributeName, lName, false, 10, 8, -90, +90, undefined, adapter);
-                        case 'DLON': return new erm.NumericAttribute(attributeName, lName, false, 11, 8, -180, +180, undefined, adapter);
-                        case 'DCURRENCY': return new erm.NumericAttribute(attributeName, lName, false, 15, 4, undefined, undefined, undefined, adapter);
-                        case 'DPOSITIVE': return new erm.NumericAttribute(attributeName, lName, false, 15, 8, 0, undefined, undefined, adapter);
-                        case 'DPERCENT': return new erm.NumericAttribute(attributeName, lName, false, 7, 4, undefined, undefined, undefined, adapter);
-                        case 'DTAX': return new erm.NumericAttribute(attributeName, lName, false, 7, 4, 0, 99, undefined, adapter);
-                        case 'DDECDIGITS': return new erm.IntegerAttribute(attributeName, lName, false, 0, 16, undefined, adapter);
-                        case 'DACCOUNTTYPE': return new erm.EnumAttribute(attributeName, lName, false, [{ value: 'D' }, { value: 'K' }], undefined, adapter);
-                        case 'DGENDER': return new erm.EnumAttribute(attributeName, lName, false, [{ value: 'M' }, { value: 'F' }, { value: 'N' }], undefined, adapter);
-                        case 'DTEXTALIGNMENT': return new erm.EnumAttribute(attributeName, lName, false, [{ value: 'L' }, { value: 'R' }, { value: 'C' }, { value: 'J' }], 'L', adapter);
-                        case 'DSECURITY': return new erm.IntegerAttribute(attributeName, lName, true, undefined, undefined, -1, adapter);
-                        case 'DDISABLED': return new erm.BooleanAttribute(attributeName, lName, false, false, adapter);
-                        case 'DBOOLEAN': return new erm.BooleanAttribute(attributeName, lName, false, false, adapter);
-                        case 'DBOOLEAN_NOTNULL': return new erm.BooleanAttribute(attributeName, lName, true, false, adapter);
-                        // следующие домены надо проверить, возможно уже нигде и не используются
-                        case 'DTYPETRANSPORT': return new erm.EnumAttribute(attributeName, lName, false, [{ value: 'C' }, { value: 'S' }, { value: 'R' }, { value: 'O' }, { value: 'W' }], undefined, adapter);
-                        case 'DGOLDQUANTITY': return new erm.NumericAttribute(attributeName, lName, false, 15, 8, undefined, undefined, undefined, adapter);
-                    }
-                    if (fieldSource.fieldScale < 0) {
-                        const factor = Math.pow(10, fieldSource.fieldScale);
-                        let MaxValue;
-                        let MinValue;
-                        switch (fieldSource.fieldType) {
-                            case gdmn_db_1.FieldType.SMALL_INTEGER:
-                                MaxValue = rdbadapter.MAX_16BIT_INT * factor;
-                                MinValue = rdbadapter.MIN_16BIT_INT * factor;
-                                break;
-                            case gdmn_db_1.FieldType.INTEGER:
-                                MaxValue = rdbadapter.MAX_32BIT_INT * factor;
-                                MinValue = rdbadapter.MIN_32BIT_INT * factor;
-                                break;
-                            default:
-                                MaxValue = rdbadapter.MAX_64BIT_INT * factor;
-                                MinValue = rdbadapter.MIN_64BIT_INT * factor;
-                        }
-                        if (fieldSource.validationSource) {
-                            console.warn(`Not processed for ${attributeName}: ${JSON.stringify(fieldSource.validationSource)}`);
-                        }
-                        return new erm.NumericAttribute(attributeName, lName, required, fieldSource.fieldPrecision, fieldSource.fieldScale, MinValue, MaxValue, util_1.default2Number(defaultValue), adapter);
-                    }
-                    switch (fieldSource.fieldType) {
-                        case gdmn_db_1.FieldType.INTEGER:
-                            {
-                                const fk = Object.entries(r.foreignKeys).find(([name, f]) => !!f.fields.find(fld => fld === attributeName));
-                                if (fk && fk[1].fields.length === 1) {
-                                    const refRelationName = dbs.relationByUqConstraint(fk[1].constNameUq).name;
-                                    const cond = atField && atField.refCondition ? rdbadapter.condition2Selectors(atField.refCondition) : undefined;
-                                    const refEntities = findEntities(refRelationName, cond);
-                                    if (!refEntities.length) {
-                                        // throw new Error(`No entities for table ${refRelationName}, condition: ${JSON.stringify(cond)}`);
-                                        console.warn(`No entities for table ${refRelationName}, condition: ${JSON.stringify(cond)}`);
-                                    }
-                                    return new erm.EntityAttribute(attributeName, lName, required, refEntities, adapter);
-                                }
-                                else {
-                                    return new erm.IntegerAttribute(attributeName, lName, required, rdbadapter.MIN_32BIT_INT, rdbadapter.MAX_32BIT_INT, util_1.default2Int(defaultValue), adapter);
-                                }
-                            }
-                        case gdmn_db_1.FieldType.CHAR:
-                        case gdmn_db_1.FieldType.VARCHAR:
-                            {
-                                if (fieldSource.fieldLength === 1 && fieldSource.validationSource) {
-                                    const enumValues = [];
-                                    const reValueIn = /CHECK\s*\((\(VALUE IS NULL\) OR )?(\(VALUE\s+IN\s*\(\s*){1}((?:\'[A-Z0-9]\'(?:\,\s*)?)+)\)\)\)/;
-                                    let match;
-                                    if (match = reValueIn.exec(fieldSource.validationSource)) {
-                                        const reEnumValue = /\'([A-Z0-9]{1})\'/g;
-                                        let enumValue;
-                                        while (enumValue = reEnumValue.exec(match[3])) {
-                                            enumValues.push({ value: enumValue[1] });
-                                        }
-                                    }
-                                    if (enumValues.length) {
-                                        return new erm.EnumAttribute(attributeName, lName, required, enumValues, undefined, adapter);
-                                    }
-                                    else {
-                                        console.warn(`Not processed for ${attributeName}: ${JSON.stringify(fieldSource.validationSource)}`);
-                                    }
-                                }
-                                else {
-                                    if (fieldSource.validationSource) {
-                                        console.warn(`Not processed for ${attributeName}: ${JSON.stringify(fieldSource.validationSource)}`);
-                                    }
-                                }
-                                return new erm.StringAttribute(attributeName, lName, required, undefined, fieldSource.fieldLength, undefined, true, undefined, adapter);
-                            }
-                        case gdmn_db_1.FieldType.TIMESTAMP:
-                            return new erm.TimeStampAttribute(attributeName, lName, required, undefined, undefined, util_1.default2Date(defaultValue), adapter);
-                        case gdmn_db_1.FieldType.DATE:
-                            return new erm.DateAttribute(attributeName, lName, required, undefined, undefined, util_1.default2Date(defaultValue), adapter);
-                        case gdmn_db_1.FieldType.TIME:
-                            return new erm.TimeAttribute(attributeName, lName, required, undefined, undefined, util_1.default2Date(defaultValue), adapter);
-                        case gdmn_db_1.FieldType.FLOAT:
-                        case gdmn_db_1.FieldType.DOUBLE:
-                            return new erm.FloatAttribute(attributeName, lName, required, undefined, undefined, util_1.default2Number(defaultValue), adapter);
-                        case gdmn_db_1.FieldType.SMALL_INTEGER:
-                            return new erm.IntegerAttribute(attributeName, lName, required, rdbadapter.MIN_16BIT_INT, rdbadapter.MAX_16BIT_INT, util_1.default2Int(defaultValue), adapter);
-                        case gdmn_db_1.FieldType.BIG_INTEGER:
-                            return new erm.IntegerAttribute(attributeName, lName, required, rdbadapter.MIN_64BIT_INT, rdbadapter.MAX_64BIT_INT, util_1.default2Int(defaultValue), adapter);
-                        case gdmn_db_1.FieldType.BLOB:
-                            if (fieldSource.fieldSubType === 1) {
-                                return new erm.StringAttribute(attributeName, lName, required, undefined, undefined, undefined, false, undefined, adapter);
-                            }
-                            else {
-                                return new erm.BLOBAttribute(attributeName, lName, required, adapter);
-                            }
-                        default:
-                            console.log(`Unknown data type ${fieldSource}=${fieldSource.fieldType} for field ${r.name}.${attributeName}`);
-                            return undefined;
-                        // throw new Error('Unknown data type for field ' + r.name + '.' + attributeName);
-                    }
-                })();
+                const attr = createAttribute(r, rf, atRelationField, entity.hasAttribute(fn) ? `${r.name}.${fn}` : fn, relations.length > 1 ? { relation: r.name, field: fn } : undefined);
                 if (attr) {
                     entity.add(attr);
                 }
@@ -463,10 +463,17 @@ async function erExport(dbs, transaction, erModel) {
             const setFieldSource = setField ? dbs.fields[setField.fieldSource] : undefined;
             const atCrossRelation = atrelations[crossName];
             entitiesOwner.forEach(e => {
-                const setAttr = new erm.SetAttribute(atSetField ? atSetField[0] : crossName, atSetField ? atSetField[1].lName : (atCrossRelation ? atCrossRelation.lName : { en: { name: crossName } }), (!!setField && setField.notNull) || (!!setFieldSource && setFieldSource.notNull), referenceEntities, (setFieldSource && setFieldSource.fieldType === gdmn_db_1.FieldType.VARCHAR) ? setFieldSource.fieldLength : 0, {
-                    crossRelation: crossName
-                });
-                e.add(setAttr);
+                if (!Object.entries(e.attributes).find(([attrName, attr]) => (attr instanceof erm.SetAttribute) && !!attr.adapter && attr.adapter.crossRelation === crossName)) {
+                    const setAttr = new erm.SetAttribute(atSetField ? atSetField[0] : crossName, atSetField ? atSetField[1].lName : (atCrossRelation ? atCrossRelation.lName : { en: { name: crossName } }), (!!setField && setField.notNull) || (!!setFieldSource && setFieldSource.notNull), referenceEntities, (setFieldSource && setFieldSource.fieldType === gdmn_db_1.FieldType.VARCHAR) ? setFieldSource.fieldLength : 0, {
+                        crossRelation: crossName
+                    });
+                    Object.entries(crossRelation.relationFields).forEach(([addName, addField]) => {
+                        if (!crossRelation.primaryKey.fields.find(f => f === addName)) {
+                            setAttr.add(createAttribute(crossRelation, addField, atCrossRelation ? atCrossRelation.relationFields[addName] : undefined, addName, undefined));
+                        }
+                    });
+                    e.add(setAttr);
+                }
             });
         }
     });

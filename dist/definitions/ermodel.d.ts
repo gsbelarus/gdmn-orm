@@ -3,22 +3,23 @@
  */
 import { LName, AttributeAdapter, SequenceAdapter } from './types';
 import { IEntity, IAttribute, IERModel } from './interfaces';
-import { Entity2RelationMap } from './rdbadapter';
+import { Entity2RelationMap, SetAttribute2CrossMap } from './rdbadapter';
 export declare type ContextVariables = 'CURRENT_TIMESTAMP' | 'CURRENT_TIMESTAMP(0)' | 'CURRENT_DATE' | 'CURRENT_TIME';
 export declare class Attribute {
     private _name;
     private _lName;
     private _required;
     private _calculated;
-    readonly adapter?: AttributeAdapter;
+    protected _adapter?: AttributeAdapter;
     constructor(name: string, lName: LName, required: boolean, adapter?: AttributeAdapter);
+    readonly adapter: AttributeAdapter | undefined;
     readonly name: string;
     readonly lName: LName;
     readonly required: boolean;
     readonly calculated: boolean;
     serialize(): IAttribute;
     inspectDataType(): string;
-    inspect(): string[];
+    inspect(indent?: string): string[];
 }
 export interface Attributes {
     [name: string]: Attribute;
@@ -99,11 +100,13 @@ export declare class DetailAttribute extends EntityAttribute {
 export declare class SetAttribute extends EntityAttribute {
     private _attributes;
     private _presLen;
-    constructor(name: string, lName: LName, required: boolean, entity: Entity[], presLen: number, adapter?: AttributeAdapter);
+    constructor(name: string, lName: LName, required: boolean, entity: Entity[], presLen: number, adapter?: SetAttribute2CrossMap);
+    readonly adapter: SetAttribute2CrossMap | undefined;
     attribute(name: string): Attribute;
     add(attribute: Attribute): Attribute;
     readonly attributes: Attributes;
     serialize(): IAttribute;
+    inspect(indent?: string): string[];
 }
 export declare class Entity {
     readonly parent?: Entity;
