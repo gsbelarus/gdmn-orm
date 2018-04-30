@@ -14,6 +14,9 @@ export interface atField {
     lName: LName;
     refTable: string | undefined;
     refCondition: string | undefined;
+    setTable: string | undefined;
+    setListField: string | undefined;
+    setCondition: string | undefined;
 }
 export interface atFields {
     [fieldName: string]: atField;
@@ -23,6 +26,9 @@ export interface atFields {
  */
 export interface atRelationField {
     lName: LName;
+    fieldSource: string;
+    crossTable: string | undefined;
+    crossField: string | undefined;
 }
 export interface atRelationFields {
     [fieldName: string]: atRelationField;

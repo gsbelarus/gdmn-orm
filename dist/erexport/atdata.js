@@ -8,21 +8,29 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 const gdmn_db_1 = require("gdmn-db");
+const getTrimmedStringFunc = (resultSet) => (fieldName) => resultSet.isNull(fieldName) ? undefined : resultSet.getString(fieldName).trim();
 async function load(transaction) {
     const atfields = await gdmn_db_1.ATransaction.executeQueryResultSet(transaction, `
     SELECT
       FIELDNAME,
       LNAME,
       REFTABLE,
-      REFCONDITION
+      REFCONDITION,
+      SETTABLE,
+      SETLISTFIELD,
+      SETCONDITION
     FROM
       AT_FIELDS`, async (resultSet) => {
+        const getTrimmedString = getTrimmedStringFunc(resultSet);
         const fields = {};
         while (await resultSet.next()) {
             fields[resultSet.getString('FIELDNAME')] = {
                 lName: { ru: { name: resultSet.getString('LNAME') } },
-                refTable: resultSet.isNull('REFTABLE') ? undefined : resultSet.getString('REFTABLE').trim(),
-                refCondition: resultSet.isNull('REFCONDITION') ? undefined : resultSet.getString('REFCONDITION').trim(),
+                refTable: getTrimmedString('REFTABLE'),
+                refCondition: getTrimmedString('REFCONDITION'),
+                setTable: getTrimmedString('SETTABLE'),
+                setListField: getTrimmedString('SETLISTFIELD'),
+                setCondition: getTrimmedString('SETCONDITION'),
             };
         }
         return fields;
@@ -55,11 +63,18 @@ async function load(transaction) {
     });
     await gdmn_db_1.ATransaction.executeQueryResultSet(transaction, `
     SELECT
-      FIELDNAME, RELATIONNAME, LNAME, DESCRIPTION
+      FIELDNAME,
+      FIELDSOURCE,
+      RELATIONNAME,
+      LNAME,
+      DESCRIPTION,
+      CROSSTABLE,
+      CROSSFIELD
     FROM
       AT_RELATION_FIELDS
     ORDER BY
       RELATIONNAME`, async (resultSet) => {
+        const getTrimmedString = getTrimmedStringFunc(resultSet);
         let relationName = '';
         let rel;
         while (await resultSet.next()) {
@@ -73,7 +88,12 @@ async function load(transaction) {
             const name = resultSet.getString('LNAME');
             const fullName = resultSet.getString('DESCRIPTION');
             const ru = fullName && fullName !== name && fullName !== fieldName ? { name, fullName } : { name };
-            rel.relationFields[fieldName] = { lName: { ru } };
+            rel.relationFields[fieldName] = {
+                lName: { ru },
+                fieldSource: getTrimmedString('FIELDSOURCE'),
+                crossTable: getTrimmedString('CROSSTABLE'),
+                crossField: getTrimmedString('CROSSFIELD'),
+            };
         }
     });
     return { atfields, atrelations };

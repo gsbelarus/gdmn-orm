@@ -55,6 +55,7 @@ export declare class NumericAttribute extends NumberAttribute<number> {
     private _precision;
     private _scale;
     constructor(name: string, lName: LName, required: boolean, precision: number, scale: number, minValue: number | undefined, maxValue: number | undefined, defaultValue: number | undefined, adapter?: AttributeAdapter);
+    inspectDataType(): string;
 }
 export declare class DateAttribute extends NumberAttribute<Date, ContextVariables> {
 }
@@ -97,6 +98,8 @@ export declare class DetailAttribute extends EntityAttribute {
 }
 export declare class SetAttribute extends EntityAttribute {
     private _attributes;
+    private _presLen;
+    constructor(name: string, lName: LName, required: boolean, entity: Entity[], presLen: number, adapter?: AttributeAdapter);
     attribute(name: string): Attribute;
     add(attribute: Attribute): Attribute;
     readonly attributes: Attributes;

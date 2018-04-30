@@ -6,7 +6,7 @@
  * все данные в объекты.
  */
 
-import { ATransaction } from 'gdmn-db';
+import { ATransaction, AResultSet } from 'gdmn-db';
 import { LName } from '../types';
 
 /**
@@ -16,6 +16,9 @@ export interface atField {
   lName: LName;
   refTable: string | undefined;
   refCondition: string | undefined;
+  setTable: string | undefined;
+  setListField: string | undefined;
+  setCondition: string | undefined;
 }
 
 export interface atFields {
@@ -27,6 +30,9 @@ export interface atFields {
  */
 export interface atRelationField {
   lName: LName;
+  fieldSource: string;
+  crossTable: string | undefined;
+  crossField: string | undefined;
 }
 
 export interface atRelationFields {
@@ -45,23 +51,33 @@ export interface atRelations {
   [relationName: string]: atRelation;
 }
 
+const getTrimmedStringFunc = (resultSet: AResultSet) =>
+  (fieldName: string) => resultSet.isNull(fieldName) ? undefined : resultSet.getString(fieldName).trim();
+
 export async function load(transaction: ATransaction) {
   const atfields = await ATransaction.executeQueryResultSet(transaction, `
     SELECT
       FIELDNAME,
       LNAME,
       REFTABLE,
-      REFCONDITION
+      REFCONDITION,
+      SETTABLE,
+      SETLISTFIELD,
+      SETCONDITION
     FROM
       AT_FIELDS`,
     async (resultSet) =>
     {
+      const getTrimmedString = getTrimmedStringFunc(resultSet);
       const fields: atFields = {};
       while (await resultSet.next()) {
         fields[resultSet.getString('FIELDNAME')] = {
           lName: {ru: {name: resultSet.getString('LNAME')}},
-          refTable: resultSet.isNull('REFTABLE') ? undefined : resultSet.getString('REFTABLE').trim(),
-          refCondition: resultSet.isNull('REFCONDITION') ? undefined : resultSet.getString('REFCONDITION').trim(),
+          refTable: getTrimmedString('REFTABLE'),
+          refCondition: getTrimmedString('REFCONDITION'),
+          setTable: getTrimmedString('SETTABLE'),
+          setListField: getTrimmedString('SETLISTFIELD'),
+          setCondition: getTrimmedString('SETCONDITION'),
         };
       }
       return fields;
@@ -100,13 +116,20 @@ export async function load(transaction: ATransaction) {
 
   await ATransaction.executeQueryResultSet(transaction, `
     SELECT
-      FIELDNAME, RELATIONNAME, LNAME, DESCRIPTION
+      FIELDNAME,
+      FIELDSOURCE,
+      RELATIONNAME,
+      LNAME,
+      DESCRIPTION,
+      CROSSTABLE,
+      CROSSFIELD
     FROM
       AT_RELATION_FIELDS
     ORDER BY
       RELATIONNAME`,
     async (resultSet) =>
     {
+      const getTrimmedString = getTrimmedStringFunc(resultSet);
       let relationName: string = '';
       let rel: atRelation;
       while (await resultSet.next()) {
@@ -119,7 +142,12 @@ export async function load(transaction: ATransaction) {
         const name = resultSet.getString('LNAME');
         const fullName = resultSet.getString('DESCRIPTION');
         const ru = fullName && fullName !== name && fullName !== fieldName ? {name, fullName} : {name};
-        rel!.relationFields[fieldName] = {lName: {ru}};
+        rel!.relationFields[fieldName] = {
+          lName: {ru},
+          fieldSource: getTrimmedString('FIELDSOURCE')!,
+          crossTable: getTrimmedString('CROSSTABLE'),
+          crossField: getTrimmedString('CROSSFIELD'),
+        };
       }
     }
   );

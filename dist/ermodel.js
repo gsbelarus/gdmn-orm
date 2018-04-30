@@ -122,6 +122,9 @@ class NumericAttribute extends NumberAttribute {
         this._precision = precision;
         this._scale = scale;
     }
+    inspectDataType() {
+        return `${super.inspectDataType()}(${this._precision}, ${-this._scale})`;
+    }
 }
 exports.NumericAttribute = NumericAttribute;
 class DateAttribute extends NumberAttribute {
@@ -201,9 +204,11 @@ class DetailAttribute extends EntityAttribute {
 }
 exports.DetailAttribute = DetailAttribute;
 class SetAttribute extends EntityAttribute {
-    constructor() {
-        super(...arguments);
+    constructor(name, lName, required, entity, presLen, adapter) {
+        super(name, lName, required, entity, adapter);
         this._attributes = {};
+        this._presLen = 0;
+        this._presLen = presLen;
     }
     attribute(name) {
         const found = this._attributes[name];

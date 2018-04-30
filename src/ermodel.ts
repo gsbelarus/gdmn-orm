@@ -280,6 +280,12 @@ export class DetailAttribute extends EntityAttribute { }
 
 export class SetAttribute extends EntityAttribute {
   private _attributes: Attributes = {};
+  private _presLen: number = 0;
+
+  constructor(name: string, lName: LName, required: boolean, entity: Entity[], presLen: number, adapter?: AttributeAdapter) {
+    super(name, lName, required, entity, adapter);
+    this._presLen = presLen;
+  }
 
   attribute(name: string) {
     const found = this._attributes[name];

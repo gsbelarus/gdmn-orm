@@ -235,25 +235,27 @@ async function erExport(dbs, transaction, erModel) {
             selector: {
                 field: 'CONTACTTYPE',
                 value: 1
-            }
+            },
+            fields: [
+                'PARENT',
+                'NAME'
+            ]
         }
     }, 'Group', { ru: { name: 'Группа' } });
     Group.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в папку' } }, [Folder]));
-    const ContactList = Group.add(new erm.SetAttribute('CONTACTLIST', { ru: { name: 'Контакты' } }, false, [Company, Person], {
+    const ContactList = Group.add(new erm.SetAttribute('CONTACTLIST', { ru: { name: 'Контакты' } }, false, [Company, Person], 0, {
         crossRelation: 'GD_CONTACTLIST'
     }));
-    createEntity(undefined, rdbadapter.relationName2Adapter('GD_COMPANYACCOUNT'));
+    const companyAccount = createEntity(undefined, rdbadapter.relationName2Adapter('GD_COMPANYACCOUNT'));
     createEntity(undefined, rdbadapter.relationName2Adapter('GD_COMPACCTYPE'));
     createEntity(undefined, rdbadapter.relationName2Adapter('GD_CURR'));
     createEntity(undefined, rdbadapter.relationName2Adapter('WG_POSITION'));
+    Company.add(new erm.DetailAttribute('GD_COMPANYACCOUNT', { ru: { name: 'Банковские счета' } }, false, [companyAccount]));
     dbs.forEachRelation(r => {
-        if (r.primaryKey && r.primaryKey.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)) {
+        if (r.primaryKey.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)) {
             createEntity(undefined, rdbadapter.relationName2Adapter(r.name));
         }
-    });
-    /**
-     * @todo Parse fields CHECK constraint and extract min and max allowed values.
-     */
+    }, true);
     function createAttributes(entity) {
         const adapterArr = rdbadapter.adapter2array(entity.adapter);
         const relations = adapterArr.map(rn => dbs.relations[rn.relationName]);
@@ -278,6 +280,8 @@ async function erExport(dbs, transaction, erModel) {
                 }
                 const atField = atfields[rf[1].fieldSource];
                 const atRelationField = atRelation ? atRelation.relationFields[rf[1].name] : undefined;
+                if (atRelationField && atRelationField.crossTable)
+                    return;
                 const attributeName = entity.hasAttribute(rf[0]) ? `${r.name}.${rf[0]}` : rf[0];
                 const fieldSource = dbs.fields[rf[1].fieldSource];
                 const lName = atRelationField ? atRelationField.lName : (atField ? atField.lName : {});
@@ -328,12 +332,15 @@ async function erExport(dbs, transaction, erModel) {
                                 MaxValue = rdbadapter.MAX_64BIT_INT * factor;
                                 MinValue = rdbadapter.MIN_64BIT_INT * factor;
                         }
+                        if (fieldSource.validationSource) {
+                            console.warn(`Not processed for ${attributeName}: ${JSON.stringify(fieldSource.validationSource)}`);
+                        }
                         return new erm.NumericAttribute(attributeName, lName, required, fieldSource.fieldPrecision, fieldSource.fieldScale, MinValue, MaxValue, util_1.default2Number(defaultValue), adapter);
                     }
                     switch (fieldSource.fieldType) {
                         case gdmn_db_1.FieldType.INTEGER:
                             {
-                                const fk = Object.entries(r.foreignKeys).find(f => !!f[1].fields.find(fld => fld === attributeName));
+                                const fk = Object.entries(r.foreignKeys).find(([name, f]) => !!f.fields.find(fld => fld === attributeName));
                                 if (fk && fk[1].fields.length === 1) {
                                     const refRelationName = dbs.relationByUqConstraint(fk[1].constNameUq).name;
                                     const cond = atField && atField.refCondition ? rdbadapter.condition2Selectors(atField.refCondition) : undefined;
@@ -366,12 +373,12 @@ async function erExport(dbs, transaction, erModel) {
                                         return new erm.EnumAttribute(attributeName, lName, required, enumValues, undefined, adapter);
                                     }
                                     else {
-                                        console.warn(JSON.stringify(fieldSource.validationSource));
+                                        console.warn(`Not processed for ${attributeName}: ${JSON.stringify(fieldSource.validationSource)}`);
                                     }
                                 }
                                 else {
                                     if (fieldSource.validationSource) {
-                                        console.warn('Not processed: ' + JSON.stringify(fieldSource.validationSource));
+                                        console.warn(`Not processed for ${attributeName}: ${JSON.stringify(fieldSource.validationSource)}`);
                                     }
                                 }
                                 return new erm.StringAttribute(attributeName, lName, required, undefined, fieldSource.fieldLength, undefined, true, undefined, adapter);
@@ -411,7 +418,58 @@ async function erExport(dbs, transaction, erModel) {
             });
         });
     }
-    Object.entries(erModel.entities).forEach(e => createAttributes(e[1]));
+    Object.entries(erModel.entities).forEach(([name, entity]) => createAttributes(entity));
+    /**
+     * Looking for cross-tables and construct set attributes.
+     *
+     * 1. Cross tables are those whose PK consists of minimum 2 fields.
+     * 2. First field of cross table PK must be a FK referencing owner table.
+     * 3. Second field of cross table PK must be a FK referencing reference table.
+     * 4. Owner in this context is an Entity(s) a Set attribute belongs to.
+     * 5. Reference in this context is an Entity(s) a Set attribute contains objects of which type.
+     */
+    Object.entries(dbs.relations).forEach(([crossName, crossRelation]) => {
+        if (crossRelation.primaryKey && crossRelation.primaryKey.fields.length >= 2) {
+            const fkOwner = Object.entries(crossRelation.foreignKeys).find(([n, f]) => f.fields.length === 1 && f.fields[0] === crossRelation.primaryKey.fields[0]);
+            if (!fkOwner)
+                return;
+            const fkReference = Object.entries(crossRelation.foreignKeys).find(([n, f]) => f.fields.length === 1 && f.fields[0] === crossRelation.primaryKey.fields[1]);
+            if (!fkReference)
+                return;
+            const relOwner = dbs.relationByUqConstraint(fkOwner[1].constNameUq);
+            const atRelOwner = atrelations[relOwner.name];
+            if (!atRelOwner)
+                return;
+            const entitiesOwner = findEntities(relOwner.name);
+            if (!entitiesOwner.length) {
+                console.log(`No entities found for relation ${relOwner.name}`);
+                return;
+                // throw new Error(`No entities found for relation ${relOwner.name}`);
+            }
+            const relReference = dbs.relationByUqConstraint(fkReference[1].constNameUq);
+            let cond;
+            const atSetField = Object.entries(atRelOwner.relationFields).find(rf => rf[1].crossTable === crossName);
+            const atSetFieldSource = atSetField ? atfields[atSetField[1].fieldSource] : undefined;
+            if (atSetFieldSource && atSetFieldSource.setTable === relReference.name && atSetFieldSource.setCondition) {
+                cond = rdbadapter.condition2Selectors(atSetFieldSource.setCondition);
+            }
+            const referenceEntities = findEntities(relReference.name, cond);
+            if (!referenceEntities.length) {
+                console.log(`No entities found for relation ${relReference.name}`);
+                return;
+                // throw new Error(`No entities found for relation ${relReference.name}`);
+            }
+            const setField = atSetField ? relOwner.relationFields[atSetField[0]] : undefined;
+            const setFieldSource = setField ? dbs.fields[setField.fieldSource] : undefined;
+            const atCrossRelation = atrelations[crossName];
+            entitiesOwner.forEach(e => {
+                const setAttr = new erm.SetAttribute(atSetField ? atSetField[0] : crossName, atSetField ? atSetField[1].lName : (atCrossRelation ? atCrossRelation.lName : { en: { name: crossName } }), (!!setField && setField.notNull) || (!!setFieldSource && setFieldSource.notNull), referenceEntities, (setFieldSource && setFieldSource.fieldType === gdmn_db_1.FieldType.VARCHAR) ? setFieldSource.fieldLength : 0, {
+                    crossRelation: crossName
+                });
+                e.add(setAttr);
+            });
+        }
+    });
     return erModel;
 }
 exports.erExport = erExport;
