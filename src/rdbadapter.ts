@@ -1,6 +1,7 @@
 
 import { AttributeAdapter, SequenceAdapter, EntityAdapter, LName } from './types';
 import { Entity, Attribute } from './ermodel';
+import { ExecSyncOptionsWithBufferEncoding } from 'child_process';
 
 export const MIN_64BIT_INT = -9223372036854775808;
 export const MAX_64BIT_INT = +9223372036854775807;
@@ -60,6 +61,15 @@ export interface Attribute2FieldMap extends AttributeAdapter {
 export interface SetAttribute2CrossMap extends AttributeAdapter {
   crossRelation: string;
   presentationField?: string;
+}
+
+export interface CrossRelation {
+  owner: string;
+  selector?: EntitySelector;
+}
+
+export interface CrossRelations {
+  [name: string]: CrossRelation;
 }
 
 export function relationName2Adapter(relationName: string): Entity2RelationMap {

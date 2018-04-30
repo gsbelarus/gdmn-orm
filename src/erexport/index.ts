@@ -9,6 +9,17 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
 
   const { atfields, atrelations } = await load(transaction);
 
+  const crossRelationsAdapters: rdbadapter.CrossRelations = {
+    'GD_CONTACTLIST': {
+      owner: 'GD_CONTACT',
+      selector: {
+        field: 'CONTACTTYPE',
+        value: 1
+      }
+
+    }
+  };
+
   /**
    * Если имя генератора совпадает с именем объекта в БД, то адаптер можем не указывать.
    */
@@ -606,7 +617,16 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
 
       if (!atRelOwner) return;
 
-      const entitiesOwner = findEntities(relOwner.name);
+      let entitiesOwner: erm.Entity[];
+
+      const crossRelationAdapter = crossRelationsAdapters[crossName];
+
+      if (crossRelationAdapter) {
+        entitiesOwner = findEntities(crossRelationAdapter.owner, crossRelationAdapter.selector ?
+          [crossRelationAdapter.selector] : undefined);
+      } else {
+        entitiesOwner = findEntities(relOwner.name);
+      }
 
       if (!entitiesOwner.length) {
         console.log(`No entities found for relation ${relOwner.name}`);

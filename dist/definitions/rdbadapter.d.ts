@@ -36,6 +36,13 @@ export interface SetAttribute2CrossMap extends AttributeAdapter {
     crossRelation: string;
     presentationField?: string;
 }
+export interface CrossRelation {
+    owner: string;
+    selector?: EntitySelector;
+}
+export interface CrossRelations {
+    [name: string]: CrossRelation;
+}
 export declare function relationName2Adapter(relationName: string): Entity2RelationMap;
 export declare function adapter2array(em: Entity2RelationMap): AnyRelation[];
 export declare function sameAdapter(mapA: Entity2RelationMap, mapB: Entity2RelationMap): boolean;

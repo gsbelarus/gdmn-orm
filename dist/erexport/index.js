@@ -14,6 +14,15 @@ const atdata_1 = require("./atdata");
 const util_1 = require("./util");
 async function erExport(dbs, transaction, erModel) {
     const { atfields, atrelations } = await atdata_1.load(transaction);
+    const crossRelationsAdapters = {
+        'GD_CONTACTLIST': {
+            owner: 'GD_CONTACT',
+            selector: {
+                field: 'CONTACTTYPE',
+                value: 1
+            }
+        }
+    };
     /**
      * Если имя генератора совпадает с именем объекта в БД, то адаптер можем не указывать.
      */
@@ -440,7 +449,15 @@ async function erExport(dbs, transaction, erModel) {
             const atRelOwner = atrelations[relOwner.name];
             if (!atRelOwner)
                 return;
-            const entitiesOwner = findEntities(relOwner.name);
+            let entitiesOwner;
+            const crossRelationAdapter = crossRelationsAdapters[crossName];
+            if (crossRelationAdapter) {
+                entitiesOwner = findEntities(crossRelationAdapter.owner, crossRelationAdapter.selector ?
+                    [crossRelationAdapter.selector] : undefined);
+            }
+            else {
+                entitiesOwner = findEntities(relOwner.name);
+            }
             if (!entitiesOwner.length) {
                 console.log(`No entities found for relation ${relOwner.name}`);
                 return;
