@@ -28,6 +28,19 @@ function relationName2Adapter(relationName) {
     };
 }
 exports.relationName2Adapter = relationName2Adapter;
+function relationNames2Adapter(relationNames) {
+    return { relation: relationNames.map(relationName => ({ relationName })) };
+}
+exports.relationNames2Adapter = relationNames2Adapter;
+function appendAdapter(em, relationName) {
+    if (Array.isArray(em.relation)) {
+        return Object.assign({}, em, { relation: [...em.relation, { relationName }] });
+    }
+    else {
+        return Object.assign({}, em, { relation: [em.relation, { relationName }] });
+    }
+}
+exports.appendAdapter = appendAdapter;
 function adapter2array(em) {
     if (Array.isArray(em.relation)) {
         if (!em.relation.length) {

@@ -260,9 +260,19 @@ async function erExport(dbs, transaction, erModel) {
     createEntity(undefined, rdbadapter.relationName2Adapter('GD_CURR'));
     createEntity(undefined, rdbadapter.relationName2Adapter('WG_POSITION'));
     Company.add(new erm.DetailAttribute('GD_COMPANYACCOUNT', { ru: { name: 'Банковские счета' } }, false, [companyAccount]));
+    function recursInherited(parentRelation, parentEntity) {
+        dbs.forEachRelation(inherited => {
+            if (Object.entries(inherited.foreignKeys).find(([name, f]) => f.fields.join() === inherited.primaryKey.fields.join()
+                && dbs.relationByUqConstraint(f.constNameUq) === parentRelation[parentRelation.length - 1])) {
+                const newParent = [...parentRelation, inherited];
+                recursInherited(newParent, createEntity(parentEntity, rdbadapter.appendAdapter(parentEntity.adapter, inherited.name), inherited.name, atrelations[inherited.name] ? atrelations[inherited.name].lName : {}));
+            }
+        }, true);
+    }
+    ;
     dbs.forEachRelation(r => {
         if (r.primaryKey.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)) {
-            createEntity(undefined, rdbadapter.relationName2Adapter(r.name));
+            recursInherited([r], createEntity(undefined, rdbadapter.relationName2Adapter(r.name)));
         }
     }, true);
     function createAttribute(r, rf, atRelationField, attributeName, adapter) {

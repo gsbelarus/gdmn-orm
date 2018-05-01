@@ -80,6 +80,18 @@ export function relationName2Adapter(relationName: string): Entity2RelationMap {
   };
 }
 
+export function relationNames2Adapter(relationNames: string[]): Entity2RelationMap {
+  return { relation: relationNames.map( relationName => ({ relationName }) ) }
+}
+
+export function appendAdapter(em: Entity2RelationMap, relationName: string) {
+  if (Array.isArray(em.relation)) {
+    return { ...em, relation: [...em.relation, { relationName } ] }
+  } else {
+    return { ...em, relation: [em.relation, { relationName }] }
+  }
+}
+
 export function adapter2array(em: Entity2RelationMap): AnyRelation[] {
   if (Array.isArray(em.relation)) {
     if (!em.relation.length) {
