@@ -56,7 +56,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
   }
 
   function createEntity(parent: erm.Entity | undefined, adapter: rdbadapter.Entity2RelationMap,
-    entityName?: string, lName?: LName, attributes?: erm.Attribute[]): erm.Entity
+    abstract?: boolean, entityName?: string, lName?: LName, attributes?: erm.Attribute[]): erm.Entity
   {
     const found = Object.entries(erModel.entities).find( e => rdbadapter.sameAdapter(adapter, e[1].adapter) );
 
@@ -78,7 +78,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
       parent,
       setEntityName,
       lName ? lName : (atRelation ? atRelation.lName : {}),
-      false,
+      !!abstract,
       JSON.stringify(adapter) !== JSON.stringify(fake) ? adapter : undefined
     );
 
@@ -105,7 +105,8 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
    * Административно-территориальная единица.
    * Тут исключительно для иллюстрации типа данных Перечисление.
    */
-  createEntity(undefined, rdbadapter.relationName2Adapter('GD_PLACE'), undefined, undefined, [
+  createEntity(undefined, rdbadapter.relationName2Adapter('GD_PLACE'), false, undefined, undefined,
+  [
     new erm.EnumAttribute('PLACETYPE', {ru: {name: 'Тип'}}, true,
       [
         {
@@ -139,6 +140,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
         ]
       }
     },
+    false,
     'Folder', {ru: {name: 'Папка'}}
   );
   Folder.add(
@@ -177,6 +179,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
       ],
       refresh: true
     },
+    false,
     'Company', {ru: {name: 'Организация'}}, [
       new erm.ParentAttribute('PARENT', {ru: {name: 'Входит в папку'}}, [Folder]),
       new erm.StringAttribute('NAME', {ru: {name: 'Краткое наименование'}}, true, undefined, 60, undefined, true, undefined)
@@ -212,6 +215,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
       ],
       refresh: true
     },
+    false,
     'Bank', {ru: {name: 'Банк'}},
   );
 
@@ -229,6 +233,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
         }
       }
     },
+    false,
     'Department', {ru: {name: 'Подразделение'}}
   );
   Department.add(
@@ -257,6 +262,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
       ],
       refresh: true
     },
+    false,
     'Person', {ru: {name: 'Физическое лицо'}}
   );
   Person.add(
@@ -288,6 +294,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
         }
       ]
     },
+    false,
     'Employee', {ru: {name: 'Сотрудник предприятия'}}
   );
   Employee.add(
@@ -313,6 +320,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
           ]
         }
     },
+    false,
     'Group', {ru: {name: 'Группа'}},
   );
   Group.add(
@@ -336,6 +344,11 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
     new erm.DetailAttribute('GD_COMPANYACCOUNT', {ru: {name: 'Банковские счета'}}, false, [companyAccount])
   );
 
+  const document = createEntity(undefined, rdbadapter.relationName2Adapter('GD_DOCUMENT'), true);
+  const userDocument = createEntity(document, rdbadapter.relationName2Adapter('GD_DOCUMENT'), true);
+  const invDocument = createEntity(document, rdbadapter.relationName2Adapter('GD_DOCUMENT'), true);
+  const invPriceListDocument = createEntity(document, rdbadapter.relationName2Adapter('GD_DOCUMENT'), true);
+
   function recursInherited(parentRelation: Relation[], parentEntity: erm.Entity) {
     dbs.forEachRelation( inherited => {
       if (Object.entries(inherited.foreignKeys).find(
@@ -344,7 +357,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
       {
         const newParent = [...parentRelation, inherited];
         recursInherited(newParent, createEntity(parentEntity,
-          rdbadapter.appendAdapter(parentEntity.adapter, inherited.name),
+          rdbadapter.appendAdapter(parentEntity.adapter, inherited.name), false,
           inherited.name, atrelations[inherited.name] ? atrelations[inherited.name].lName : {}));
       }
     }, true);
