@@ -2,6 +2,7 @@
 import { AttributeAdapter, SequenceAdapter, EntityAdapter, LName } from './types';
 import { Entity, Attribute } from './ermodel';
 import { ExecSyncOptionsWithBufferEncoding } from 'child_process';
+import clone from 'clone';
 
 export const MIN_64BIT_INT = -9223372036854775808;
 export const MAX_64BIT_INT = +9223372036854775807;
@@ -84,9 +85,11 @@ export function relationNames2Adapter(relationNames: string[]): Entity2RelationM
   return { relation: relationNames.map( relationName => ({ relationName }) ) }
 }
 
-export function appendAdapter(em: Entity2RelationMap, relationName: string) {
+export function appendAdapter(src: Entity2RelationMap, relationName: string) {
+  const em = clone(src);
+  //const em = JSON.parse(JSON.stringify(src));
   if (Array.isArray(em.relation)) {
-    if (relationName && !em.relation.find( r => r.relationName === relationName )) {
+    if (relationName && !em.relation.find( (r: AnyRelation) => r.relationName === relationName )) {
       return { ...em, relation: [...em.relation, { relationName } ] };
     }
   } else {
@@ -94,10 +97,12 @@ export function appendAdapter(em: Entity2RelationMap, relationName: string) {
       return { ...em, relation: [em.relation, { relationName }] };
     }
   }
-  return em;
+  return {...em};
 }
 
-export function adapter2array(em: Entity2RelationMap): AnyRelation[] {
+export function adapter2array(src: Entity2RelationMap): AnyRelation[] {
+  const em = clone(src);
+  //const em = JSON.parse(JSON.stringify(src));
   if (Array.isArray(em.relation)) {
     if (!em.relation.length) {
       throw new Error('Invalid entity 2 relation adapter');
@@ -113,7 +118,7 @@ export function sameAdapter(mapA: Entity2RelationMap, mapB: Entity2RelationMap):
   const arrB = adapter2array(mapB).filter( r => !isWeakRelation(r) );
   return arrA.length === arrB.length
     && arrA.every( (a, idx) => a.relationName === arrB[idx].relationName
-      && (idx < (arrA.length - 1) || JSON.stringify(a.selector) === JSON.stringify(arrB[idx].selector)));
+      && JSON.stringify(a.selector) === JSON.stringify(arrB[idx].selector));
 }
 
 export function hasField(em: Entity2RelationMap, rn: string, fn: string): boolean {

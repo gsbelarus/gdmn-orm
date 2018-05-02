@@ -6,6 +6,8 @@ import { load, atField, atRelationField } from './atdata';
 import { default2Int, default2Number, default2Date } from './util';
 import { loadDocument } from './document';
 import { gedeminTables } from './gdtables';
+import { inspect } from 'util';
+import { INSPECT_MAX_BYTES } from 'buffer';
 
 export async function erExport(dbs: DBStructure, transaction: ATransaction, erModel: erm.ERModel): Promise<erm.ERModel> {
 
@@ -380,13 +382,15 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
 
   gedeminTables.forEach( t => createEntity(undefined, rdbadapter.relationName2Adapter(t)) );
 
+  createEntity(undefined, rdbadapter.relationName2Adapter('INV_CARD'));
+
   const TgdcDocument = createEntity(undefined, rdbadapter.relationName2Adapter('GD_DOCUMENT'), true, 'TgdcDocument');
   const TgdcDocumentAdapter = rdbadapter.relationName2Adapter('GD_DOCUMENT');
   const documentABC: { [name: string]: erm.Entity } = {
     'TgdcDocumentType': TgdcDocument,
-    'TgdcUserDocumentType': createEntity(TgdcDocument, TgdcDocumentAdapter, true, 'TgdcUserDocument'),
-    'TgdcInvDocumentType': createEntity(TgdcDocument, TgdcDocumentAdapter, true, 'TgdcInvDocument'),
-    'TgdcInvPriceListType': createEntity(TgdcDocument, TgdcDocumentAdapter, true, 'TgdcInvPriceList')
+    'TgdcUserDocumentType': createEntity(TgdcDocument, TgdcDocumentAdapter, true, 'TgdcUserDocument', {ru:{name: 'Пользовательские документы'}}),
+    'TgdcInvDocumentType': createEntity(TgdcDocument, TgdcDocumentAdapter, true, 'TgdcInvDocument', {ru:{name: 'Складские документы'}}),
+    'TgdcInvPriceListType': createEntity(TgdcDocument, TgdcDocumentAdapter, true, 'TgdcInvPriceList', {ru:{name: 'Прайс-листы'}})
   };
 
   const documentClasses: { [ruid: string]: { header: erm.Entity, line?: erm.Entity } } = {};
@@ -430,7 +434,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
       }
 
       const lineAdapter = {
-        relation: rdbadapter.adapter2array(rdbadapter.appendAdapter(parent.adapter, setLR))
+        relation: rdbadapter.adapter2array(rdbadapter.appendAdapter(lineParent.adapter, setLR))
       };
       lineAdapter.relation[0].selector = {field: 'DOCUMENTTYPEKEY', value: id};
       const line = createEntity(lineParent, lineAdapter,
@@ -440,12 +444,14 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
       );
       documentClasses[ruid] = { ...documentClasses[ruid], line };
       header.add(
-        new erm.DetailAttribute('DocumentLine', line.lName, false, [line])
+        new erm.DetailAttribute(line.name, line.lName, false, [line])
       );
     }
   };
 
   await loadDocument(transaction, createDocument);
+
+  console.log('documents loaded...')
 
   function recursInherited(parentRelation: Relation[], parentEntity?: erm.Entity) {
     dbs.forEachRelation( inherited => {
@@ -583,7 +589,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
           const refEntities = findEntities(refRelationName, cond);
 
           if (!refEntities.length) {
-            console.warn(`${r.name}.${rf.name}: no entities for table ${refRelationName}, condition: ${JSON.stringify(cond)}`);
+            console.warn(`${r.name}.${rf.name}: no entities for table ${refRelationName}${cond ? ', condition: ' + JSON.stringify(cond) : ''}`);
           }
 
           return new erm.EntityAttribute(attributeName, lName, required, refEntities, adapter);
@@ -690,6 +696,8 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
         // throw new Error('Unknown data type for field ' + r.name + '.' + attributeName);
     }
   };
+
+  console.log('creating attributes...');
 
   function createAttributes(entity: erm.Entity) {
     const adapterArr = rdbadapter.adapter2array(entity.adapter);

@@ -63,7 +63,7 @@ function sameAdapter(mapA, mapB) {
     const arrB = adapter2array(mapB).filter(r => !isWeakRelation(r));
     return arrA.length === arrB.length
         && arrA.every((a, idx) => a.relationName === arrB[idx].relationName
-            && (idx < (arrA.length - 1) || JSON.stringify(a.selector) === JSON.stringify(arrB[idx].selector)));
+            && JSON.stringify(a.selector) === JSON.stringify(arrB[idx].selector));
 }
 exports.sameAdapter = sameAdapter;
 function hasField(em, rn, fn) {

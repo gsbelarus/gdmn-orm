@@ -1,6 +1,13 @@
 export const gedeminTables = [
   'AC_ACCOUNT', // План счетов
   'AC_ACCVALUE', // AC_ACCVALUE
+  'AC_TRANSACTION',
+  'AC_TRRECORD',
+  'AT_FIELDS',
+  'AT_RELATIONS',
+  'AT_RELATION_FIELDS',
+  'EVT_OBJECT',
+  'EVT_MACROSGROUP',
   'GD_COMMAND',
   'GD_COMPACCTYPE', // Типы банковских счетов
   'GD_CONST', // Константы
@@ -10,6 +17,7 @@ export const gedeminTables = [
   'GD_DOCUMENTTYPE', // Типы документов
   'GD_DOCUMENTTYPE_OPTION', // GD_DOCUMENTTYPE_OPTION
   'GD_FILE', // Файлы
+  'GD_FUNCTION',
   'GD_GOOD', // Справочник ТМЦ
   'GD_GOODBARCODE', // Штрих коды
   'GD_GOODGROUP', // Группы ТМЦ
@@ -30,6 +38,7 @@ export const gedeminTables = [
   'MSG_BOX', // Группы сообщений
   'MSG_MESSAGE', // Сообщения
   'MSG_MESSAGERULES', // Правила сообщений
+  'RP_REPORTGROUP',
   'WG_POSITION', // Должности
   'WG_TBLCAL', // График рабочего времени
   'WG_TBLCALDAY', // График рабочего времени (день)

@@ -14,6 +14,7 @@ const atdata_1 = require("./atdata");
 const util_1 = require("./util");
 const document_1 = require("./document");
 const gdtables_1 = require("./gdtables");
+const util_2 = require("util");
 async function erExport(dbs, transaction, erModel) {
     const { atfields, atrelations } = await atdata_1.load(transaction);
     const crossRelationsAdapters = {
@@ -63,6 +64,11 @@ async function erExport(dbs, transaction, erModel) {
         if (!abstract) {
             const found = Object.entries(erModel.entities).find(e => !e[1].isAbstract && rdbadapter.sameAdapter(adapter, e[1].adapter));
             if (found) {
+                console.log('================================');
+                console.log(`adapter 1: ${JSON.stringify(adapter)}`);
+                console.log(`adapter 2: ${JSON.stringify(found[1].adapter)}`);
+                console.log(util_2.inspect(lName));
+                console.log(util_2.inspect(found[1].lName));
                 return found[1];
             }
         }
@@ -325,13 +331,13 @@ async function erExport(dbs, transaction, erModel) {
                 throw new Error(`Unknown doc type ${parent_ruid} of ${className}`);
             }
             const lineAdapter = {
-                relation: rdbadapter.adapter2array(rdbadapter.appendAdapter(parent.adapter, setLR))
+                relation: rdbadapter.adapter2array(rdbadapter.appendAdapter(lineParent.adapter, setLR))
             };
             lineAdapter.relation[0].selector = { field: 'DOCUMENTTYPEKEY', value: id };
             const line = createEntity(lineParent, lineAdapter, false, `LINE:${ruid}[${setLR}]`, { ru: { name: `Позиция: ${name}` } });
             line.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Шапка документа' } }, [header]));
             documentClasses[ruid] = Object.assign({}, documentClasses[ruid], { line });
-            header.add(new erm.DetailAttribute('DocumentLine', line.lName, false, [line]));
+            header.add(new erm.DetailAttribute(line.name, line.lName, false, [line]));
         }
     }
     ;
@@ -433,7 +439,7 @@ async function erExport(dbs, transaction, erModel) {
                         const cond = atField && atField.refCondition ? rdbadapter.condition2Selectors(atField.refCondition) : undefined;
                         const refEntities = findEntities(refRelationName, cond);
                         if (!refEntities.length) {
-                            console.warn(`${r.name}.${rf.name}: no entities for table ${refRelationName}, condition: ${JSON.stringify(cond)}`);
+                            console.warn(`${r.name}.${rf.name}: no entities for table ${refRelationName}${cond ? ', condition: ' + JSON.stringify(cond) : ''}`);
                         }
                         return new erm.EntityAttribute(attributeName, lName, required, refEntities, adapter);
                     }

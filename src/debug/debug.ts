@@ -28,6 +28,22 @@ const testDB: IDBDetail<IDefaultConnectionPoolOptions> = {
   }
 };
 
+const broiler: IDBDetail<IDefaultConnectionPoolOptions> = {
+  alias: "broiler",
+  driver: Factory.FBDriver,
+  poolInstance: Factory.FBDriver.newDefaultConnectionPool(),
+  poolOptions: {
+    max: 3
+  },
+  connectionOptions: {
+    host: "brutto",
+    port: 3053,
+    username: "SYSDBA",
+    password: "masterkey",
+    path: "k:\\bases\\broiler\\GDBASE_2017_10_02.FDB"
+  }
+};
+
 async function loadERModel(dbDetail: IDBDetail) {
   const {driver, poolInstance, poolOptions, connectionOptions}: IDBDetail = dbDetail;
   await poolInstance.create(connectionOptions, poolOptions);
@@ -59,6 +75,6 @@ async function loadERModel(dbDetail: IDBDetail) {
   return result;
 };
 
-(async () => await loadERModel(testDB))();
+(async () => await loadERModel(broiler))();
 
 

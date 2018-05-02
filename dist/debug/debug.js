@@ -27,6 +27,21 @@ const testDB = {
         path: "c:\\golden\\ns\\gdmn-back\\test\\db\\test.fdb"
     }
 };
+const broiler = {
+    alias: "broiler",
+    driver: gdmn_db_2.Factory.FBDriver,
+    poolInstance: gdmn_db_2.Factory.FBDriver.newDefaultConnectionPool(),
+    poolOptions: {
+        max: 3
+    },
+    connectionOptions: {
+        host: "brutto",
+        port: 3053,
+        username: "SYSDBA",
+        password: "masterkey",
+        path: "k:\\bases\\broiler\\GDBASE_2017_10_02.FDB"
+    }
+};
 async function loadERModel(dbDetail) {
     const { driver, poolInstance, poolOptions, connectionOptions } = dbDetail;
     await poolInstance.create(connectionOptions, poolOptions);
@@ -53,5 +68,5 @@ async function loadERModel(dbDetail) {
     return result;
 }
 ;
-(async () => await loadERModel(testDB))();
+(async () => await loadERModel(broiler))();
 //# sourceMappingURL=debug.js.map
