@@ -6,7 +6,8 @@
   "types": "./dist/definitions/index.d.ts",
   "scripts": {
     "test": "tsc && jest",
-    "push": "tsc && git commit -a -m \"wip\" && git push"
+    "push": "tsc && git commit -a -m \"wip\" && git push",
+    "debug": "node --nolazy --inspect-brk=9229 ./dist/debug/debug.js"
   },
   "repository": {
     "type": "git",
@@ -27,7 +28,7 @@
     "@types/node": "^9.6.7",
     "jest": "^22.4.3",
     "ts-jest": "^22.4.4",
-    "ts-node": "^6.0.1",
+    "ts-node": "^6.0.2",
     "typescript": "^2.8.3"
   }
 }

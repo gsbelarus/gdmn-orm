@@ -4,6 +4,7 @@ import * as rdbadapter from '../rdbadapter';
 import { LName } from '../types';
 import { load, atField, atRelationField } from './atdata';
 import { default2Int, default2Number, default2Date } from './util';
+import { loadDocument } from './document';
 
 export async function erExport(dbs: DBStructure, transaction: ATransaction, erModel: erm.ERModel): Promise<erm.ERModel> {
 
@@ -58,10 +59,14 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
   function createEntity(parent: erm.Entity | undefined, adapter: rdbadapter.Entity2RelationMap,
     abstract?: boolean, entityName?: string, lName?: LName, attributes?: erm.Attribute[]): erm.Entity
   {
-    const found = Object.entries(erModel.entities).find( e => rdbadapter.sameAdapter(adapter, e[1].adapter) );
+    if (!abstract) {
+      const found = Object.entries(erModel.entities).find(
+        e => !e[1].isAbstract && rdbadapter.sameAdapter(adapter, e[1].adapter)
+      );
 
-    if (found) {
-      return found[1];
+      if (found) {
+        return found[1];
+      }
     }
 
     const relation = rdbadapter.adapter2array(adapter).filter( r => !rdbadapter.isWeakRelation(r) ).reverse()[0];
@@ -344,10 +349,72 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
     new erm.DetailAttribute('GD_COMPANYACCOUNT', {ru: {name: 'Банковские счета'}}, false, [companyAccount])
   );
 
-  const document = createEntity(undefined, rdbadapter.relationName2Adapter('GD_DOCUMENT'), true);
-  const userDocument = createEntity(document, rdbadapter.relationName2Adapter('GD_DOCUMENT'), true);
-  const invDocument = createEntity(document, rdbadapter.relationName2Adapter('GD_DOCUMENT'), true);
-  const invPriceListDocument = createEntity(document, rdbadapter.relationName2Adapter('GD_DOCUMENT'), true);
+  const TgdcDocument = createEntity(undefined, rdbadapter.relationName2Adapter('GD_DOCUMENT'), true, 'TgdcDocument');
+  const TgdcDocumentAdapter = rdbadapter.relationName2Adapter('GD_DOCUMENT');
+  const documentABC: { [name: string]: erm.Entity } = {
+    'TgdcDocumentType': TgdcDocument,
+    'TgdcUserDocumentType': createEntity(TgdcDocument, TgdcDocumentAdapter, true, 'TgdcUserDocument'),
+    'TgdcInvDocumentType': createEntity(TgdcDocument, TgdcDocumentAdapter, true, 'TgdcInvDocument'),
+    'TgdcInvPriceListType': createEntity(TgdcDocument, TgdcDocumentAdapter, true, 'TgdcInvPriceList')
+  };
+
+  const documentClasses: { [ruid: string]: { header: erm.Entity, line?: erm.Entity } } = {};
+
+  function createDocument(id: number, ruid: string, parent_ruid: string, name: string,
+    className: string, hr: string, lr: string)
+  {
+    const setHR = hr ? hr
+        : id === 800300 ? 'BN_BANKSTATEMENT'
+        : id === 800350 ? 'BN_BANKCATALOGUE'
+        : '';
+
+    const setLR = lr ? lr
+        : id === 800300 ? 'BN_BANKSTATEMENTLINE'
+        : id === 800350 ? 'BN_BANKCATALOGUELINE'
+        : '';
+
+    const parent = documentClasses[parent_ruid] && documentClasses[parent_ruid].header ? documentClasses[parent_ruid].header
+      : documentABC[className] ? documentABC[className]
+      : TgdcDocument;
+
+    if (!parent) {
+      throw new Error(`Unknown doc type ${parent_ruid} of ${className}`);
+    }
+
+    const headerAdapter = {
+      relation: rdbadapter.adapter2array(rdbadapter.appendAdapter(parent.adapter, setHR))
+    };
+    headerAdapter.relation[0].selector = {field: 'DOCUMENTTYPEKEY', value: id};
+    const header = createEntity(parent, headerAdapter, false, `${ruid}[${setHR}]`, {ru: {name}});
+
+    documentClasses[ruid] = { header };
+
+    if (setLR) {
+      const lineParent = documentClasses[parent_ruid] && documentClasses[parent_ruid].line ? documentClasses[parent_ruid].line
+        : documentABC[className] ? documentABC[className]
+        : TgdcDocument;
+
+      if (!lineParent) {
+        throw new Error(`Unknown doc type ${parent_ruid} of ${className}`);
+      }
+
+      const lineAdapter = {
+        relation: rdbadapter.adapter2array(rdbadapter.appendAdapter(parent.adapter, setLR))
+      };
+      lineAdapter.relation[0].selector = {field: 'DOCUMENTTYPEKEY', value: id};
+      const line = createEntity(lineParent, lineAdapter,
+        false, `LINE:${ruid}[${setLR}]`, {ru: {name: `Позиция: ${name}`}});
+      line.add(
+        new erm.ParentAttribute('PARENT', {ru: {name: 'Шапка документа'}}, [header])
+      );
+      documentClasses[ruid] = { ...documentClasses[ruid], line };
+      header.add(
+        new erm.DetailAttribute('DocumentLine', line.lName, false, [line])
+      );
+    }
+  };
+
+  await loadDocument(transaction, createDocument);
 
   function recursInherited(parentRelation: Relation[], parentEntity: erm.Entity) {
     dbs.forEachRelation( inherited => {

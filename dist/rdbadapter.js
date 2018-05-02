@@ -34,11 +34,16 @@ function relationNames2Adapter(relationNames) {
 exports.relationNames2Adapter = relationNames2Adapter;
 function appendAdapter(em, relationName) {
     if (Array.isArray(em.relation)) {
-        return Object.assign({}, em, { relation: [...em.relation, { relationName }] });
+        if (relationName && !em.relation.find(r => r.relationName === relationName)) {
+            return Object.assign({}, em, { relation: [...em.relation, { relationName }] });
+        }
     }
     else {
-        return Object.assign({}, em, { relation: [em.relation, { relationName }] });
+        if (relationName && em.relation.relationName !== relationName) {
+            return Object.assign({}, em, { relation: [em.relation, { relationName }] });
+        }
     }
+    return em;
 }
 exports.appendAdapter = appendAdapter;
 function adapter2array(em) {

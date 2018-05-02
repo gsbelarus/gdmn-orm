@@ -86,10 +86,15 @@ export function relationNames2Adapter(relationNames: string[]): Entity2RelationM
 
 export function appendAdapter(em: Entity2RelationMap, relationName: string) {
   if (Array.isArray(em.relation)) {
-    return { ...em, relation: [...em.relation, { relationName } ] }
+    if (relationName && !em.relation.find( r => r.relationName === relationName )) {
+      return { ...em, relation: [...em.relation, { relationName } ] };
+    }
   } else {
-    return { ...em, relation: [em.relation, { relationName }] }
+    if (relationName && em.relation.relationName !== relationName) {
+      return { ...em, relation: [em.relation, { relationName }] };
+    }
   }
+  return em;
 }
 
 export function adapter2array(em: Entity2RelationMap): AnyRelation[] {

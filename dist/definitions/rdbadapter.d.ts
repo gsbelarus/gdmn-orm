@@ -45,10 +45,7 @@ export interface CrossRelations {
 }
 export declare function relationName2Adapter(relationName: string): Entity2RelationMap;
 export declare function relationNames2Adapter(relationNames: string[]): Entity2RelationMap;
-export declare function appendAdapter(em: Entity2RelationMap, relationName: string): {
-    relation: Relation[];
-    refresh?: boolean | undefined;
-};
+export declare function appendAdapter(em: Entity2RelationMap, relationName: string): Entity2RelationMap;
 export declare function adapter2array(em: Entity2RelationMap): AnyRelation[];
 export declare function sameAdapter(mapA: Entity2RelationMap, mapB: Entity2RelationMap): boolean;
 export declare function hasField(em: Entity2RelationMap, rn: string, fn: string): boolean;

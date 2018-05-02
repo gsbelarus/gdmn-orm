@@ -12,6 +12,7 @@ const erm = __importStar(require("../ermodel"));
 const rdbadapter = __importStar(require("../rdbadapter"));
 const atdata_1 = require("./atdata");
 const util_1 = require("./util");
+const document_1 = require("./document");
 async function erExport(dbs, transaction, erModel) {
     const { atfields, atrelations } = await atdata_1.load(transaction);
     const crossRelationsAdapters = {
@@ -54,10 +55,12 @@ async function erExport(dbs, transaction, erModel) {
         }
         return found;
     }
-    function createEntity(parent, adapter, entityName, lName, attributes) {
-        const found = Object.entries(erModel.entities).find(e => rdbadapter.sameAdapter(adapter, e[1].adapter));
-        if (found) {
-            return found[1];
+    function createEntity(parent, adapter, abstract, entityName, lName, attributes) {
+        if (!abstract) {
+            const found = Object.entries(erModel.entities).find(e => !e[1].isAbstract && rdbadapter.sameAdapter(adapter, e[1].adapter));
+            if (found) {
+                return found[1];
+            }
         }
         const relation = rdbadapter.adapter2array(adapter).filter(r => !rdbadapter.isWeakRelation(r)).reverse()[0];
         if (!relation || !relation.relationName) {
@@ -66,7 +69,7 @@ async function erExport(dbs, transaction, erModel) {
         const setEntityName = entityName ? entityName : relation.relationName;
         const atRelation = atrelations[relation.relationName];
         const fake = rdbadapter.relationName2Adapter(setEntityName);
-        const entity = new erm.Entity(parent, setEntityName, lName ? lName : (atRelation ? atRelation.lName : {}), false, JSON.stringify(adapter) !== JSON.stringify(fake) ? adapter : undefined);
+        const entity = new erm.Entity(parent, setEntityName, lName ? lName : (atRelation ? atRelation.lName : {}), !!abstract, JSON.stringify(adapter) !== JSON.stringify(fake) ? adapter : undefined);
         if (!parent) {
             entity.add(new erm.SequenceAttribute('ID', { ru: { name: 'Идентификатор' } }, GDGUnique));
         }
@@ -85,7 +88,7 @@ async function erExport(dbs, transaction, erModel) {
      * Административно-территориальная единица.
      * Тут исключительно для иллюстрации типа данных Перечисление.
      */
-    createEntity(undefined, rdbadapter.relationName2Adapter('GD_PLACE'), undefined, undefined, [
+    createEntity(undefined, rdbadapter.relationName2Adapter('GD_PLACE'), false, undefined, undefined, [
         new erm.EnumAttribute('PLACETYPE', { ru: { name: 'Тип' } }, true, [
             {
                 value: 'Область'
@@ -113,7 +116,7 @@ async function erExport(dbs, transaction, erModel) {
                 'NAME'
             ]
         }
-    }, 'Folder', { ru: { name: 'Папка' } });
+    }, false, 'Folder', { ru: { name: 'Папка' } });
     Folder.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в папку' } }, [Folder]));
     /**
      * Компания хранится в трех таблицах.
@@ -145,7 +148,7 @@ async function erExport(dbs, transaction, erModel) {
             }
         ],
         refresh: true
-    }, 'Company', { ru: { name: 'Организация' } }, [
+    }, false, 'Company', { ru: { name: 'Организация' } }, [
         new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в папку' } }, [Folder]),
         new erm.StringAttribute('NAME', { ru: { name: 'Краткое наименование' } }, true, undefined, 60, undefined, true, undefined)
     ]);
@@ -176,7 +179,7 @@ async function erExport(dbs, transaction, erModel) {
             }
         ],
         refresh: true
-    }, 'Bank', { ru: { name: 'Банк' } });
+    }, false, 'Bank', { ru: { name: 'Банк' } });
     /**
      * Подразделение организации может входить (через поле Parent) в
      * организацию (компания, банк) или в другое подразделение.
@@ -189,7 +192,7 @@ async function erExport(dbs, transaction, erModel) {
                 value: 4
             }
         }
-    }, 'Department', { ru: { name: 'Подразделение' } });
+    }, false, 'Department', { ru: { name: 'Подразделение' } });
     Department.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в организацию (подразделение)' } }, [Company, Department]));
     Department.add(new erm.StringAttribute('NAME', { ru: { name: 'Наименование' } }, true, undefined, 60, undefined, true, undefined));
     /**
@@ -209,7 +212,7 @@ async function erExport(dbs, transaction, erModel) {
             }
         ],
         refresh: true
-    }, 'Person', { ru: { name: 'Физическое лицо' } });
+    }, false, 'Person', { ru: { name: 'Физическое лицо' } });
     Person.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в папку' } }, [Folder]));
     Person.add(new erm.StringAttribute('NAME', { ru: { name: 'ФИО' } }, true, undefined, 60, undefined, true, undefined));
     /**
@@ -232,7 +235,7 @@ async function erExport(dbs, transaction, erModel) {
                 relationName: 'GD_EMPLOYEE'
             }
         ]
-    }, 'Employee', { ru: { name: 'Сотрудник предприятия' } });
+    }, false, 'Employee', { ru: { name: 'Сотрудник предприятия' } });
     Employee.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Организация или подразделение' } }, [Company, Department]));
     /**
      * Группа контактов.
@@ -250,7 +253,7 @@ async function erExport(dbs, transaction, erModel) {
                 'NAME'
             ]
         }
-    }, 'Group', { ru: { name: 'Группа' } });
+    }, false, 'Group', { ru: { name: 'Группа' } });
     Group.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в папку' } }, [Folder]));
     const ContactList = Group.add(new erm.SetAttribute('CONTACTLIST', { ru: { name: 'Контакты' } }, false, [Company, Person], 0, {
         crossRelation: 'GD_CONTACTLIST'
@@ -260,12 +263,61 @@ async function erExport(dbs, transaction, erModel) {
     createEntity(undefined, rdbadapter.relationName2Adapter('GD_CURR'));
     createEntity(undefined, rdbadapter.relationName2Adapter('WG_POSITION'));
     Company.add(new erm.DetailAttribute('GD_COMPANYACCOUNT', { ru: { name: 'Банковские счета' } }, false, [companyAccount]));
+    const TgdcDocument = createEntity(undefined, rdbadapter.relationName2Adapter('GD_DOCUMENT'), true, 'TgdcDocument');
+    const TgdcDocumentAdapter = rdbadapter.relationName2Adapter('GD_DOCUMENT');
+    const documentABC = {
+        'TgdcDocumentType': TgdcDocument,
+        'TgdcUserDocumentType': createEntity(TgdcDocument, TgdcDocumentAdapter, true, 'TgdcUserDocument'),
+        'TgdcInvDocumentType': createEntity(TgdcDocument, TgdcDocumentAdapter, true, 'TgdcInvDocument'),
+        'TgdcInvPriceListType': createEntity(TgdcDocument, TgdcDocumentAdapter, true, 'TgdcInvPriceList')
+    };
+    const documentClasses = {};
+    function createDocument(id, ruid, parent_ruid, name, className, hr, lr) {
+        const setHR = hr ? hr
+            : id === 800300 ? 'BN_BANKSTATEMENT'
+                : id === 800350 ? 'BN_BANKCATALOGUE'
+                    : '';
+        const setLR = lr ? lr
+            : id === 800300 ? 'BN_BANKSTATEMENTLINE'
+                : id === 800350 ? 'BN_BANKCATALOGUELINE'
+                    : '';
+        const parent = documentClasses[parent_ruid] && documentClasses[parent_ruid].header ? documentClasses[parent_ruid].header
+            : documentABC[className] ? documentABC[className]
+                : TgdcDocument;
+        if (!parent) {
+            throw new Error(`Unknown doc type ${parent_ruid} of ${className}`);
+        }
+        const headerAdapter = {
+            relation: rdbadapter.adapter2array(rdbadapter.appendAdapter(parent.adapter, setHR))
+        };
+        headerAdapter.relation[0].selector = { field: 'DOCUMENTTYPEKEY', value: id };
+        const header = createEntity(parent, headerAdapter, false, `${ruid}[${setHR}]`, { ru: { name } });
+        documentClasses[ruid] = { header };
+        if (setLR) {
+            const lineParent = documentClasses[parent_ruid] && documentClasses[parent_ruid].line ? documentClasses[parent_ruid].line
+                : documentABC[className] ? documentABC[className]
+                    : TgdcDocument;
+            if (!lineParent) {
+                throw new Error(`Unknown doc type ${parent_ruid} of ${className}`);
+            }
+            const lineAdapter = {
+                relation: rdbadapter.adapter2array(rdbadapter.appendAdapter(parent.adapter, setLR))
+            };
+            lineAdapter.relation[0].selector = { field: 'DOCUMENTTYPEKEY', value: id };
+            const line = createEntity(lineParent, lineAdapter, false, `LINE:${ruid}[${setLR}]`, { ru: { name: `Позиция: ${name}` } });
+            line.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Шапка документа' } }, [header]));
+            documentClasses[ruid] = Object.assign({}, documentClasses[ruid], { line });
+            header.add(new erm.DetailAttribute('DocumentLine', line.lName, false, [line]));
+        }
+    }
+    ;
+    await document_1.loadDocument(transaction, createDocument);
     function recursInherited(parentRelation, parentEntity) {
         dbs.forEachRelation(inherited => {
             if (Object.entries(inherited.foreignKeys).find(([name, f]) => f.fields.join() === inherited.primaryKey.fields.join()
                 && dbs.relationByUqConstraint(f.constNameUq) === parentRelation[parentRelation.length - 1])) {
                 const newParent = [...parentRelation, inherited];
-                recursInherited(newParent, createEntity(parentEntity, rdbadapter.appendAdapter(parentEntity.adapter, inherited.name), inherited.name, atrelations[inherited.name] ? atrelations[inherited.name].lName : {}));
+                recursInherited(newParent, createEntity(parentEntity, rdbadapter.appendAdapter(parentEntity.adapter, inherited.name), false, inherited.name, atrelations[inherited.name] ? atrelations[inherited.name].lName : {}));
             }
         }, true);
     }

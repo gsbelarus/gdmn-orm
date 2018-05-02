@@ -178,7 +178,7 @@ export class NumericAttribute extends NumberAttribute<number> {
   }
 
   inspectDataType() {
-    return `${super.inspectDataType()}(${this._precision}, ${-this._scale})`;
+    return `${super.inspectDataType()}(${this._precision}, ${Math.abs(this._scale)})`;
   }
 }
 
@@ -425,7 +425,7 @@ export class Entity {
 
   inspect(): string[] {
     const lName = this.lName.ru ? ' - ' + this.lName.ru.name : '';
-    return [`${this.name}${this.parent ? '(' + this.parent.name + ')': ''}${lName}:`,
+    return [`${this.isAbstract ? '!' : ''}${this.name}${this.parent ? '(' + this.parent.name + ')': ''}${lName}:`,
       `  adapter: ${JSON.stringify(this.adapter)}`,
       '  Attributes:',
       ...Object.entries(this.attributes).reduce( (p, a) => {
@@ -481,6 +481,7 @@ export class ERModel {
     if (this._entities[entity.name]) {
       throw new Error(`Entity ${entity.name} already exists`);
     }
+    console.log('added: ' + entity.name)
     return this._entities[entity.name] = entity;
   }
 
