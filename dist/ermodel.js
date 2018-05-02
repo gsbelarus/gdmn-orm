@@ -126,7 +126,7 @@ class NumericAttribute extends NumberAttribute {
         this._scale = scale;
     }
     inspectDataType() {
-        return `${super.inspectDataType()}(${this._precision}, ${-this._scale})`;
+        return `${super.inspectDataType()}(${this._precision}, ${Math.abs(this._scale)})`;
     }
 }
 exports.NumericAttribute = NumericAttribute;
@@ -360,7 +360,6 @@ class ERModel {
         if (this._entities[entity.name]) {
             throw new Error(`Entity ${entity.name} already exists`);
         }
-        console.log('added: ' + entity.name);
         return this._entities[entity.name] = entity;
     }
     addSequence(sequence) {

@@ -481,7 +481,6 @@ export class ERModel {
     if (this._entities[entity.name]) {
       throw new Error(`Entity ${entity.name} already exists`);
     }
-    console.log('added: ' + entity.name)
     return this._entities[entity.name] = entity;
   }
 

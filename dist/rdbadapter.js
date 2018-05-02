@@ -59,11 +59,11 @@ function adapter2array(em) {
 }
 exports.adapter2array = adapter2array;
 function sameAdapter(mapA, mapB) {
-    const arrA = adapter2array(mapA);
-    const arrB = adapter2array(mapB);
+    const arrA = adapter2array(mapA).filter(r => !isWeakRelation(r));
+    const arrB = adapter2array(mapB).filter(r => !isWeakRelation(r));
     return arrA.length === arrB.length
         && arrA.every((a, idx) => a.relationName === arrB[idx].relationName
-            && JSON.stringify(a.selector) === JSON.stringify(arrB[idx].selector));
+            && (idx < (arrA.length - 1) || JSON.stringify(a.selector) === JSON.stringify(arrB[idx].selector)));
 }
 exports.sameAdapter = sameAdapter;
 function hasField(em, rn, fn) {

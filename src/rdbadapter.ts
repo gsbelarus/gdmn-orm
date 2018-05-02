@@ -109,11 +109,11 @@ export function adapter2array(em: Entity2RelationMap): AnyRelation[] {
 }
 
 export function sameAdapter(mapA: Entity2RelationMap, mapB: Entity2RelationMap): boolean {
-  const arrA = adapter2array(mapA);
-  const arrB = adapter2array(mapB);
+  const arrA = adapter2array(mapA).filter( r => !isWeakRelation(r) );
+  const arrB = adapter2array(mapB).filter( r => !isWeakRelation(r) );
   return arrA.length === arrB.length
     && arrA.every( (a, idx) => a.relationName === arrB[idx].relationName
-      && JSON.stringify(a.selector) === JSON.stringify(arrB[idx].selector));
+      && (idx < (arrA.length - 1) || JSON.stringify(a.selector) === JSON.stringify(arrB[idx].selector)));
 }
 
 export function hasField(em: Entity2RelationMap, rn: string, fn: string): boolean {

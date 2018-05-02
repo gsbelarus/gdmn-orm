@@ -5,6 +5,7 @@ import { LName } from '../types';
 import { load, atField, atRelationField } from './atdata';
 import { default2Int, default2Number, default2Date } from './util';
 import { loadDocument } from './document';
+import { gedeminTables } from './gdtables';
 
 export async function erExport(dbs: DBStructure, transaction: ATransaction, erModel: erm.ERModel): Promise<erm.ERModel> {
 
@@ -19,6 +20,10 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
       }
 
     }
+  };
+
+  const abstractBaseRelations: { [name: string]: boolean } = {
+    'GD_CONTACT': true
   };
 
   /**
@@ -191,6 +196,33 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
     ]
   );
 
+  const OurCompany = createEntity(Company,
+    {
+      relation: [
+        {
+          relationName: 'GD_CONTACT',
+          selector: {
+            field: 'CONTACTTYPE',
+            value: 3
+          }
+        },
+        {
+          relationName: 'GD_COMPANY'
+        },
+        {
+          relationName: 'GD_COMPANYCODE',
+          weak: true
+        },
+        {
+          relationName: 'GD_OURCOMPANY'
+        }
+      ],
+      refresh: true
+    },
+    false,
+    'OurCompany', {ru: {name: 'Рабочая организация'}}
+  );
+
   /**
    * Банк является частным случаем компании (наследуется от компании).
    * Все атрибуты компании являются и атрибутами банка и не нуждаются
@@ -341,13 +373,12 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
     ) as erm.SetAttribute;
 
   const companyAccount = createEntity(undefined, rdbadapter.relationName2Adapter('GD_COMPANYACCOUNT'));
-  createEntity(undefined, rdbadapter.relationName2Adapter('GD_COMPACCTYPE'));
-  createEntity(undefined, rdbadapter.relationName2Adapter('GD_CURR'));
-  createEntity(undefined, rdbadapter.relationName2Adapter('WG_POSITION'));
 
   Company.add(
     new erm.DetailAttribute('GD_COMPANYACCOUNT', {ru: {name: 'Банковские счета'}}, false, [companyAccount])
   );
+
+  gedeminTables.forEach( t => createEntity(undefined, rdbadapter.relationName2Adapter(t)) );
 
   const TgdcDocument = createEntity(undefined, rdbadapter.relationName2Adapter('GD_DOCUMENT'), true, 'TgdcDocument');
   const TgdcDocumentAdapter = rdbadapter.relationName2Adapter('GD_DOCUMENT');
@@ -416,23 +447,31 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
 
   await loadDocument(transaction, createDocument);
 
-  function recursInherited(parentRelation: Relation[], parentEntity: erm.Entity) {
+  function recursInherited(parentRelation: Relation[], parentEntity?: erm.Entity) {
     dbs.forEachRelation( inherited => {
       if (Object.entries(inherited.foreignKeys).find(
         ([name, f]) => f.fields.join() === inherited.primaryKey!.fields.join()
           && dbs.relationByUqConstraint(f.constNameUq) === parentRelation[parentRelation.length - 1] ))
       {
         const newParent = [...parentRelation, inherited];
+        const parentAdapter = parentEntity ? parentEntity.adapter
+          : rdbadapter.relationNames2Adapter(parentRelation.map( p => p.name ));
         recursInherited(newParent, createEntity(parentEntity,
-          rdbadapter.appendAdapter(parentEntity.adapter, inherited.name), false,
+          rdbadapter.appendAdapter(parentAdapter, inherited.name), false,
           inherited.name, atrelations[inherited.name] ? atrelations[inherited.name].lName : {}));
       }
     }, true);
   };
 
   dbs.forEachRelation( r => {
-    if (r.primaryKey!.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)) {
-      recursInherited([r], createEntity(undefined, rdbadapter.relationName2Adapter(r.name)));
+    if (r.primaryKey!.fields.join() === 'ID' && /^USR\$.+$/.test(r.name)
+      && !Object.entries(r.foreignKeys).find( fk => fk[1].fields.join() === 'ID' ))
+    {
+      if (abstractBaseRelations[r.name]) {
+        recursInherited([r]);
+      } else {
+        recursInherited([r], createEntity(undefined, rdbadapter.relationName2Adapter(r.name)));
+      }
     }
   }, true);
 
@@ -484,6 +523,14 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
       case 'DTYPETRANSPORT': return new erm.EnumAttribute(attributeName, lName, false,
         [{value: 'C'}, {value: 'S'}, {value: 'R'}, {value: 'O'}, {value: 'W'}], undefined, adapter);
       case 'DGOLDQUANTITY': return new erm.NumericAttribute(attributeName, lName, false, 15, 8, undefined, undefined, undefined, adapter);
+      case 'GD_DIPADDRESS': return new erm.StringAttribute(attributeName, lName, true, undefined, 15, undefined, true, /([1-9]|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])(\.(\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])){3}\/\d+/, adapter);
+      case 'DSTORAGE_DATA_TYPE': return new erm.EnumAttribute(attributeName, lName, true,
+        [
+          {value: 'G'}, {value: 'U'}, {value: 'O'}, {value: 'T'}, {value: 'F'},
+          {value: 'S'}, {value: 'I'}, {value: 'C'}, {value: 'L'}, {value: 'D'},
+          {value: 'B'}
+        ], undefined, adapter
+      );
     }
 
     if (fieldSource.fieldScale < 0) {
@@ -508,7 +555,11 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
       }
 
       if (fieldSource.validationSource) {
-        console.warn(`Not processed for ${attributeName}: ${JSON.stringify(fieldSource.validationSource)}`);
+        if (fieldSource.validationSource === 'CHECK(VALUE >= 0)') {
+          MinValue = 0;
+        } else {
+          console.warn(`Not processed for ${attributeName}: ${JSON.stringify(fieldSource.validationSource)}`);
+        }
       }
 
       return new erm.NumericAttribute(attributeName, lName, required,
@@ -532,8 +583,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
           const refEntities = findEntities(refRelationName, cond);
 
           if (!refEntities.length) {
-            // throw new Error(`No entities for table ${refRelationName}, condition: ${JSON.stringify(cond)}`);
-            console.warn(`No entities for table ${refRelationName}, condition: ${JSON.stringify(cond)}`);
+            console.warn(`${r.name}.${rf.name}: no entities for table ${refRelationName}, condition: ${JSON.stringify(cond)}`);
           }
 
           return new erm.EntityAttribute(attributeName, lName, required, refEntities, adapter);
@@ -548,9 +598,11 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
       case FieldType.CHAR:
       case FieldType.VARCHAR:
       {
+        let minLength: number | undefined = undefined;
+
         if (fieldSource.fieldLength === 1 && fieldSource.validationSource) {
           const enumValues = [];
-          const reValueIn = /CHECK\s*\((\(VALUE IS NULL\) OR )?(\(VALUE\s+IN\s*\(\s*){1}((?:\'[A-Z0-9]\'(?:\,\s*)?)+)\)\)\)/;
+          const reValueIn = /CHECK\s*\((\(VALUE IS NULL\) OR )?(\(?VALUE\s+IN\s*\(\s*){1}((?:\'[A-Z0-9]\'(?:\,\s*)?)+)\)?\)\)/i;
           let match;
           if (match = reValueIn.exec(fieldSource.validationSource)) {
             const reEnumValue = /\'([A-Z0-9]{1})\'/g;
@@ -567,11 +619,17 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
           }
         } else {
           if (fieldSource.validationSource) {
-            console.warn(`Not processed for ${attributeName}: ${JSON.stringify(fieldSource.validationSource)}`);
+            if (fieldSource.validationSource === "CHECK (VALUE > '')" ||
+              fieldSource.validationSource === "CHECK ((VALUE IS NULL) OR (VALUE > ''))")
+            {
+              minLength = 1;
+            } else {
+              console.warn(`Not processed for ${attributeName}: ${JSON.stringify(fieldSource.validationSource)}`);
+            }
           }
         }
 
-        return new erm.StringAttribute(attributeName, lName, required, undefined,
+        return new erm.StringAttribute(attributeName, lName, required, minLength,
           fieldSource.fieldLength, undefined, true, undefined, adapter);
       }
 
@@ -723,9 +781,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
       }
 
       if (!entitiesOwner.length) {
-        console.log(`No entities found for relation ${relOwner.name}`);
         return;
-        // throw new Error(`No entities found for relation ${relOwner.name}`);
       }
 
       const relReference = dbs.relationByUqConstraint(fkReference[1].constNameUq);
@@ -742,9 +798,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
       const referenceEntities = findEntities(relReference.name, cond);
 
       if (!referenceEntities.length) {
-        console.log(`No entities found for relation ${relReference.name}`);
         return;
-        // throw new Error(`No entities found for relation ${relReference.name}`);
       }
 
       const setField = atSetField ? relOwner.relationFields[atSetField[0]] : undefined;
