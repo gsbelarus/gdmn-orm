@@ -87,4 +87,8 @@ function condition2Selectors(cond) {
     return [];
 }
 exports.condition2Selectors = condition2Selectors;
+function adjustName(relationName) {
+    return relationName.replace('$', '_');
+}
+exports.adjustName = adjustName;
 //# sourceMappingURL=rdbadapter.js.map

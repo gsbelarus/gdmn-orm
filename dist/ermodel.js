@@ -250,6 +250,9 @@ class Entity {
         this._pk = [];
         this._attributes = {};
         this._unique = [];
+        if (!/^[a-zA-Z0-9_]+$/.test(name)) {
+            throw new Error(`Invalid entity name ${name}`);
+        }
         this.parent = parent;
         this.name = name;
         this.lName = lName;

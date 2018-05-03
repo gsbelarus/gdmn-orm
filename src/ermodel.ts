@@ -345,6 +345,10 @@ export class Entity {
   constructor(parent: Entity | undefined, name: string, lName: LName,
     isAbstract: boolean, adapter?: Entity2RelationMap)
   {
+    if (!/^[a-zA-Z0-9_]+$/.test(name)) {
+      throw new Error(`Invalid entity name ${name}`);
+    }
+
     this.parent = parent;
     this.name = name;
     this.lName = lName;

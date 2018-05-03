@@ -46,3 +46,4 @@ export declare function sameAdapter(mapA: Entity2RelationMap, mapB: Entity2Relat
 export declare function hasField(em: Entity2RelationMap, rn: string, fn: string): boolean;
 export declare function isUserDefined(name: string): boolean;
 export declare function condition2Selectors(cond: string): EntitySelector[];
+export declare function adjustName(relationName: string): string;

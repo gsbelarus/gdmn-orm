@@ -83,7 +83,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
       throw new Error('Invalid entity adapter');
     }
 
-    const setEntityName = entityName ? entityName : relation.relationName;
+    const setEntityName = rdbadapter.adjustName(entityName ? entityName : relation.relationName);
     const atRelation = atrelations[relation.relationName];
     const fake = rdbadapter.relationName2Adapter(setEntityName);
 
@@ -419,7 +419,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
 
     const headerAdapter = rdbadapter.appendAdapter(parent.adapter, setHR);
     headerAdapter.relation[0].selector = {field: 'DOCUMENTTYPEKEY', value: id};
-    const header = createEntity(parent, headerAdapter, false, `${ruid}[${setHR}]`, {ru: {name}});
+    const header = createEntity(parent, headerAdapter, false, `DOC_${ruid}_${setHR}`, {ru: {name}});
 
     documentClasses[ruid] = { header };
 
@@ -435,7 +435,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
       const lineAdapter = rdbadapter.appendAdapter(lineParent.adapter, setLR);
       lineAdapter.relation[0].selector = {field: 'DOCUMENTTYPEKEY', value: id};
       const line = createEntity(lineParent, lineAdapter,
-        false, `LINE:${ruid}[${setLR}]`, {ru: {name: `Позиция: ${name}`}});
+        false, `LINE_${ruid}_${setLR}`, {ru: {name: `Позиция: ${name}`}});
       line.add(
         new erm.ParentAttribute('PARENT', {ru: {name: 'Шапка документа'}}, [header])
       );
