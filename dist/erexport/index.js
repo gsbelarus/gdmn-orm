@@ -334,7 +334,6 @@ async function erExport(dbs, transaction, erModel) {
     }
     ;
     await document_1.loadDocument(transaction, createDocument);
-    console.log('documents loaded...');
     function recursInherited(parentRelation, parentEntity) {
         dbs.forEachRelation(inherited => {
             if (Object.entries(inherited.foreignKeys).find(([name, f]) => f.fields.join() === inherited.primaryKey.fields.join()
@@ -473,7 +472,6 @@ async function erExport(dbs, transaction, erModel) {
         }
     }
     ;
-    console.log('creating attributes...');
     function createAttributes(entity) {
         const relations = entity.adapter.relation.map(rn => dbs.relations[rn.relationName]);
         relations.forEach(r => {

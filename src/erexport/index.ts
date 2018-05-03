@@ -448,8 +448,6 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
 
   await loadDocument(transaction, createDocument);
 
-  console.log('documents loaded...')
-
   function recursInherited(parentRelation: Relation[], parentEntity?: erm.Entity) {
     dbs.forEachRelation( inherited => {
       if (Object.entries(inherited.foreignKeys).find(
@@ -653,8 +651,6 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
         throw new Error(`Unknown data type ${fieldSource}=${fieldSource.fieldType} for field ${r.name}.${attributeName}`);
     }
   };
-
-  console.log('creating attributes...');
 
   function createAttributes(entity: erm.Entity) {
     const relations = entity.adapter.relation.map( rn => dbs.relations[rn.relationName] );
