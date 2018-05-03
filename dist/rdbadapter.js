@@ -1,5 +1,9 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+const clone_1 = __importDefault(require("clone"));
 exports.MIN_64BIT_INT = -9223372036854775808;
 exports.MAX_64BIT_INT = +9223372036854775807;
 exports.MIN_32BIT_INT = -2147483648;
@@ -16,15 +20,11 @@ exports.systemFields = [
     'EDITIONDATE',
     'EDITORKEY'
 ];
-function isWeakRelation(r) {
-    return typeof r.weak !== 'undefined';
-}
-exports.isWeakRelation = isWeakRelation;
 function relationName2Adapter(relationName) {
     return {
-        relation: {
-            relationName
-        }
+        relation: [{
+                relationName
+            }]
     };
 }
 exports.relationName2Adapter = relationName2Adapter;
@@ -32,42 +32,24 @@ function relationNames2Adapter(relationNames) {
     return { relation: relationNames.map(relationName => ({ relationName })) };
 }
 exports.relationNames2Adapter = relationNames2Adapter;
-function appendAdapter(em, relationName) {
-    if (Array.isArray(em.relation)) {
-        if (relationName && !em.relation.find(r => r.relationName === relationName)) {
-            return Object.assign({}, em, { relation: [...em.relation, { relationName }] });
-        }
-    }
-    else {
-        if (relationName && em.relation.relationName !== relationName) {
-            return Object.assign({}, em, { relation: [em.relation, { relationName }] });
-        }
+function appendAdapter(src, relationName) {
+    const em = clone_1.default(src);
+    if (relationName && !em.relation.find(r => r.relationName === relationName)) {
+        em.relation.push({ relationName });
     }
     return em;
 }
 exports.appendAdapter = appendAdapter;
-function adapter2array(em) {
-    if (Array.isArray(em.relation)) {
-        if (!em.relation.length) {
-            throw new Error('Invalid entity 2 relation adapter');
-        }
-        return em.relation;
-    }
-    else {
-        return [em.relation];
-    }
-}
-exports.adapter2array = adapter2array;
 function sameAdapter(mapA, mapB) {
-    const arrA = adapter2array(mapA).filter(r => !isWeakRelation(r));
-    const arrB = adapter2array(mapB).filter(r => !isWeakRelation(r));
+    const arrA = mapA.relation.filter(r => !r.weak);
+    const arrB = mapB.relation.filter(r => !r.weak);
     return arrA.length === arrB.length
         && arrA.every((a, idx) => a.relationName === arrB[idx].relationName
             && JSON.stringify(a.selector) === JSON.stringify(arrB[idx].selector));
 }
 exports.sameAdapter = sameAdapter;
 function hasField(em, rn, fn) {
-    const r = adapter2array(em).find(ar => ar.relationName === rn);
+    const r = em.relation.find(ar => ar.relationName === rn);
     if (!r) {
         throw new Error(`Can't find relation ${rn} in adapter`);
     }

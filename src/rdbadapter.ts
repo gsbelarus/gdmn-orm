@@ -31,26 +31,17 @@ export interface EntitySelector {
   value: number | string;
 }
 
+export type Weak = true;
+
 export interface Relation {
   relationName: string,
   selector?: EntitySelector;
   fields?: string[];
-}
-
-export type Weak = true;
-
-export interface WeakRelation extends Relation {
-  weak: Weak;
-}
-
-export type AnyRelation = Relation | WeakRelation;
-
-export function isWeakRelation(r: AnyRelation): r is WeakRelation {
-  return typeof (r as WeakRelation).weak !== 'undefined';
+  weak?: Weak;
 }
 
 export interface Entity2RelationMap extends EntityAdapter {
-  relation: Relation | AnyRelation[];
+  relation: Relation[];
   refresh?: boolean;
 }
 
@@ -75,9 +66,9 @@ export interface CrossRelations {
 
 export function relationName2Adapter(relationName: string): Entity2RelationMap {
   return {
-    relation: {
+    relation: [{
       relationName
-    }
+    }]
   };
 }
 
@@ -85,44 +76,24 @@ export function relationNames2Adapter(relationNames: string[]): Entity2RelationM
   return { relation: relationNames.map( relationName => ({ relationName }) ) }
 }
 
-export function appendAdapter(src: Entity2RelationMap, relationName: string) {
+export function appendAdapter(src: Entity2RelationMap, relationName: string): Entity2RelationMap {
   const em = clone(src);
-  //const em = JSON.parse(JSON.stringify(src));
-  if (Array.isArray(em.relation)) {
-    if (relationName && !em.relation.find( (r: AnyRelation) => r.relationName === relationName )) {
-      return { ...em, relation: [...em.relation, { relationName } ] };
-    }
-  } else {
-    if (relationName && em.relation.relationName !== relationName) {
-      return { ...em, relation: [em.relation, { relationName }] };
-    }
+  if (relationName && !em.relation.find( r => r.relationName === relationName )) {
+    em.relation.push({ relationName });
   }
-  return {...em};
-}
-
-export function adapter2array(src: Entity2RelationMap): AnyRelation[] {
-  const em = clone(src);
-  //const em = JSON.parse(JSON.stringify(src));
-  if (Array.isArray(em.relation)) {
-    if (!em.relation.length) {
-      throw new Error('Invalid entity 2 relation adapter');
-    }
-    return em.relation;
-  } else {
-    return [em.relation];
-  }
+  return em;
 }
 
 export function sameAdapter(mapA: Entity2RelationMap, mapB: Entity2RelationMap): boolean {
-  const arrA = adapter2array(mapA).filter( r => !isWeakRelation(r) );
-  const arrB = adapter2array(mapB).filter( r => !isWeakRelation(r) );
+  const arrA = mapA.relation.filter( r => !r.weak );
+  const arrB = mapB.relation.filter( r => !r.weak );
   return arrA.length === arrB.length
     && arrA.every( (a, idx) => a.relationName === arrB[idx].relationName
       && JSON.stringify(a.selector) === JSON.stringify(arrB[idx].selector));
 }
 
 export function hasField(em: Entity2RelationMap, rn: string, fn: string): boolean {
-  const r = adapter2array(em).find( ar => ar.relationName === rn );
+  const r = em.relation.find( ar => ar.relationName === rn );
 
   if (!r) {
     throw new Error(`Can't find relation ${rn} in adapter`);

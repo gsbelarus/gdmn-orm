@@ -38,8 +38,8 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
   function findEntities(relationName: string, selectors: rdbadapter.EntitySelector[] = []): erm.Entity[] {
     const found = Object.entries(erModel.entities).reduce( (p, e) => {
       if (e[1].adapter) {
-        rdbadapter.adapter2array(e[1].adapter).forEach( r => {
-          if (r.relationName === relationName && !rdbadapter.isWeakRelation(r)) {
+        e[1].adapter.relation.forEach( r => {
+          if (r.relationName === relationName && !r.weak) {
             if (r.selector && selectors.length) {
               if (selectors.find( s => s.field === r.selector!.field && s.value === r.selector!.value )) {
                 p.push(e[1]);
@@ -76,7 +76,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
       }
     }
 
-    const relation = rdbadapter.adapter2array(adapter).filter( r => !rdbadapter.isWeakRelation(r) ).reverse()[0];
+    const relation = adapter.relation.filter( r => !r.weak ).reverse()[0];
 
     if (!relation || !relation.relationName) {
       throw new Error('Invalid entity adapter');
@@ -140,7 +140,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
    */
   const Folder = createEntity(undefined,
     {
-      relation: {
+      relation: [{
         relationName: 'GD_CONTACT',
         selector: {
           field: 'CONTACTTYPE',
@@ -150,7 +150,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
           'PARENT',
           'NAME'
         ]
-      }
+      }]
     },
     false,
     'Folder', {ru: {name: 'Папка'}}
@@ -264,13 +264,13 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
    */
   const Department = createEntity(undefined,
     {
-      relation: {
+      relation: [{
         relationName: 'GD_CONTACT',
         selector: {
           field: 'CONTACTTYPE',
           value: 4
         }
-      }
+      }]
     },
     false,
     'Department', {ru: {name: 'Подразделение'}}
@@ -347,7 +347,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
   const Group = createEntity(undefined,
     {
       relation:
-        {
+        [{
           relationName: 'GD_CONTACT',
           selector: {
             field: 'CONTACTTYPE',
@@ -357,7 +357,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
             'PARENT',
             'NAME'
           ]
-        }
+        }]
     },
     false,
     'Group', {ru: {name: 'Группа'}},
@@ -416,9 +416,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
       throw new Error(`Unknown doc type ${parent_ruid} of ${className}`);
     }
 
-    const headerAdapter = {
-      relation: rdbadapter.adapter2array(rdbadapter.appendAdapter(parent.adapter, setHR))
-    };
+    const headerAdapter = rdbadapter.appendAdapter(parent.adapter, setHR);
     headerAdapter.relation[0].selector = {field: 'DOCUMENTTYPEKEY', value: id};
     const header = createEntity(parent, headerAdapter, false, `${ruid}[${setHR}]`, {ru: {name}});
 
@@ -433,9 +431,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
         throw new Error(`Unknown doc type ${parent_ruid} of ${className}`);
       }
 
-      const lineAdapter = {
-        relation: rdbadapter.adapter2array(rdbadapter.appendAdapter(lineParent.adapter, setLR))
-      };
+      const lineAdapter = rdbadapter.appendAdapter(lineParent.adapter, setLR);
       lineAdapter.relation[0].selector = {field: 'DOCUMENTTYPEKEY', value: id};
       const line = createEntity(lineParent, lineAdapter,
         false, `LINE:${ruid}[${setLR}]`, {ru: {name: `Позиция: ${name}`}});
@@ -700,8 +696,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
   console.log('creating attributes...');
 
   function createAttributes(entity: erm.Entity) {
-    const adapterArr = rdbadapter.adapter2array(entity.adapter);
-    const relations = adapterArr.map( rn => dbs.relations[rn.relationName] );
+    const relations = entity.adapter.relation.map( rn => dbs.relations[rn.relationName] );
 
     relations.forEach( r => {
       if (!r || !r.primaryKey) return;
@@ -722,7 +717,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
           return;
         }
 
-        if (adapterArr[0].selector && adapterArr[0].selector!.field === fn) {
+        if (entity.adapter.relation[0].selector && entity.adapter.relation[0].selector!.field === fn) {
           return;
         }
 

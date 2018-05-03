@@ -14,7 +14,6 @@ const atdata_1 = require("./atdata");
 const util_1 = require("./util");
 const document_1 = require("./document");
 const gdtables_1 = require("./gdtables");
-const util_2 = require("util");
 async function erExport(dbs, transaction, erModel) {
     const { atfields, atrelations } = await atdata_1.load(transaction);
     const crossRelationsAdapters = {
@@ -37,8 +36,8 @@ async function erExport(dbs, transaction, erModel) {
     function findEntities(relationName, selectors = []) {
         const found = Object.entries(erModel.entities).reduce((p, e) => {
             if (e[1].adapter) {
-                rdbadapter.adapter2array(e[1].adapter).forEach(r => {
-                    if (r.relationName === relationName && !rdbadapter.isWeakRelation(r)) {
+                e[1].adapter.relation.forEach(r => {
+                    if (r.relationName === relationName && !r.weak) {
                         if (r.selector && selectors.length) {
                             if (selectors.find(s => s.field === r.selector.field && s.value === r.selector.value)) {
                                 p.push(e[1]);
@@ -64,15 +63,10 @@ async function erExport(dbs, transaction, erModel) {
         if (!abstract) {
             const found = Object.entries(erModel.entities).find(e => !e[1].isAbstract && rdbadapter.sameAdapter(adapter, e[1].adapter));
             if (found) {
-                console.log('================================');
-                console.log(`adapter 1: ${JSON.stringify(adapter)}`);
-                console.log(`adapter 2: ${JSON.stringify(found[1].adapter)}`);
-                console.log(util_2.inspect(lName));
-                console.log(util_2.inspect(found[1].lName));
                 return found[1];
             }
         }
-        const relation = rdbadapter.adapter2array(adapter).filter(r => !rdbadapter.isWeakRelation(r)).reverse()[0];
+        const relation = adapter.relation.filter(r => !r.weak).reverse()[0];
         if (!relation || !relation.relationName) {
             throw new Error('Invalid entity adapter');
         }
@@ -115,17 +109,17 @@ async function erExport(dbs, transaction, erModel) {
      * Имеет древовидную структуру.
      */
     const Folder = createEntity(undefined, {
-        relation: {
-            relationName: 'GD_CONTACT',
-            selector: {
-                field: 'CONTACTTYPE',
-                value: 0,
-            },
-            fields: [
-                'PARENT',
-                'NAME'
-            ]
-        }
+        relation: [{
+                relationName: 'GD_CONTACT',
+                selector: {
+                    field: 'CONTACTTYPE',
+                    value: 0,
+                },
+                fields: [
+                    'PARENT',
+                    'NAME'
+                ]
+            }]
     }, false, 'Folder', { ru: { name: 'Папка' } });
     Folder.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в папку' } }, [Folder]));
     /**
@@ -217,13 +211,13 @@ async function erExport(dbs, transaction, erModel) {
      * организацию (компания, банк) или в другое подразделение.
      */
     const Department = createEntity(undefined, {
-        relation: {
-            relationName: 'GD_CONTACT',
-            selector: {
-                field: 'CONTACTTYPE',
-                value: 4
-            }
-        }
+        relation: [{
+                relationName: 'GD_CONTACT',
+                selector: {
+                    field: 'CONTACTTYPE',
+                    value: 4
+                }
+            }]
     }, false, 'Department', { ru: { name: 'Подразделение' } });
     Department.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в организацию (подразделение)' } }, [Company, Department]));
     Department.add(new erm.StringAttribute('NAME', { ru: { name: 'Наименование' } }, true, undefined, 60, undefined, true, undefined));
@@ -274,17 +268,17 @@ async function erExport(dbs, transaction, erModel) {
      * CONTACTLIST -- множество, которое хранится в кросс-таблице.
      */
     const Group = createEntity(undefined, {
-        relation: {
-            relationName: 'GD_CONTACT',
-            selector: {
-                field: 'CONTACTTYPE',
-                value: 1
-            },
-            fields: [
-                'PARENT',
-                'NAME'
-            ]
-        }
+        relation: [{
+                relationName: 'GD_CONTACT',
+                selector: {
+                    field: 'CONTACTTYPE',
+                    value: 1
+                },
+                fields: [
+                    'PARENT',
+                    'NAME'
+                ]
+            }]
     }, false, 'Group', { ru: { name: 'Группа' } });
     Group.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Входит в папку' } }, [Folder]));
     const ContactList = Group.add(new erm.SetAttribute('CONTACTLIST', { ru: { name: 'Контакты' } }, false, [Company, Person], 0, {
@@ -293,13 +287,14 @@ async function erExport(dbs, transaction, erModel) {
     const companyAccount = createEntity(undefined, rdbadapter.relationName2Adapter('GD_COMPANYACCOUNT'));
     Company.add(new erm.DetailAttribute('GD_COMPANYACCOUNT', { ru: { name: 'Банковские счета' } }, false, [companyAccount]));
     gdtables_1.gedeminTables.forEach(t => createEntity(undefined, rdbadapter.relationName2Adapter(t)));
+    createEntity(undefined, rdbadapter.relationName2Adapter('INV_CARD'));
     const TgdcDocument = createEntity(undefined, rdbadapter.relationName2Adapter('GD_DOCUMENT'), true, 'TgdcDocument');
     const TgdcDocumentAdapter = rdbadapter.relationName2Adapter('GD_DOCUMENT');
     const documentABC = {
         'TgdcDocumentType': TgdcDocument,
-        'TgdcUserDocumentType': createEntity(TgdcDocument, TgdcDocumentAdapter, true, 'TgdcUserDocument'),
-        'TgdcInvDocumentType': createEntity(TgdcDocument, TgdcDocumentAdapter, true, 'TgdcInvDocument'),
-        'TgdcInvPriceListType': createEntity(TgdcDocument, TgdcDocumentAdapter, true, 'TgdcInvPriceList')
+        'TgdcUserDocumentType': createEntity(TgdcDocument, TgdcDocumentAdapter, true, 'TgdcUserDocument', { ru: { name: 'Пользовательские документы' } }),
+        'TgdcInvDocumentType': createEntity(TgdcDocument, TgdcDocumentAdapter, true, 'TgdcInvDocument', { ru: { name: 'Складские документы' } }),
+        'TgdcInvPriceListType': createEntity(TgdcDocument, TgdcDocumentAdapter, true, 'TgdcInvPriceList', { ru: { name: 'Прайс-листы' } })
     };
     const documentClasses = {};
     function createDocument(id, ruid, parent_ruid, name, className, hr, lr) {
@@ -317,9 +312,7 @@ async function erExport(dbs, transaction, erModel) {
         if (!parent) {
             throw new Error(`Unknown doc type ${parent_ruid} of ${className}`);
         }
-        const headerAdapter = {
-            relation: rdbadapter.adapter2array(rdbadapter.appendAdapter(parent.adapter, setHR))
-        };
+        const headerAdapter = rdbadapter.appendAdapter(parent.adapter, setHR);
         headerAdapter.relation[0].selector = { field: 'DOCUMENTTYPEKEY', value: id };
         const header = createEntity(parent, headerAdapter, false, `${ruid}[${setHR}]`, { ru: { name } });
         documentClasses[ruid] = { header };
@@ -330,9 +323,7 @@ async function erExport(dbs, transaction, erModel) {
             if (!lineParent) {
                 throw new Error(`Unknown doc type ${parent_ruid} of ${className}`);
             }
-            const lineAdapter = {
-                relation: rdbadapter.adapter2array(rdbadapter.appendAdapter(lineParent.adapter, setLR))
-            };
+            const lineAdapter = rdbadapter.appendAdapter(lineParent.adapter, setLR);
             lineAdapter.relation[0].selector = { field: 'DOCUMENTTYPEKEY', value: id };
             const line = createEntity(lineParent, lineAdapter, false, `LINE:${ruid}[${setLR}]`, { ru: { name: `Позиция: ${name}` } });
             line.add(new erm.ParentAttribute('PARENT', { ru: { name: 'Шапка документа' } }, [header]));
@@ -342,6 +333,7 @@ async function erExport(dbs, transaction, erModel) {
     }
     ;
     await document_1.loadDocument(transaction, createDocument);
+    console.log('documents loaded...');
     function recursInherited(parentRelation, parentEntity) {
         dbs.forEachRelation(inherited => {
             if (Object.entries(inherited.foreignKeys).find(([name, f]) => f.fields.join() === inherited.primaryKey.fields.join()
@@ -509,9 +501,9 @@ async function erExport(dbs, transaction, erModel) {
         }
     }
     ;
+    console.log('creating attributes...');
     function createAttributes(entity) {
-        const adapterArr = rdbadapter.adapter2array(entity.adapter);
-        const relations = adapterArr.map(rn => dbs.relations[rn.relationName]);
+        const relations = entity.adapter.relation.map(rn => dbs.relations[rn.relationName]);
         relations.forEach(r => {
             if (!r || !r.primaryKey)
                 return;
@@ -528,7 +520,7 @@ async function erExport(dbs, transaction, erModel) {
                     && !rdbadapter.isUserDefined(fn)) {
                     return;
                 }
-                if (adapterArr[0].selector && adapterArr[0].selector.field === fn) {
+                if (entity.adapter.relation[0].selector && entity.adapter.relation[0].selector.field === fn) {
                     return;
                 }
                 const atRelationField = atRelation ? atRelation.relationFields[fn] : undefined;
