@@ -479,9 +479,10 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
   function createAttribute(r: Relation,
     rf: RelationField,
     atRelationField: atRelationField | undefined,
-    attributeName: string,
+    attrName: string,
     adapter: rdbadapter.Attribute2FieldMap | undefined)
   {
+    const attributeName = rdbadapter.adjustName(attrName);
     const atField = atfields[rf.fieldSource];
     const fieldSource = dbs.fields[rf.fieldSource];
     const required: boolean = rf.notNull || fieldSource.notNull;

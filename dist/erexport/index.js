@@ -357,7 +357,8 @@ async function erExport(dbs, transaction, erModel) {
             }
         }
     }, true);
-    function createAttribute(r, rf, atRelationField, attributeName, adapter) {
+    function createAttribute(r, rf, atRelationField, attrName, adapter) {
+        const attributeName = rdbadapter.adjustName(attrName);
         const atField = atfields[rf.fieldSource];
         const fieldSource = dbs.fields[rf.fieldSource];
         const required = rf.notNull || fieldSource.notNull;
