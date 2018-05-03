@@ -8,6 +8,7 @@ import { loadDocument } from './document';
 import { gedeminTables } from './gdtables';
 import { inspect } from 'util';
 import { INSPECT_MAX_BYTES } from 'buffer';
+import { gdDomains } from './gddomains';
 
 export async function erExport(dbs: DBStructure, transaction: ATransaction, erModel: erm.ERModel): Promise<erm.ERModel> {
 
@@ -489,50 +490,10 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
     const defaultValue: string | null = rf.defaultValue || fieldSource.defaultValue;
     const lName = atRelationField ? atRelationField.lName : (atField ? atField.lName : {});
 
-    switch (rf.fieldSource) {
-      case 'DEDITIONDATE':
-        return new erm.TimeStampAttribute(attributeName, {ru: {name: 'Изменено'}}, true,
-          new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)',
-          adapter
-        );
-      case 'DCREATIONDATE':
-        return new erm.TimeStampAttribute(attributeName, {ru: {name: 'Создано'}}, true,
-          new Date('2000-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)',
-          adapter
-        );
-      case 'DDOCUMENTDATE':
-        return new erm.TimeStampAttribute(attributeName, {ru: {name: 'Дата документа'}}, true,
-          new Date('1900-01-01'), new Date('2100-12-31'), 'CURRENT_TIMESTAMP(0)',
-          adapter
-        );
-      case 'DQUANTITY': return new erm.NumericAttribute(attributeName, lName, false, 15, 4, undefined, undefined, undefined, adapter);
-      case 'DLAT': return new erm.NumericAttribute(attributeName, lName, false, 10, 8, -90, +90, undefined, adapter);
-      case 'DLON': return new erm.NumericAttribute(attributeName, lName, false, 11, 8, -180, +180, undefined, adapter);
-      case 'DCURRENCY': return new erm.NumericAttribute(attributeName, lName, false, 15, 4, undefined, undefined, undefined, adapter);
-      case 'DPOSITIVE': return new erm.NumericAttribute(attributeName, lName, false, 15, 8, 0, undefined, undefined, adapter);
-      case 'DPERCENT': return new erm.NumericAttribute(attributeName, lName, false, 7, 4, undefined, undefined, undefined, adapter);
-      case 'DTAX': return new erm.NumericAttribute(attributeName, lName, false, 7, 4, 0, 99, undefined, adapter);
-      case 'DDECDIGITS': return new erm.IntegerAttribute(attributeName, lName, false, 0, 16, undefined, adapter);
-      case 'DACCOUNTTYPE': return new erm.EnumAttribute(attributeName, lName, false, [{value: 'D'}, {value: 'K'}], undefined, adapter);
-      case 'DGENDER': return new erm.EnumAttribute(attributeName, lName, false, [{value: 'M'}, {value: 'F'}, {value: 'N'}], undefined, adapter);
-      case 'DTEXTALIGNMENT': return new erm.EnumAttribute(attributeName, lName, false,
-        [{value: 'L'}, {value: 'R'}, {value: 'C'}, {value: 'J'}], 'L', adapter);
-      case 'DSECURITY': return new erm.IntegerAttribute(attributeName, lName, true, undefined, undefined, -1, adapter);
-      case 'DDISABLED': return new erm.BooleanAttribute(attributeName, lName, false, false, adapter);
-      case 'DBOOLEAN': return new erm.BooleanAttribute(attributeName, lName, false, false, adapter);
-      case 'DBOOLEAN_NOTNULL': return new erm.BooleanAttribute(attributeName, lName, true, false, adapter);
-      // следующие домены надо проверить, возможно уже нигде и не используются
-      case 'DTYPETRANSPORT': return new erm.EnumAttribute(attributeName, lName, false,
-        [{value: 'C'}, {value: 'S'}, {value: 'R'}, {value: 'O'}, {value: 'W'}], undefined, adapter);
-      case 'DGOLDQUANTITY': return new erm.NumericAttribute(attributeName, lName, false, 15, 8, undefined, undefined, undefined, adapter);
-      case 'GD_DIPADDRESS': return new erm.StringAttribute(attributeName, lName, true, undefined, 15, undefined, true, /([1-9]|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])(\.(\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])){3}\/\d+/, adapter);
-      case 'DSTORAGE_DATA_TYPE': return new erm.EnumAttribute(attributeName, lName, true,
-        [
-          {value: 'G'}, {value: 'U'}, {value: 'O'}, {value: 'T'}, {value: 'F'},
-          {value: 'S'}, {value: 'I'}, {value: 'C'}, {value: 'L'}, {value: 'D'},
-          {value: 'B'}
-        ], undefined, adapter
-      );
+    const createDomainFunc = gdDomains[rf.fieldSource];
+
+    if (createDomainFunc) {
+      return createDomainFunc(attributeName, lName, adapter);
     }
 
     if (fieldSource.fieldScale < 0) {
@@ -557,7 +518,9 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
       }
 
       if (fieldSource.validationSource) {
-        if (fieldSource.validationSource === 'CHECK(VALUE >= 0)') {
+        if (fieldSource.validationSource === 'CHECK(VALUE >= 0)'
+          || fieldSource.validationSource === 'CHECK(((VALUE IS NULL) OR (VALUE >= 0)))')
+        {
           MinValue = 0;
         } else {
           console.warn(`Not processed for ${attributeName}: ${JSON.stringify(fieldSource.validationSource)}`);
@@ -688,8 +651,6 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
 
       default:
         throw new Error(`Unknown data type ${fieldSource}=${fieldSource.fieldType} for field ${r.name}.${attributeName}`);
-        // return undefined;
-        // throw new Error('Unknown data type for field ' + r.name + '.' + attributeName);
     }
   };
 
