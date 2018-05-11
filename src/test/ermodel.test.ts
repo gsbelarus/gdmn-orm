@@ -3,6 +3,7 @@ import {AConnection, AConnectionPool, ADriver, DBStructure, IConnectionOptions} 
 import {Factory, IDefaultConnectionPoolOptions} from "gdmn-db";
 import {ERModel, SetAttribute} from "../ermodel";
 import {erExport} from "../erexport";
+import { adjustName } from "../rdbadapter";
 
 interface IDBDetail<PoolOptions = any, ConnectionOptions extends IConnectionOptions = IConnectionOptions> {
   alias: string;
@@ -61,10 +62,10 @@ async function loadERModel(dbDetail: IDBDetail) {
 
 test('erModel', async () => {
   const result = await loadERModel(testDB);
-  const tstTable = result.erModel.entities['USR$TST_TABLE'];
+  const tstTable = result.erModel.entities[adjustName('USR$TST_TABLE')];
 
   expect(tstTable).toBeDefined();
-  expect(tstTable.attribute('USR$SET_COMPANY_WF')).toBeInstanceOf(SetAttribute);
-  expect(tstTable.attribute('USR$SET_COMPANY_WOF')).toBeInstanceOf(SetAttribute);
+  expect(tstTable.attribute(adjustName('USR$SET_COMPANY_WF'))).toBeInstanceOf(SetAttribute);
+  expect(tstTable.attribute(adjustName('USR$SET_COMPANY_WOF'))).toBeInstanceOf(SetAttribute);
 });
 

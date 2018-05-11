@@ -12,6 +12,7 @@ const gdmn_db_1 = require("gdmn-db");
 const gdmn_db_2 = require("gdmn-db");
 const ermodel_1 = require("../ermodel");
 const erexport_1 = require("../erexport");
+const rdbadapter_1 = require("../rdbadapter");
 const testDB = {
     alias: "test",
     driver: gdmn_db_2.Factory.FBDriver,
@@ -55,9 +56,9 @@ async function loadERModel(dbDetail) {
 ;
 test('erModel', async () => {
     const result = await loadERModel(testDB);
-    const tstTable = result.erModel.entities['USR$TST_TABLE'];
+    const tstTable = result.erModel.entities[rdbadapter_1.adjustName('USR$TST_TABLE')];
     expect(tstTable).toBeDefined();
-    expect(tstTable.attribute('USR$SET_COMPANY_WF')).toBeInstanceOf(ermodel_1.SetAttribute);
-    expect(tstTable.attribute('USR$SET_COMPANY_WOF')).toBeInstanceOf(ermodel_1.SetAttribute);
+    expect(tstTable.attribute(rdbadapter_1.adjustName('USR$SET_COMPANY_WF'))).toBeInstanceOf(ermodel_1.SetAttribute);
+    expect(tstTable.attribute(rdbadapter_1.adjustName('USR$SET_COMPANY_WOF'))).toBeInstanceOf(ermodel_1.SetAttribute);
 });
 //# sourceMappingURL=ermodel.test.js.map

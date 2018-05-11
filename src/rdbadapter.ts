@@ -136,6 +136,7 @@ export function condition2Selectors(cond: string): EntitySelector[] {
 }
 
 export function adjustName(relationName: string) {
-  return relationName.replace('$', '_');
+  // return relationName.replace('$', '_');
+  return relationName;
 }
 
