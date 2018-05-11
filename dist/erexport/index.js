@@ -15,8 +15,8 @@ const util_1 = require("./util");
 const document_1 = require("./document");
 const gdtables_1 = require("./gdtables");
 const gddomains_1 = require("./gddomains");
-async function erExport(dbs, transaction, erModel) {
-    const { atfields, atrelations } = await atdata_1.load(transaction);
+async function erExport(dbs, connection, transaction, erModel) {
+    const { atfields, atrelations } = await atdata_1.load(connection, transaction);
     const crossRelationsAdapters = {
         'GD_CONTACTLIST': {
             owner: 'GD_CONTACT',
@@ -333,7 +333,7 @@ async function erExport(dbs, transaction, erModel) {
         }
     }
     ;
-    await document_1.loadDocument(transaction, createDocument);
+    await document_1.loadDocument(connection, transaction, createDocument);
     function recursInherited(parentRelation, parentEntity) {
         dbs.forEachRelation(inherited => {
             if (Object.entries(inherited.foreignKeys).find(([name, f]) => f.fields.join() === inherited.primaryKey.fields.join()

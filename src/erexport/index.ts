@@ -1,4 +1,14 @@
-import { DBStructure, IRefConstraints, FKConstraint, Relation, FieldType, ATransaction, RelationField, Field } from 'gdmn-db';
+import {
+    DBStructure,
+    IRefConstraints,
+    FKConstraint,
+    Relation,
+    FieldType,
+    ATransaction,
+    RelationField,
+    Field,
+    AConnection
+} from "gdmn-db";
 import * as erm from '../ermodel';
 import * as rdbadapter from '../rdbadapter';
 import { LName } from '../types';
@@ -10,9 +20,9 @@ import { inspect } from 'util';
 import { INSPECT_MAX_BYTES } from 'buffer';
 import { gdDomains } from './gddomains';
 
-export async function erExport(dbs: DBStructure, transaction: ATransaction, erModel: erm.ERModel): Promise<erm.ERModel> {
+export async function erExport(dbs: DBStructure, connection: AConnection, transaction: ATransaction, erModel: erm.ERModel): Promise<erm.ERModel> {
 
-  const { atfields, atrelations } = await load(transaction);
+  const { atfields, atrelations } = await load(connection, transaction);
 
   const crossRelationsAdapters: rdbadapter.CrossRelations = {
     'GD_CONTACTLIST': {
@@ -446,7 +456,7 @@ export async function erExport(dbs: DBStructure, transaction: ATransaction, erMo
     }
   };
 
-  await loadDocument(transaction, createDocument);
+  await loadDocument(connection, transaction, createDocument);
 
   function recursInherited(parentRelation: Relation[], parentEntity?: erm.Entity) {
     dbs.forEachRelation( inherited => {

@@ -5,8 +5,8 @@
  * Чтобы каждый раз не выполнять отдельные запросы, мы изначально загружаем
  * все данные в объекты.
  */
-import { ATransaction } from 'gdmn-db';
-import { LName } from '../types';
+import { AConnection, ATransaction } from "gdmn-db";
+import { LName } from "../types";
 /**
  * Дополнительная информация по доменам.
  */
@@ -43,7 +43,7 @@ export interface atRelation {
 export interface atRelations {
     [relationName: string]: atRelation;
 }
-export declare function load(transaction: ATransaction): Promise<{
+export declare function load(connection: AConnection, transaction: ATransaction): Promise<{
     atfields: atFields;
     atrelations: atRelations;
 }>;
