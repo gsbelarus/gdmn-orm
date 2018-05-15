@@ -22,8 +22,7 @@
   "homepage": "https://github.com/gsbelarus/gdmn-orm#readme",
   "dependencies": {
     "@types/clone": "^0.1.30",
-    "clone": "^2.1.1",
-    "gdmn-db": "git://github.com/gsbelarus/gdmn-db.git"
+    "clone": "^2.1.1"
   },
   "devDependencies": {
     "@types/jest": "^22.2.3",
