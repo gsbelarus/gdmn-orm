@@ -46,7 +46,10 @@ export class Attribute {
   serialize(): IAttribute {
     return {
       name: this.name,
-      type: this.constructor.name
+      type: this.constructor.name,
+      lName: this._lName,
+      required: this._required,
+      calculated: this._calculated
     }
   }
 
@@ -425,6 +428,8 @@ export class Entity {
     return {
       parent: this.parent ? this.parent.name : undefined,
       name: this.name,
+      lName: this.lName,
+      isAbstract: this.isAbstract,
       attributes: Object.entries(this.attributes).map( a => a[1].serialize() )
     };
   }
