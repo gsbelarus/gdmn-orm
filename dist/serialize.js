@@ -28,4 +28,5 @@ function loadERModel(serialized) {
     serialized.entities.forEach(e => createEntity(e));
     return erModel;
 }
+exports.loadERModel = loadERModel;
 //# sourceMappingURL=serialize.js.map

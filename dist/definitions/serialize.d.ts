@@ -1,4 +1,5 @@
 import { LName } from './types';
+import { ERModel } from './ermodel';
 export interface IAttribute {
     name: string;
     lName: LName;
@@ -19,3 +20,4 @@ export interface IEntity {
 export interface IERModel {
     entities: IEntity[];
 }
+export declare function loadERModel(serialized: IERModel): ERModel;
