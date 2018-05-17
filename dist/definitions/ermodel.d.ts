@@ -2,7 +2,7 @@
  *
  */
 import { LName, AttributeAdapter, SequenceAdapter } from './types';
-import { IEntity, IAttribute, IERModel } from './interfaces';
+import { IEntity, IAttribute, IERModel } from './serialize';
 import { Entity2RelationMap, SetAttribute2CrossMap } from './rdbadapter';
 export declare type ContextVariables = 'CURRENT_TIMESTAMP' | 'CURRENT_TIMESTAMP(0)' | 'CURRENT_DATE' | 'CURRENT_TIME';
 export declare class Attribute {

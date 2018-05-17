@@ -3,7 +3,7 @@
  */
 
 import { LName, AttributeAdapter, SequenceAdapter } from './types';
-import { IEntity, IAttribute, IERModel } from './interfaces';
+import { IEntity, IAttribute, IERModel } from './serialize';
 import { Entity2RelationMap, relationName2Adapter, SetAttribute2CrossMap, CrossRelations } from './rdbadapter';
 
 export type ContextVariables = 'CURRENT_TIMESTAMP' | 'CURRENT_TIMESTAMP(0)' | 'CURRENT_DATE' | 'CURRENT_TIME';
@@ -426,6 +426,7 @@ export class Entity {
 
   serialize(): IEntity {
     return {
+      className: this.constructor.name,
       parent: this.parent ? this.parent.name : undefined,
       name: this.name,
       lName: this.lName,

@@ -319,6 +319,7 @@ class Entity {
     }
     serialize() {
         return {
+            className: this.constructor.name,
             parent: this.parent ? this.parent.name : undefined,
             name: this.name,
             lName: this.lName,

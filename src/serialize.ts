@@ -1,4 +1,5 @@
 import { LName } from './types';
+import { ERModel } from './ermodel';
 
 export interface IAttribute {
   name: string;
@@ -11,6 +12,7 @@ export interface IAttribute {
 }
 
 export interface IEntity {
+  className: string;
   parent?: string;
   name: string;
   lName: LName;
@@ -21,3 +23,14 @@ export interface IEntity {
 export interface IERModel {
   entities: IEntity[]
 }
+
+function loadERModel(serialized: IERModel): ERModel {
+  const erModel = new ERModel();
+
+  serialized.entities.forEach( e => {
+
+  });
+
+  return erModel;
+}
+
