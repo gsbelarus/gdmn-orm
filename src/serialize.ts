@@ -115,152 +115,110 @@ export function deserializeERModel(serialized: IERModel): ERModel {
     return result;
   };
 
+  const createAttribute = (_attr: IAttribute): Attribute => {
+    const { name, lName, required, calculated } = _attr;
+
+    switch (_attr.type) {
+      case 'DetailAttribute':{
+        const attr = _attr as IEntityAttribute;
+        return new DetailAttribute(name, lName, required,
+          attr.references.map( e => erModel.entities[e] )
+        );
+      }
+
+      case 'ParentAttribute':{
+        const attr = _attr as IEntityAttribute;
+        return new ParentAttribute(name, lName,
+          attr.references.map( e => erModel.entities[e] )
+        );
+      }
+
+      case 'EntityAttribute': {
+        const attr = _attr as IEntityAttribute;
+        return new EntityAttribute(name, lName, required,
+          attr.references.map( e => erModel.entity(e) )
+        );
+      }
+
+      case 'StringAttribute': {
+        const attr = _attr as IStringAttribute;
+        return new StringAttribute(name, lName, required, attr.minLength, attr.maxLength,
+            attr.defaultValue, attr.autoTrim, attr.mask
+        );
+      }
+
+      case 'SetAttribute': {
+        const attr = _attr as ISetAttribute;
+        const setAttribute = new SetAttribute(name, lName, required,
+            attr.references.map( e => erModel.entities[e] ), attr.presLen
+        );
+        attr.attributes.forEach( a => setAttribute.add(createAttribute(a)) );
+        return setAttribute;
+      }
+
+      case 'SequenceAttribute': {
+        const attr = _attr as ISequenceAttribute;
+        return new SequenceAttribute(name, lName, createSequence(attr.sequence));
+      }
+
+      case 'IntegerAttribute': {
+        const attr = _attr as INumberAttribute<number>;
+        return new IntegerAttribute(name, lName, required, attr.minValue, attr.maxValue,
+            attr.defaultValue
+        );
+      }
+
+      case 'NumericAttribute': {
+        const attr = _attr as INumericAttribute;
+        return new NumericAttribute(name, lName, required, attr.precision, attr.scale,
+            attr.minValue, attr.maxValue, attr.defaultValue
+        );
+      }
+
+      case 'FloatAttribute': {
+        const attr = _attr as INumberAttribute<number>;
+        return new FloatAttribute(name, lName, required, attr.minValue, attr.maxValue,
+            attr.defaultValue
+        );
+      }
+
+      case 'BooleanAttribute': {
+        const attr = _attr as IBooleanAttribute;
+        return new BooleanAttribute(name, lName, required, attr.defaultValue);
+      }
+
+      case 'DateAttribute': {
+        const attr = _attr as IDateAttribute;
+        return new DateAttribute(name, lName, required, attr.minValue, attr.maxValue, attr.defaultValue);
+      }
+
+      case 'TimeStampAttribute': {
+        const attr = _attr as IDateAttribute;
+        return new TimeStampAttribute(name, lName, required, attr.minValue, attr.maxValue, attr.defaultValue);
+      }
+
+      case 'TimeAttribute': {
+        const attr = _attr as IDateAttribute;
+        return new TimeAttribute(name, lName, required, attr.minValue, attr.maxValue, attr.defaultValue);
+      }
+
+      case 'BlobAttribute': {
+        return new BlobAttribute(name, lName, required);
+      }
+
+      case 'EnumAttribute': {
+        const attr = _attr as IEnumAttribute;
+        return new EnumAttribute(name, lName, required, attr.values, attr.defaultValue);
+      }
+
+      default:
+        throw new Error(`Unknown attribyte type ${_attr.type}`);
+    }
+  }
+
   const createAttributes = (e: IEntity): void => {
     const entity = erModel.entity(e.name);
-
-    e.attributes.forEach( _attr => {
-      const { name, lName, required, calculated } = _attr;
-
-      switch (_attr.type) {
-        case 'DetailAttribute':{
-          const attr = _attr as IEntityAttribute;
-          entity.add(
-            new DetailAttribute(name, lName, required,
-              attr.references.map( e => erModel.entities[e] )
-            )
-          );
-          break;
-        }
-
-        case 'ParentAttribute':{
-          const attr = _attr as IEntityAttribute;
-          entity.add(
-            new ParentAttribute(name, lName,
-              attr.references.map( e => erModel.entities[e] )
-            )
-          );
-          break;
-        }
-
-        case 'EntityAttribute': {
-          const attr = _attr as IEntityAttribute;
-          entity.add(
-            new EntityAttribute(name, lName, required,
-              attr.references.map( e => erModel.entity(e) )
-            )
-          );
-          break;
-        }
-
-        case 'StringAttribute': {
-          const attr = _attr as IStringAttribute;
-          entity.add(
-            new StringAttribute(name, lName, required, attr.minLength, attr.maxLength,
-              attr.defaultValue, attr.autoTrim, attr.mask
-            )
-          );
-          break;
-        }
-
-        case 'SetAttribute': {
-          const attr = _attr as ISetAttribute;
-          entity.add(
-            new SetAttribute(name, lName, required,
-              attr.references.map( e => erModel.entities[e] ), attr.presLen
-            )
-          );
-          break;
-        }
-
-        case 'SequenceAttribute': {
-          const attr = _attr as ISequenceAttribute;
-          entity.add(
-            new SequenceAttribute(name, lName, createSequence(attr.sequence))
-          );
-          break;
-        }
-
-        case 'IntegerAttribute': {
-          const attr = _attr as INumberAttribute<number>;
-          entity.add(
-            new IntegerAttribute(name, lName, required, attr.minValue, attr.maxValue,
-              attr.defaultValue
-            )
-          );
-          break;
-        }
-
-        case 'NumericAttribute': {
-          const attr = _attr as INumericAttribute;
-          entity.add(
-            new NumericAttribute(name, lName, required, attr.precision, attr.scale,
-              attr.minValue, attr.maxValue, attr.defaultValue
-            )
-          );
-          break;
-        }
-
-        case 'FloatAttribute': {
-          const attr = _attr as INumberAttribute<number>;
-          entity.add(
-            new FloatAttribute(name, lName, required, attr.minValue, attr.maxValue,
-              attr.defaultValue
-            )
-          );
-          break;
-        }
-
-        case 'BooleanAttribute': {
-          const attr = _attr as IBooleanAttribute;
-          entity.add(
-            new BooleanAttribute(name, lName, required, attr.defaultValue)
-          );
-          break;
-        }
-
-        case 'DateAttribute': {
-          const attr = _attr as IDateAttribute;
-          entity.add(
-            new DateAttribute(name, lName, required, attr.minValue, attr.maxValue, attr.defaultValue)
-          );
-          break;
-        }
-
-        case 'TimeStampAttribute': {
-          const attr = _attr as IDateAttribute;
-          entity.add(
-            new TimeStampAttribute(name, lName, required, attr.minValue, attr.maxValue, attr.defaultValue)
-          );
-          break;
-        }
-
-        case 'TimeAttribute': {
-          const attr = _attr as IDateAttribute;
-          entity.add(
-            new TimeAttribute(name, lName, required, attr.minValue, attr.maxValue, attr.defaultValue)
-          );
-          break;
-        }
-
-        case 'BlobAttribute': {
-          entity.add(
-            new BlobAttribute(name, lName, required)
-          );
-          break;
-        }
-
-        case 'EnumAttribute': {
-          const attr = _attr as IEnumAttribute;
-          entity.add(
-            new EnumAttribute(name, lName, required, attr.values, attr.defaultValue)
-          );
-          break;
-        }
-
-        default:
-          throw new Error(`Unknown attribyte type ${_attr.type}`);
-      }
-    });
+    e.attributes.forEach( _attr => entity.add(createAttribute(_attr)) );
   };
 
   serialized.entities.forEach( e => createEntity(e) );
