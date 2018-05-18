@@ -4,7 +4,7 @@
 
 import { LName, AttributeAdapter, SequenceAdapter, EnumValue, ContextVariables } from './types';
 import { IEntity, IAttribute, IERModel, AttributeClasses, IEntityAttribute, IStringAttribute, ISetAttribute, ISequenceAttribute, INumberAttribute, INumericAttribute, IBooleanAttribute, IEnumAttribute, IDateAttribute } from './serialize';
-import { Entity2RelationMap, relationName2Adapter, SetAttribute2CrossMap, CrossRelations } from './rdbadapter';
+import { Entity2RelationMap, relationName2Adapter, SetAttribute2CrossMap, CrossRelations, DetailAttributeMap } from './rdbadapter';
 
 export class Attribute {
   private _name: string;
@@ -338,7 +338,11 @@ export class ParentAttribute extends EntityAttribute {
   }
 }
 
-export class DetailAttribute extends EntityAttribute { }
+export class DetailAttribute extends EntityAttribute {
+  constructor(name: string, lName: LName, required: boolean, entity: Entity[], adapter?: DetailAttributeMap) {
+    super(name, lName, required, entity, adapter);
+  }
+}
 
 export class SetAttribute extends EntityAttribute {
   private _attributes: Attributes = {};

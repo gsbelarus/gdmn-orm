@@ -32,6 +32,43 @@ export interface SetAttribute2CrossMap extends AttributeAdapter {
     crossRelation: string;
     presentationField?: string;
 }
+/**
+ * Адаптер для атрибута детальной сущности это массив из объектов,
+ * каждый из которых содержит имя детальной таблицы и имя её поля,
+ * являющегося внешним ключем на одну из таблиц мастер сущности.
+ *
+ * Рассмотрим структуру сложного документа. Шапка хранится в двух
+ * таблицах:
+ *
+ *  GD_DOCUMENT -- DOC_HEADER_TABLE
+ *
+ * позиция тоже хранится в двух таблицах:
+ *
+ *  GD_DOCUMENT -- DOC_LINE_TABLE
+ *
+ * В ER модели, сущность документа будет содержать атрибут
+ * детальной сущности (позиции документа). Как правило, имя атрибута
+ * совпадает с именем детальной таблицы.
+ *
+ * Адаптер детальной сущности будет содержать следующий массив:
+ *
+ * [
+ *   {
+ *     detailRelation: 'GD_DOCUMENT',
+ *     link2masterField: 'PARENT'
+ *   },
+ *   {
+ *     detailRelation: 'DOC_LINE_TABLE',
+ *     link2masterfield: 'MASTERKEY'
+ *   }
+ * ]
+ */
+export interface DetailAttributeMap extends AttributeAdapter {
+    masterLinks: [{
+        detailRelation: string;
+        link2masterField: string;
+    }];
+}
 export interface CrossRelation {
     owner: string;
     selector?: EntitySelector;

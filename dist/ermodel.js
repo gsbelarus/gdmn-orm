@@ -234,6 +234,9 @@ class ParentAttribute extends EntityAttribute {
 }
 exports.ParentAttribute = ParentAttribute;
 class DetailAttribute extends EntityAttribute {
+    constructor(name, lName, required, entity, adapter) {
+        super(name, lName, required, entity, adapter);
+    }
 }
 exports.DetailAttribute = DetailAttribute;
 class SetAttribute extends EntityAttribute {
