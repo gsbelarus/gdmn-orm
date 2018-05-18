@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const ermodel_1 = require("./ermodel");
-function loadERModel(serialized) {
+function deserializeERModel(serialized) {
     const erModel = new ermodel_1.ERModel();
     const createEntity = (e) => {
         let result = erModel.entities[e.name];
@@ -42,5 +42,5 @@ function loadERModel(serialized) {
     serialized.entities.forEach(e => createEntity(e));
     return erModel;
 }
-exports.loadERModel = loadERModel;
+exports.deserializeERModel = deserializeERModel;
 //# sourceMappingURL=serialize.js.map

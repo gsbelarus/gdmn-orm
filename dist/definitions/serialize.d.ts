@@ -51,4 +51,4 @@ export interface IEntity {
 export interface IERModel {
     entities: IEntity[];
 }
-export declare function loadERModel(serialized: IERModel): ERModel;
+export declare function deserializeERModel(serialized: IERModel): ERModel;

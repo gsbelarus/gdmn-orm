@@ -78,7 +78,7 @@ export interface IERModel {
   entities: IEntity[]
 }
 
-export function loadERModel(serialized: IERModel): ERModel {
+export function deserializeERModel(serialized: IERModel): ERModel {
   const erModel = new ERModel();
 
   const createEntity = (e: IEntity): Entity => {
