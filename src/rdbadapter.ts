@@ -87,12 +87,10 @@ export interface SetAttribute2CrossMap extends AttributeAdapter {
  * ]
  */
 export interface DetailAttributeMap extends AttributeAdapter {
-  masterLinks: [
-    {
-      detailRelation: string;
-      link2masterField: string;
-    }
-  ]
+  masterLinks: {
+    detailRelation: string;
+    link2masterField: string;
+  }[]
 }
 
 export interface CrossRelation {
