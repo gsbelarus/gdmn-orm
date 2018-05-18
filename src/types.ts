@@ -9,6 +9,11 @@ export interface LName {
   en?: TName;
 }
 
+export interface EnumValue {
+  value: string | number;
+  lName?: LName;
+}
+
 export interface AttributeAdapter { }
 
 export interface EntityAdapter { }

@@ -2,8 +2,8 @@
  *
  */
 
-import { LName, AttributeAdapter, SequenceAdapter } from './types';
-import { IEntity, IAttribute, IERModel } from './serialize';
+import { LName, AttributeAdapter, SequenceAdapter, EnumValue } from './types';
+import { IEntity, IAttribute, IERModel, AttributeClasses, IEntityAttribute, IStringAttribute, ISetAttribute, ISequenceAttribute, INumberAttribute, INumericAttribute, IBooleanAttribute, IEnumAttribute } from './serialize';
 import { Entity2RelationMap, relationName2Adapter, SetAttribute2CrossMap, CrossRelations } from './rdbadapter';
 
 export type ContextVariables = 'CURRENT_TIMESTAMP' | 'CURRENT_TIMESTAMP(0)' | 'CURRENT_DATE' | 'CURRENT_TIME';
@@ -46,7 +46,7 @@ export class Attribute {
   serialize(): IAttribute {
     return {
       name: this.name,
-      type: this.constructor.name,
+      type: this.constructor.name as AttributeClasses,
       lName: this._lName,
       required: this._required,
       calculated: this._calculated
@@ -109,6 +109,17 @@ export class StringAttribute extends ScalarAttribute {
     this._mask = mask;
   }
 
+  serialize(): IStringAttribute {
+    return {
+      ...super.serialize(),
+      minLength: this._minLength,
+      maxLength: this._maxLength,
+      defaultValue: this._defaultValue,
+      mask: this._mask,
+      autoTrim: this._autoTrim
+    }
+  }
+
   inspectDataType() {
     return super.inspectDataType() + (this._maxLength ? '(' + this._maxLength + ')' : '');
   }
@@ -120,6 +131,13 @@ export class SequenceAttribute extends ScalarAttribute {
   constructor(name: string, lName: LName, sequence: Sequence, adapter?: AttributeAdapter) {
     super(name, lName, true, adapter);
     this._sequence = sequence;
+  }
+
+  serialize(): ISequenceAttribute {
+    return {
+      ...super.serialize(),
+      sequence: this._sequence.name
+    }
   }
 }
 
@@ -161,6 +179,15 @@ export class NumberAttribute<T, DF = undefined> extends ScalarAttribute {
   set defaultValue(value) {
     this._defaultValue = value;
   }
+
+  serialize(): INumberAttribute<T, DF> {
+    return {
+      ...super.serialize(),
+      minValue: this._minValue,
+      maxValue: this._maxValue,
+      defaultValue: this._defaultValue
+    }
+  }
 }
 
 export class IntegerAttribute extends NumberAttribute<number> { }
@@ -182,6 +209,14 @@ export class NumericAttribute extends NumberAttribute<number> {
 
   inspectDataType() {
     return `${super.inspectDataType()}(${this._precision}, ${Math.abs(this._scale)})`;
+  }
+
+  serialize(): INumericAttribute<number> {
+    return {
+      ...super.serialize(),
+      precision: this._precision,
+      scale: this._scale
+    }
   }
 }
 
@@ -208,14 +243,16 @@ export class BooleanAttribute extends ScalarAttribute {
   set defaultValue(value) {
     this._defaultValue = value;
   }
+
+  serialize(): IBooleanAttribute {
+    return {
+      ...super.serialize(),
+      defaultValue: this._defaultValue
+    }
+  }
 }
 
 export class BLOBAttribute extends ScalarAttribute { }
-
-export interface EnumValue {
-  value: string | number;
-  lName?: LName;
-}
 
 export class EnumAttribute extends ScalarAttribute {
   private _values: EnumValue[];
@@ -249,6 +286,14 @@ export class EnumAttribute extends ScalarAttribute {
   inspectDataType(): string {
     return super.inspectDataType() + ' ' + JSON.stringify(this._values);
   }
+
+  serialize(): IEnumAttribute {
+    return {
+      ...super.serialize(),
+      values: this._values,
+      defaultValue: this._defaultValue
+    }
+  }
 }
 
 export class TimeIntervalAttribute extends ScalarAttribute { }
@@ -265,7 +310,7 @@ export class EntityAttribute extends Attribute {
     return this._entity;
   }
 
-  serialize(): IAttribute {
+  serialize(): IEntityAttribute {
     return {
       ...super.serialize(),
       references: this.entity.map( ent => ent.name )
@@ -318,10 +363,11 @@ export class SetAttribute extends EntityAttribute {
     return this._attributes;
   }
 
-  serialize(): IAttribute {
+  serialize(): ISetAttribute {
     return {
       ...super.serialize(),
-      attributes: Object.entries(this._attributes).map( a => a[1].serialize() )
+      attributes: Object.entries(this._attributes).map( a => a[1].serialize() ),
+      presLen: this._presLen
     }
   }
 
@@ -426,7 +472,6 @@ export class Entity {
 
   serialize(): IEntity {
     return {
-      className: this.constructor.name,
       parent: this.parent ? this.parent.name : undefined,
       name: this.name,
       lName: this.lName,

@@ -14,14 +14,28 @@ function loadERModel(serialized) {
                 }
                 parent = createEntity(pe);
             }
-            switch (e.className) {
-                case 'Entity':
-                    result = new ermodel_1.Entity(parent, e.name, e.lName, e.isAbstract);
-                    break;
-                default:
-                    throw new Error(`Unknown entity class ${e.className}`);
-            }
-            erModel.add(result);
+            erModel.add(result = new ermodel_1.Entity(parent, e.name, e.lName, e.isAbstract));
+            e.attributes.forEach(attr => {
+                let attribute;
+                switch (attr.type) {
+                    case 'EntityAttribute':
+                    case 'StringAttribute':
+                    case 'SetAttribute':
+                    case 'ParentAttribute':
+                    case 'SequenceAttribute':
+                    case 'IntegerAttribute':
+                    case 'NumericAttribute':
+                    case 'FloatAttribute':
+                    case 'BooleanAttribute':
+                    case 'DateAttribute':
+                    case 'TimeStampAttribute':
+                    case 'TimeAttribute':
+                    case 'BlobAttribute':
+                    case 'EnumAttribute':
+                    default:
+                        throw new Error(`Unknown attribyte type ${attr.type}`);
+                }
+            });
         }
         return result;
     };

@@ -1,8 +1,8 @@
 /**
  *
  */
-import { LName, AttributeAdapter, SequenceAdapter } from './types';
-import { IEntity, IAttribute, IERModel } from './serialize';
+import { LName, AttributeAdapter, SequenceAdapter, EnumValue } from './types';
+import { IEntity, IAttribute, IERModel, IEntityAttribute, IStringAttribute, ISetAttribute, ISequenceAttribute, INumberAttribute, INumericAttribute, IBooleanAttribute, IEnumAttribute } from './serialize';
 import { Entity2RelationMap, SetAttribute2CrossMap } from './rdbadapter';
 export declare type ContextVariables = 'CURRENT_TIMESTAMP' | 'CURRENT_TIMESTAMP(0)' | 'CURRENT_DATE' | 'CURRENT_TIME';
 export declare class Attribute {
@@ -33,11 +33,13 @@ export declare class StringAttribute extends ScalarAttribute {
     private _mask?;
     private _autoTrim;
     constructor(name: string, lName: LName, required: boolean, minLength: number | undefined, maxLength: number | undefined, defaultValue: string | undefined, autoTrim: boolean, mask: RegExp | undefined, adapter?: AttributeAdapter);
+    serialize(): IStringAttribute;
     inspectDataType(): string;
 }
 export declare class SequenceAttribute extends ScalarAttribute {
     private _sequence;
     constructor(name: string, lName: LName, sequence: Sequence, adapter?: AttributeAdapter);
+    serialize(): ISequenceAttribute;
 }
 export declare class NumberAttribute<T, DF = undefined> extends ScalarAttribute {
     private _minValue?;
@@ -47,6 +49,7 @@ export declare class NumberAttribute<T, DF = undefined> extends ScalarAttribute 
     minValue: T | undefined;
     maxValue: T | undefined;
     defaultValue: T | DF | undefined;
+    serialize(): INumberAttribute<T, DF>;
 }
 export declare class IntegerAttribute extends NumberAttribute<number> {
 }
@@ -57,6 +60,7 @@ export declare class NumericAttribute extends NumberAttribute<number> {
     private _scale;
     constructor(name: string, lName: LName, required: boolean, precision: number, scale: number, minValue: number | undefined, maxValue: number | undefined, defaultValue: number | undefined, adapter?: AttributeAdapter);
     inspectDataType(): string;
+    serialize(): INumericAttribute<number>;
 }
 export declare class DateAttribute extends NumberAttribute<Date, ContextVariables> {
 }
@@ -68,12 +72,9 @@ export declare class BooleanAttribute extends ScalarAttribute {
     private _defaultValue;
     constructor(name: string, lName: LName, required: boolean, defaultValue: boolean, adapter?: AttributeAdapter);
     defaultValue: boolean;
+    serialize(): IBooleanAttribute;
 }
 export declare class BLOBAttribute extends ScalarAttribute {
-}
-export interface EnumValue {
-    value: string | number;
-    lName?: LName;
 }
 export declare class EnumAttribute extends ScalarAttribute {
     private _values;
@@ -82,6 +83,7 @@ export declare class EnumAttribute extends ScalarAttribute {
     values: EnumValue[];
     defaultValue: string | number | undefined;
     inspectDataType(): string;
+    serialize(): IEnumAttribute;
 }
 export declare class TimeIntervalAttribute extends ScalarAttribute {
 }
@@ -89,7 +91,7 @@ export declare class EntityAttribute extends Attribute {
     private _entity;
     constructor(name: string, lName: LName, required: boolean, entity: Entity[], adapter?: AttributeAdapter);
     readonly entity: Entity[];
-    serialize(): IAttribute;
+    serialize(): IEntityAttribute;
     inspectDataType(): string;
 }
 export declare class ParentAttribute extends EntityAttribute {
@@ -105,7 +107,7 @@ export declare class SetAttribute extends EntityAttribute {
     attribute(name: string): Attribute;
     add(attribute: Attribute): Attribute;
     readonly attributes: Attributes;
-    serialize(): IAttribute;
+    serialize(): ISetAttribute;
     inspect(indent?: string): string[];
 }
 export declare class Entity {

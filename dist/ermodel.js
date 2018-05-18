@@ -77,6 +77,9 @@ class StringAttribute extends ScalarAttribute {
         this._autoTrim = autoTrim;
         this._mask = mask;
     }
+    serialize() {
+        return Object.assign({}, super.serialize(), { minLength: this._minLength, maxLength: this._maxLength, defaultValue: this._defaultValue, mask: this._mask, autoTrim: this._autoTrim });
+    }
     inspectDataType() {
         return super.inspectDataType() + (this._maxLength ? '(' + this._maxLength + ')' : '');
     }
@@ -86,6 +89,9 @@ class SequenceAttribute extends ScalarAttribute {
     constructor(name, lName, sequence, adapter) {
         super(name, lName, true, adapter);
         this._sequence = sequence;
+    }
+    serialize() {
+        return Object.assign({}, super.serialize(), { sequence: this._sequence.name });
     }
 }
 exports.SequenceAttribute = SequenceAttribute;
@@ -114,6 +120,9 @@ class NumberAttribute extends ScalarAttribute {
     set defaultValue(value) {
         this._defaultValue = value;
     }
+    serialize() {
+        return Object.assign({}, super.serialize(), { minValue: this._minValue, maxValue: this._maxValue, defaultValue: this._defaultValue });
+    }
 }
 exports.NumberAttribute = NumberAttribute;
 class IntegerAttribute extends NumberAttribute {
@@ -130,6 +139,9 @@ class NumericAttribute extends NumberAttribute {
     }
     inspectDataType() {
         return `${super.inspectDataType()}(${this._precision}, ${Math.abs(this._scale)})`;
+    }
+    serialize() {
+        return Object.assign({}, super.serialize(), { precision: this._precision, scale: this._scale });
     }
 }
 exports.NumericAttribute = NumericAttribute;
@@ -152,6 +164,9 @@ class BooleanAttribute extends ScalarAttribute {
     }
     set defaultValue(value) {
         this._defaultValue = value;
+    }
+    serialize() {
+        return Object.assign({}, super.serialize(), { defaultValue: this._defaultValue });
     }
 }
 exports.BooleanAttribute = BooleanAttribute;
@@ -178,6 +193,9 @@ class EnumAttribute extends ScalarAttribute {
     }
     inspectDataType() {
         return super.inspectDataType() + ' ' + JSON.stringify(this._values);
+    }
+    serialize() {
+        return Object.assign({}, super.serialize(), { values: this._values, defaultValue: this._defaultValue });
     }
 }
 exports.EnumAttribute = EnumAttribute;
@@ -236,7 +254,7 @@ class SetAttribute extends EntityAttribute {
         return this._attributes;
     }
     serialize() {
-        return Object.assign({}, super.serialize(), { attributes: Object.entries(this._attributes).map(a => a[1].serialize()) });
+        return Object.assign({}, super.serialize(), { attributes: Object.entries(this._attributes).map(a => a[1].serialize()), presLen: this._presLen });
     }
     inspect(indent = '    ') {
         const result = super.inspect();
@@ -319,7 +337,6 @@ class Entity {
     }
     serialize() {
         return {
-            className: this.constructor.name,
             parent: this.parent ? this.parent.name : undefined,
             name: this.name,
             lName: this.lName,
