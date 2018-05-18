@@ -14,6 +14,8 @@ export interface EnumValue {
   lName?: LName;
 }
 
+export type ContextVariables = 'CURRENT_TIMESTAMP' | 'CURRENT_TIMESTAMP(0)' | 'CURRENT_DATE' | 'CURRENT_TIME';
+
 export interface AttributeAdapter { }
 
 export interface EntityAdapter { }

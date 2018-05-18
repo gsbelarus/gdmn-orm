@@ -1,10 +1,9 @@
 /**
  *
  */
-import { LName, AttributeAdapter, SequenceAdapter, EnumValue } from './types';
-import { IEntity, IAttribute, IERModel, IEntityAttribute, IStringAttribute, ISetAttribute, ISequenceAttribute, INumberAttribute, INumericAttribute, IBooleanAttribute, IEnumAttribute } from './serialize';
+import { LName, AttributeAdapter, SequenceAdapter, EnumValue, ContextVariables } from './types';
+import { IEntity, IAttribute, IERModel, IEntityAttribute, IStringAttribute, ISetAttribute, ISequenceAttribute, INumberAttribute, INumericAttribute, IBooleanAttribute, IEnumAttribute, IDateAttribute } from './serialize';
 import { Entity2RelationMap, SetAttribute2CrossMap } from './rdbadapter';
-export declare type ContextVariables = 'CURRENT_TIMESTAMP' | 'CURRENT_TIMESTAMP(0)' | 'CURRENT_DATE' | 'CURRENT_TIME';
 export declare class Attribute {
     private _name;
     private _lName;
@@ -60,13 +59,16 @@ export declare class NumericAttribute extends NumberAttribute<number> {
     private _scale;
     constructor(name: string, lName: LName, required: boolean, precision: number, scale: number, minValue: number | undefined, maxValue: number | undefined, defaultValue: number | undefined, adapter?: AttributeAdapter);
     inspectDataType(): string;
-    serialize(): INumericAttribute<number>;
+    serialize(): INumericAttribute;
 }
 export declare class DateAttribute extends NumberAttribute<Date, ContextVariables> {
+    serialize(): IDateAttribute;
 }
 export declare class TimeAttribute extends NumberAttribute<Date, ContextVariables> {
+    serialize(): IDateAttribute;
 }
 export declare class TimeStampAttribute extends NumberAttribute<Date, ContextVariables> {
+    serialize(): IDateAttribute;
 }
 export declare class BooleanAttribute extends ScalarAttribute {
     private _defaultValue;
@@ -148,6 +150,7 @@ export interface Sequencies {
 export declare class ERModel {
     private _entities;
     private _sequencies;
+    readonly sequencies: Sequencies;
     readonly entities: Entities;
     entity(name: string): Entity;
     add(entity: Entity): Entity;

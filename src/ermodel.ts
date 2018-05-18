@@ -2,11 +2,9 @@
  *
  */
 
-import { LName, AttributeAdapter, SequenceAdapter, EnumValue } from './types';
-import { IEntity, IAttribute, IERModel, AttributeClasses, IEntityAttribute, IStringAttribute, ISetAttribute, ISequenceAttribute, INumberAttribute, INumericAttribute, IBooleanAttribute, IEnumAttribute } from './serialize';
+import { LName, AttributeAdapter, SequenceAdapter, EnumValue, ContextVariables } from './types';
+import { IEntity, IAttribute, IERModel, AttributeClasses, IEntityAttribute, IStringAttribute, ISetAttribute, ISequenceAttribute, INumberAttribute, INumericAttribute, IBooleanAttribute, IEnumAttribute, IDateAttribute } from './serialize';
 import { Entity2RelationMap, relationName2Adapter, SetAttribute2CrossMap, CrossRelations } from './rdbadapter';
-
-export type ContextVariables = 'CURRENT_TIMESTAMP' | 'CURRENT_TIMESTAMP(0)' | 'CURRENT_DATE' | 'CURRENT_TIME';
 
 export class Attribute {
   private _name: string;
@@ -211,7 +209,7 @@ export class NumericAttribute extends NumberAttribute<number> {
     return `${super.inspectDataType()}(${this._precision}, ${Math.abs(this._scale)})`;
   }
 
-  serialize(): INumericAttribute<number> {
+  serialize(): INumericAttribute {
     return {
       ...super.serialize(),
       precision: this._precision,
@@ -220,11 +218,23 @@ export class NumericAttribute extends NumberAttribute<number> {
   }
 }
 
-export class DateAttribute extends NumberAttribute<Date, ContextVariables> { }
+export class DateAttribute extends NumberAttribute<Date, ContextVariables> {
+  serialize(): IDateAttribute {
+    return super.serialize();
+  }
+}
 
-export class TimeAttribute extends NumberAttribute<Date, ContextVariables> { }
+export class TimeAttribute extends NumberAttribute<Date, ContextVariables> {
+  serialize(): IDateAttribute {
+    return super.serialize();
+  }
+}
 
-export class TimeStampAttribute extends NumberAttribute<Date, ContextVariables> { }
+export class TimeStampAttribute extends NumberAttribute<Date, ContextVariables> {
+  serialize(): IDateAttribute {
+    return super.serialize();
+  }
+}
 
 export class BooleanAttribute extends ScalarAttribute {
   private _defaultValue: boolean;
@@ -521,6 +531,10 @@ export interface Sequencies {
 export class ERModel {
   private _entities: Entities = {};
   private _sequencies: Sequencies = {};
+
+  get sequencies() {
+    return this._sequencies;
+  }
 
   get entities() {
     return this._entities;

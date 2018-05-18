@@ -146,12 +146,21 @@ class NumericAttribute extends NumberAttribute {
 }
 exports.NumericAttribute = NumericAttribute;
 class DateAttribute extends NumberAttribute {
+    serialize() {
+        return super.serialize();
+    }
 }
 exports.DateAttribute = DateAttribute;
 class TimeAttribute extends NumberAttribute {
+    serialize() {
+        return super.serialize();
+    }
 }
 exports.TimeAttribute = TimeAttribute;
 class TimeStampAttribute extends NumberAttribute {
+    serialize() {
+        return super.serialize();
+    }
 }
 exports.TimeStampAttribute = TimeStampAttribute;
 class BooleanAttribute extends ScalarAttribute {
@@ -373,6 +382,9 @@ class ERModel {
     constructor() {
         this._entities = {};
         this._sequencies = {};
+    }
+    get sequencies() {
+        return this._sequencies;
     }
     get entities() {
         return this._entities;

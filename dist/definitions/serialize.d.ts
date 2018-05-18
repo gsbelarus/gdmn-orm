@@ -1,4 +1,4 @@
-import { LName, EnumValue } from './types';
+import { LName, EnumValue, ContextVariables } from './types';
 import { ERModel } from './ermodel';
 export declare type AttributeClasses = 'EntityAttribute' | 'StringAttribute' | 'SetAttribute' | 'ParentAttribute' | 'DetailAttribute' | 'SequenceAttribute' | 'IntegerAttribute' | 'NumericAttribute' | 'FloatAttribute' | 'BooleanAttribute' | 'DateAttribute' | 'TimeStampAttribute' | 'TimeAttribute' | 'BlobAttribute' | 'EnumAttribute';
 export interface IAttribute {
@@ -20,9 +20,11 @@ export interface INumberAttribute<T, DF = undefined> extends IAttribute {
     maxValue?: T;
     defaultValue?: T | DF;
 }
-export interface INumericAttribute<T> extends INumberAttribute<T> {
+export interface INumericAttribute extends INumberAttribute<number> {
     precision: number;
     scale: number;
+}
+export interface IDateAttribute extends INumberAttribute<Date, ContextVariables> {
 }
 export interface ISequenceAttribute extends IAttribute {
     sequence: string;
