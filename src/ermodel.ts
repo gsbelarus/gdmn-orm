@@ -323,7 +323,7 @@ export class EntityAttribute extends Attribute {
   serialize(): IEntityAttribute {
     return {
       ...super.serialize(),
-      references: this.entity.map( ent => ent.name )
+      references: this._entity.map( ent => ent.name )
     }
   }
 

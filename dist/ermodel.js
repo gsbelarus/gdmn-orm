@@ -220,7 +220,7 @@ class EntityAttribute extends Attribute {
         return this._entity;
     }
     serialize() {
-        return Object.assign({}, super.serialize(), { references: this.entity.map(ent => ent.name) });
+        return Object.assign({}, super.serialize(), { references: this._entity.map(ent => ent.name) });
     }
     inspectDataType() {
         return super.inspectDataType() + ' [' + this._entity.reduce((p, e, idx) => p + (idx ? ', ' : '') + e.name, '') + ']';

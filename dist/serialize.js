@@ -22,91 +22,95 @@ function deserializeERModel(serialized) {
                 parent = createEntity(pe);
             }
             erModel.add(result = new ermodel_1.Entity(parent, e.name, e.lName, e.isAbstract));
-            e.attributes.forEach(_attr => {
-                const { name, lName, required, calculated } = _attr;
-                switch (_attr.type) {
-                    case 'DetailAttribute': {
-                        const attr = _attr;
-                        result.add(new ermodel_1.DetailAttribute(name, lName, required, attr.references.map(e => erModel.entities[e])));
-                        break;
-                    }
-                    case 'ParentAttribute': {
-                        const attr = _attr;
-                        result.add(new ermodel_1.ParentAttribute(name, lName, attr.references.map(e => erModel.entities[e])));
-                        break;
-                    }
-                    case 'EntityAttribute': {
-                        const attr = _attr;
-                        result.add(new ermodel_1.EntityAttribute(name, lName, required, attr.references.map(e => erModel.entities[e])));
-                        break;
-                    }
-                    case 'StringAttribute': {
-                        const attr = _attr;
-                        result.add(new ermodel_1.StringAttribute(name, lName, required, attr.minLength, attr.maxLength, attr.defaultValue, attr.autoTrim, attr.mask));
-                        break;
-                    }
-                    case 'SetAttribute': {
-                        const attr = _attr;
-                        result.add(new ermodel_1.SetAttribute(name, lName, required, attr.references.map(e => erModel.entities[e]), attr.presLen));
-                        break;
-                    }
-                    case 'SequenceAttribute': {
-                        const attr = _attr;
-                        result.add(new ermodel_1.SequenceAttribute(name, lName, createSequence(attr.sequence)));
-                        break;
-                    }
-                    case 'IntegerAttribute': {
-                        const attr = _attr;
-                        result.add(new ermodel_1.IntegerAttribute(name, lName, required, attr.minValue, attr.maxValue, attr.defaultValue));
-                        break;
-                    }
-                    case 'NumericAttribute': {
-                        const attr = _attr;
-                        result.add(new ermodel_1.NumericAttribute(name, lName, required, attr.precision, attr.scale, attr.minValue, attr.maxValue, attr.defaultValue));
-                        break;
-                    }
-                    case 'FloatAttribute': {
-                        const attr = _attr;
-                        result.add(new ermodel_1.FloatAttribute(name, lName, required, attr.minValue, attr.maxValue, attr.defaultValue));
-                        break;
-                    }
-                    case 'BooleanAttribute': {
-                        const attr = _attr;
-                        result.add(new ermodel_1.BooleanAttribute(name, lName, required, attr.defaultValue));
-                        break;
-                    }
-                    case 'DateAttribute': {
-                        const attr = _attr;
-                        result.add(new ermodel_1.DateAttribute(name, lName, required, attr.minValue, attr.maxValue, attr.defaultValue));
-                        break;
-                    }
-                    case 'TimeStampAttribute': {
-                        const attr = _attr;
-                        result.add(new ermodel_1.TimeStampAttribute(name, lName, required, attr.minValue, attr.maxValue, attr.defaultValue));
-                        break;
-                    }
-                    case 'TimeAttribute': {
-                        const attr = _attr;
-                        result.add(new ermodel_1.TimeAttribute(name, lName, required, attr.minValue, attr.maxValue, attr.defaultValue));
-                        break;
-                    }
-                    case 'BlobAttribute': {
-                        result.add(new ermodel_1.BlobAttribute(name, lName, required));
-                        break;
-                    }
-                    case 'EnumAttribute': {
-                        const attr = _attr;
-                        result.add(new ermodel_1.EnumAttribute(name, lName, required, attr.values, attr.defaultValue));
-                        break;
-                    }
-                    default:
-                        throw new Error(`Unknown attribyte type ${_attr.type}`);
-                }
-            });
         }
         return result;
     };
+    const createAttributes = (e) => {
+        const entity = erModel.entity(e.name);
+        e.attributes.forEach(_attr => {
+            const { name, lName, required, calculated } = _attr;
+            switch (_attr.type) {
+                case 'DetailAttribute': {
+                    const attr = _attr;
+                    entity.add(new ermodel_1.DetailAttribute(name, lName, required, attr.references.map(e => erModel.entities[e])));
+                    break;
+                }
+                case 'ParentAttribute': {
+                    const attr = _attr;
+                    entity.add(new ermodel_1.ParentAttribute(name, lName, attr.references.map(e => erModel.entities[e])));
+                    break;
+                }
+                case 'EntityAttribute': {
+                    const attr = _attr;
+                    entity.add(new ermodel_1.EntityAttribute(name, lName, required, attr.references.map(e => erModel.entity(e))));
+                    break;
+                }
+                case 'StringAttribute': {
+                    const attr = _attr;
+                    entity.add(new ermodel_1.StringAttribute(name, lName, required, attr.minLength, attr.maxLength, attr.defaultValue, attr.autoTrim, attr.mask));
+                    break;
+                }
+                case 'SetAttribute': {
+                    const attr = _attr;
+                    entity.add(new ermodel_1.SetAttribute(name, lName, required, attr.references.map(e => erModel.entities[e]), attr.presLen));
+                    break;
+                }
+                case 'SequenceAttribute': {
+                    const attr = _attr;
+                    entity.add(new ermodel_1.SequenceAttribute(name, lName, createSequence(attr.sequence)));
+                    break;
+                }
+                case 'IntegerAttribute': {
+                    const attr = _attr;
+                    entity.add(new ermodel_1.IntegerAttribute(name, lName, required, attr.minValue, attr.maxValue, attr.defaultValue));
+                    break;
+                }
+                case 'NumericAttribute': {
+                    const attr = _attr;
+                    entity.add(new ermodel_1.NumericAttribute(name, lName, required, attr.precision, attr.scale, attr.minValue, attr.maxValue, attr.defaultValue));
+                    break;
+                }
+                case 'FloatAttribute': {
+                    const attr = _attr;
+                    entity.add(new ermodel_1.FloatAttribute(name, lName, required, attr.minValue, attr.maxValue, attr.defaultValue));
+                    break;
+                }
+                case 'BooleanAttribute': {
+                    const attr = _attr;
+                    entity.add(new ermodel_1.BooleanAttribute(name, lName, required, attr.defaultValue));
+                    break;
+                }
+                case 'DateAttribute': {
+                    const attr = _attr;
+                    entity.add(new ermodel_1.DateAttribute(name, lName, required, attr.minValue, attr.maxValue, attr.defaultValue));
+                    break;
+                }
+                case 'TimeStampAttribute': {
+                    const attr = _attr;
+                    entity.add(new ermodel_1.TimeStampAttribute(name, lName, required, attr.minValue, attr.maxValue, attr.defaultValue));
+                    break;
+                }
+                case 'TimeAttribute': {
+                    const attr = _attr;
+                    entity.add(new ermodel_1.TimeAttribute(name, lName, required, attr.minValue, attr.maxValue, attr.defaultValue));
+                    break;
+                }
+                case 'BlobAttribute': {
+                    entity.add(new ermodel_1.BlobAttribute(name, lName, required));
+                    break;
+                }
+                case 'EnumAttribute': {
+                    const attr = _attr;
+                    entity.add(new ermodel_1.EnumAttribute(name, lName, required, attr.values, attr.defaultValue));
+                    break;
+                }
+                default:
+                    throw new Error(`Unknown attribyte type ${_attr.type}`);
+            }
+        });
+    };
     serialized.entities.forEach(e => createEntity(e));
+    serialized.entities.forEach(e => createAttributes(e));
     return erModel;
 }
 exports.deserializeERModel = deserializeERModel;
