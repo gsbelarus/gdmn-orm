@@ -1,5 +1,5 @@
 import { LName, EnumValue, ContextVariables } from './types';
-import { ERModel, Entity, Attribute, EntityAttribute, StringAttribute, SetAttribute, SequenceAttribute, Sequence, IntegerAttribute, NumericAttribute, FloatAttribute, BooleanAttribute, DateAttribute, TimeStampAttribute, TimeAttribute, ParentAttribute, BLOBAttribute, EnumAttribute } from './ermodel';
+import { ERModel, Entity, Attribute, EntityAttribute, StringAttribute, SetAttribute, SequenceAttribute, Sequence, IntegerAttribute, NumericAttribute, FloatAttribute, BooleanAttribute, DateAttribute, TimeStampAttribute, TimeAttribute, ParentAttribute, BLOBAttribute, EnumAttribute, DetailAttribute } from './ermodel';
 
 export type AttributeClasses = 'EntityAttribute'
   | 'StringAttribute'
@@ -115,6 +115,16 @@ export function deserializeERModel(serialized: IERModel): ERModel {
         const { name, lName, required, calculated } = _attr;
 
         switch (_attr.type) {
+
+          case 'DetailAttribute':{
+            const attr = _attr as IEntityAttribute;
+            result.add(
+              new DetailAttribute(name, lName, required,
+                attr.references.map( e => erModel.entities[e] )
+              )
+            );
+            break;
+          }
 
           case 'ParentAttribute':{
             const attr = _attr as IEntityAttribute;

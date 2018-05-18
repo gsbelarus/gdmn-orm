@@ -25,6 +25,11 @@ function deserializeERModel(serialized) {
             e.attributes.forEach(_attr => {
                 const { name, lName, required, calculated } = _attr;
                 switch (_attr.type) {
+                    case 'DetailAttribute': {
+                        const attr = _attr;
+                        result.add(new ermodel_1.DetailAttribute(name, lName, required, attr.references.map(e => erModel.entities[e])));
+                        break;
+                    }
                     case 'ParentAttribute': {
                         const attr = _attr;
                         result.add(new ermodel_1.ParentAttribute(name, lName, attr.references.map(e => erModel.entities[e])));
