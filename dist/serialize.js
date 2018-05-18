@@ -91,7 +91,7 @@ function deserializeERModel(serialized) {
                         break;
                     }
                     case 'BlobAttribute': {
-                        result.add(new ermodel_1.BLOBAttribute(name, lName, required));
+                        result.add(new ermodel_1.BlobAttribute(name, lName, required));
                         break;
                     }
                     case 'EnumAttribute': {

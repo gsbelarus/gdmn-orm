@@ -1,5 +1,5 @@
 import { LName, EnumValue, ContextVariables } from './types';
-import { ERModel, Entity, Attribute, EntityAttribute, StringAttribute, SetAttribute, SequenceAttribute, Sequence, IntegerAttribute, NumericAttribute, FloatAttribute, BooleanAttribute, DateAttribute, TimeStampAttribute, TimeAttribute, ParentAttribute, BLOBAttribute, EnumAttribute, DetailAttribute } from './ermodel';
+import { ERModel, Entity, Attribute, EntityAttribute, StringAttribute, SetAttribute, SequenceAttribute, Sequence, IntegerAttribute, NumericAttribute, FloatAttribute, BooleanAttribute, DateAttribute, TimeStampAttribute, TimeAttribute, ParentAttribute, BlobAttribute, EnumAttribute, DetailAttribute } from './ermodel';
 
 export type AttributeClasses = 'EntityAttribute'
   | 'StringAttribute'
@@ -238,7 +238,7 @@ export function deserializeERModel(serialized: IERModel): ERModel {
 
           case 'BlobAttribute': {
             result.add(
-              new BLOBAttribute(name, lName, required)
+              new BlobAttribute(name, lName, required)
             );
             break;
           }

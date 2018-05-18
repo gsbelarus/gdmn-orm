@@ -179,9 +179,9 @@ class BooleanAttribute extends ScalarAttribute {
     }
 }
 exports.BooleanAttribute = BooleanAttribute;
-class BLOBAttribute extends ScalarAttribute {
+class BlobAttribute extends ScalarAttribute {
 }
-exports.BLOBAttribute = BLOBAttribute;
+exports.BlobAttribute = BlobAttribute;
 class EnumAttribute extends ScalarAttribute {
     constructor(name, lName, required, values, defaultValue, adapter) {
         super(name, lName, required, adapter);

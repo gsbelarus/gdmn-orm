@@ -262,7 +262,7 @@ export class BooleanAttribute extends ScalarAttribute {
   }
 }
 
-export class BLOBAttribute extends ScalarAttribute { }
+export class BlobAttribute extends ScalarAttribute { }
 
 export class EnumAttribute extends ScalarAttribute {
   private _values: EnumValue[];

@@ -76,7 +76,7 @@ export declare class BooleanAttribute extends ScalarAttribute {
     defaultValue: boolean;
     serialize(): IBooleanAttribute;
 }
-export declare class BLOBAttribute extends ScalarAttribute {
+export declare class BlobAttribute extends ScalarAttribute {
 }
 export declare class EnumAttribute extends ScalarAttribute {
     private _values;
