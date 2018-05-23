@@ -6,4 +6,5 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./ermodel"));
 __export(require("./rdbadapter"));
 __export(require("./serialize"));
+__export(require("./utils"));
 //# sourceMappingURL=index.js.map

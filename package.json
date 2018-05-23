@@ -6,6 +6,9 @@
   "types": "./dist/definitions/index.d.ts",
   "scripts": {
     "test": "tsc && jest",
+    "clean": "rimraf dist",
+    "build": "tsc",
+    "rebuild": "npm run clean && npm run build",
     "push": "tsc && git commit -a -m \"wip\" && git push",
     "debug": "node --nolazy --inspect-brk=9229 ./dist/debug/debug.js"
   },
