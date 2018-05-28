@@ -3,3 +3,7 @@ export * from './rdbadapter';
 export * from './types';
 export * from './serialize';
 export * from './utils';
+export * from './query-models/EntityLink';
+export * from './query-models/EntityQuery';
+export * from './query-models/EntityQueryField';
+export * from './query-models/EntityQueryOptions';
