@@ -175,11 +175,21 @@ export class EntityQueryOptions {
   }
 
   public inspect(): IEntityQueryOptionsInspector {
-    return {
-      first: this.first,
-      skip: this.skip,
-      where: EntityQueryOptions._inspectWhere(this.where),
-      order: EntityQueryOptions._inspectMap(this.order)
-    };
+    const options: IEntityQueryOptionsInspector = {};
+    if (this.first !== undefined) {
+      options.first = this.first;
+    }
+    if (this.skip !== undefined) {
+      options.skip = this.skip;
+    }
+    const where = EntityQueryOptions._inspectWhere(this.where);
+    if (where) {
+      options.where = where;
+    }
+    const order = EntityQueryOptions._inspectMap(this.order);
+    if (order) {
+      options.order = order;
+    }
+    return options;
   }
 }
