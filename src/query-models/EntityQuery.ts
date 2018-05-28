@@ -22,10 +22,10 @@ export class EntityQuery {
   }
 
   public static inspectorToObject(erModel: ERModel, inspector: IEntityQueryInspector): EntityQuery {
-    const query = EntityLink.inspectorToObject(erModel, inspector.link);
-    const options = inspector.options && EntityQueryOptions.inspectorToObject(query.entity, inspector.options);
+    const link = EntityLink.inspectorToObject(erModel, inspector.link);
+    const options = inspector.options && EntityQueryOptions.inspectorToObject(link, inspector.options);
 
-    return new EntityQuery(query, options);
+    return new EntityQuery(link, options);
   }
 
   public inspect(): IEntityQueryInspector {

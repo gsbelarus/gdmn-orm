@@ -1,4 +1,5 @@
-import { Attribute, Entity } from '../ermodel';
+import { Attribute } from '../ermodel';
+import { EntityLink } from './EntityLink';
 export interface IEntityQueryWhereInspector {
     not?: IEntityQueryWhereInspector;
     or?: IEntityQueryWhereInspector;
@@ -44,9 +45,9 @@ export declare class EntityQueryOptions {
     where?: IEntityQueryWhere;
     order?: IEntityLinkAlias<Map<Attribute, EntityQueryOrder>>;
     constructor(first?: number, skip?: number, where?: IEntityQueryWhere, order?: IEntityLinkAlias<Map<Attribute, EntityQueryOrder>>);
-    static inspectorToObject(entity: Entity, inspector: IEntityQueryOptionsInspector): EntityQueryOptions;
-    private static inspectorWhereToObject(entity, inspector?);
-    private static _inspectorToObjectMap(entity, map?);
+    static inspectorToObject(link: EntityLink, inspector: IEntityQueryOptionsInspector): EntityQueryOptions;
+    private static inspectorWhereToObject(link, inspector?);
+    private static _inspectorToObjectMap(link, map?);
     private static _inspectMap(map?);
     private static _inspectWhere(where?);
     inspect(): IEntityQueryOptionsInspector;

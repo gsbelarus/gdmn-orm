@@ -1,4 +1,5 @@
-import {Attribute, Entity} from '../ermodel';
+import {Attribute} from '../ermodel';
+import {EntityLink} from './EntityLink';
 
 export interface IEntityQueryWhereInspector {
   not?: IEntityQueryWhereInspector;
@@ -55,51 +56,55 @@ export class EntityQueryOptions {
     this.order = order;
   }
 
-  public static inspectorToObject(entity: Entity, inspector: IEntityQueryOptionsInspector): EntityQueryOptions {
+  public static inspectorToObject(link: EntityLink, inspector: IEntityQueryOptionsInspector): EntityQueryOptions {
     return new EntityQueryOptions(
       inspector.first,
       inspector.skip,
-      EntityQueryOptions.inspectorWhereToObject(entity, inspector.where),
-      EntityQueryOptions._inspectorToObjectMap(entity, inspector.order)
+      EntityQueryOptions.inspectorWhereToObject(link, inspector.where),
+      EntityQueryOptions._inspectorToObjectMap(link, inspector.order)
     );
   }
 
-  private static inspectorWhereToObject(entity: Entity,
+  private static inspectorWhereToObject(link: EntityLink,
                                         inspector?: IEntityQueryWhereInspector): IEntityQueryWhere | undefined {
     if (inspector) {
       const where: IEntityQueryWhere = {};
 
-      const not = EntityQueryOptions.inspectorWhereToObject(entity, inspector.not);
+      const not = EntityQueryOptions.inspectorWhereToObject(link, inspector.not);
       if (not) {
         where.not = not;
       }
-      const or = EntityQueryOptions.inspectorWhereToObject(entity, inspector.or);
+      const or = EntityQueryOptions.inspectorWhereToObject(link, inspector.or);
       if (or) {
         where.or = or;
       }
-      const and = EntityQueryOptions.inspectorWhereToObject(entity, inspector.and);
+      const and = EntityQueryOptions.inspectorWhereToObject(link, inspector.and);
       if (and) {
         where.and = and;
       }
 
       if (inspector.isNull) {
         const isNull = Object.entries(inspector.isNull).reduce((aliases, [alias, value]) => {
-          aliases[alias] = entity.attribute(value);
+          const findLink = link.deepFindLinkByAlias(alias);
+          if (!findLink) {
+            throw new Error('Alias not found');
+          }
+          aliases[alias] = findLink.entity.attribute(value);
           return aliases;
         }, {} as IEntityLinkAlias<Attribute>);
         if (Object.keys(isNull).length) {
           where.isNull = isNull;
         }
       }
-      const equals = EntityQueryOptions._inspectorToObjectMap(entity, inspector.equals);
+      const equals = EntityQueryOptions._inspectorToObjectMap(link, inspector.equals);
       if (equals) {
         where.equals = equals;
       }
-      const greater = EntityQueryOptions._inspectorToObjectMap(entity, inspector.greater);
+      const greater = EntityQueryOptions._inspectorToObjectMap(link, inspector.greater);
       if (greater) {
         where.greater = greater;
       }
-      const less = EntityQueryOptions._inspectorToObjectMap(entity, inspector.less);
+      const less = EntityQueryOptions._inspectorToObjectMap(link, inspector.less);
       if (less) {
         where.less = less;
       }
@@ -108,15 +113,19 @@ export class EntityQueryOptions {
   }
 
   private static _inspectorToObjectMap(
-    entity: Entity,
+    link: EntityLink,
     map?: IEntityLinkAlias<{ [fieldName: string]: any }>
   ): IEntityLinkAlias<Map<Attribute, any>> {
     if (map) {
       return Object.entries(map)
         .reduce((aliases, [alias, condition]) => {
+          const findLink = link.deepFindLinkByAlias(alias);
+          if (!findLink) {
+            throw new Error('Alias not found');
+          }
           aliases[alias] = Object.entries(condition)
             .reduce((newMap, [key, value]) => {
-              newMap.set(entity.attribute(key), value);
+              newMap.set(findLink.entity.attribute(key), value);
               return newMap;
             }, new Map<Attribute, any>());
 

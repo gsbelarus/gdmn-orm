@@ -12,55 +12,63 @@ class EntityQueryOptions {
         this.where = where;
         this.order = order;
     }
-    static inspectorToObject(entity, inspector) {
-        return new EntityQueryOptions(inspector.first, inspector.skip, EntityQueryOptions.inspectorWhereToObject(entity, inspector.where), EntityQueryOptions._inspectorToObjectMap(entity, inspector.order));
+    static inspectorToObject(link, inspector) {
+        return new EntityQueryOptions(inspector.first, inspector.skip, EntityQueryOptions.inspectorWhereToObject(link, inspector.where), EntityQueryOptions._inspectorToObjectMap(link, inspector.order));
     }
-    static inspectorWhereToObject(entity, inspector) {
+    static inspectorWhereToObject(link, inspector) {
         if (inspector) {
             const where = {};
-            const not = EntityQueryOptions.inspectorWhereToObject(entity, inspector.not);
+            const not = EntityQueryOptions.inspectorWhereToObject(link, inspector.not);
             if (not) {
                 where.not = not;
             }
-            const or = EntityQueryOptions.inspectorWhereToObject(entity, inspector.or);
+            const or = EntityQueryOptions.inspectorWhereToObject(link, inspector.or);
             if (or) {
                 where.or = or;
             }
-            const and = EntityQueryOptions.inspectorWhereToObject(entity, inspector.and);
+            const and = EntityQueryOptions.inspectorWhereToObject(link, inspector.and);
             if (and) {
                 where.and = and;
             }
             if (inspector.isNull) {
                 const isNull = Object.entries(inspector.isNull).reduce((aliases, [alias, value]) => {
-                    aliases[alias] = entity.attribute(value);
+                    const findLink = link.deepFindLinkByAlias(alias);
+                    if (!findLink) {
+                        throw new Error('Alias not found');
+                    }
+                    aliases[alias] = findLink.entity.attribute(value);
                     return aliases;
                 }, {});
                 if (Object.keys(isNull).length) {
                     where.isNull = isNull;
                 }
             }
-            const equals = EntityQueryOptions._inspectorToObjectMap(entity, inspector.equals);
+            const equals = EntityQueryOptions._inspectorToObjectMap(link, inspector.equals);
             if (equals) {
                 where.equals = equals;
             }
-            const greater = EntityQueryOptions._inspectorToObjectMap(entity, inspector.greater);
+            const greater = EntityQueryOptions._inspectorToObjectMap(link, inspector.greater);
             if (greater) {
                 where.greater = greater;
             }
-            const less = EntityQueryOptions._inspectorToObjectMap(entity, inspector.less);
+            const less = EntityQueryOptions._inspectorToObjectMap(link, inspector.less);
             if (less) {
                 where.less = less;
             }
             return where;
         }
     }
-    static _inspectorToObjectMap(entity, map) {
+    static _inspectorToObjectMap(link, map) {
         if (map) {
             return Object.entries(map)
                 .reduce((aliases, [alias, condition]) => {
+                const findLink = link.deepFindLinkByAlias(alias);
+                if (!findLink) {
+                    throw new Error('Alias not found');
+                }
                 aliases[alias] = Object.entries(condition)
                     .reduce((newMap, [key, value]) => {
-                    newMap.set(entity.attribute(key), value);
+                    newMap.set(findLink.entity.attribute(key), value);
                     return newMap;
                 }, new Map());
                 return aliases;

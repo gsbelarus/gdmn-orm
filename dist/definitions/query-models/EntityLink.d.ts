@@ -11,5 +11,7 @@ export declare class EntityLink {
     fields: EntityQueryField[];
     constructor(entity: Entity, alias: string, fields: EntityQueryField[]);
     static inspectorToObject(erModel: ERModel, inspector: IEntitySubQueryInspector): EntityLink;
+    deepFindLinkByField(field: EntityQueryField): EntityLink | undefined;
+    deepFindLinkByAlias(alias: string): EntityLink | undefined;
     inspect(): IEntitySubQueryInspector;
 }

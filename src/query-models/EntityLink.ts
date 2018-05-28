@@ -29,6 +29,39 @@ export class EntityLink {
     return new EntityLink(entity, alias, fields);
   }
 
+  public deepFindLinkByField(field: EntityQueryField): EntityLink | undefined {
+    const find = this.fields
+      .filter((qField) => !qField.link)
+      .some((qField) => qField === field);
+
+    if (find) {
+      return this;
+    }
+
+    for (const qField of this.fields) {
+      if (qField.link) {
+        const findLink = qField.link.deepFindLinkByField(field);
+        if (findLink) {
+          return findLink;
+        }
+      }
+    }
+  }
+
+  public deepFindLinkByAlias(alias: string): EntityLink | undefined {
+    if (this.alias === alias) {
+      return this;
+    }
+    for (const field of this.fields) {
+      if (field.link) {
+        const find = field.link.deepFindLinkByAlias(alias);
+        if (find) {
+          return find;
+        }
+      }
+    }
+  }
+
   public inspect(): IEntitySubQueryInspector {
     return {
       entity: this.entity.name,

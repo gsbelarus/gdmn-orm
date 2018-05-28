@@ -13,6 +13,35 @@ class EntityLink {
         const fields = inspector.fields.map((inspectorField) => (EntityQueryField_1.EntityQueryField.inspectorToObject(erModel, entity, inspectorField)));
         return new EntityLink(entity, alias, fields);
     }
+    deepFindLinkByField(field) {
+        const find = this.fields
+            .filter((qField) => !qField.link)
+            .some((qField) => qField === field);
+        if (find) {
+            return this;
+        }
+        for (const qField of this.fields) {
+            if (qField.link) {
+                const findLink = qField.link.deepFindLinkByField(field);
+                if (findLink) {
+                    return findLink;
+                }
+            }
+        }
+    }
+    deepFindLinkByAlias(alias) {
+        if (this.alias === alias) {
+            return this;
+        }
+        for (const field of this.fields) {
+            if (field.link) {
+                const find = field.link.deepFindLinkByAlias(alias);
+                if (find) {
+                    return find;
+                }
+            }
+        }
+    }
     inspect() {
         return {
             entity: this.entity.name,

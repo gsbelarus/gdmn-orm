@@ -11,9 +11,9 @@ class EntityQuery {
         return EntityQuery.inspectorToObject(erModel, JSON.parse(text));
     }
     static inspectorToObject(erModel, inspector) {
-        const query = EntityLink_1.EntityLink.inspectorToObject(erModel, inspector.link);
-        const options = inspector.options && EntityQueryOptions_1.EntityQueryOptions.inspectorToObject(query.entity, inspector.options);
-        return new EntityQuery(query, options);
+        const link = EntityLink_1.EntityLink.inspectorToObject(erModel, inspector.link);
+        const options = inspector.options && EntityQueryOptions_1.EntityQueryOptions.inspectorToObject(link, inspector.options);
+        return new EntityQuery(link, options);
     }
     inspect() {
         const inspect = { link: this.link.inspect() };
