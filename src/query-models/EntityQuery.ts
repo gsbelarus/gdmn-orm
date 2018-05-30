@@ -28,6 +28,10 @@ export class EntityQuery {
     return new EntityQuery(link, options);
   }
 
+  public serialize(): string {
+    return JSON.stringify(this.inspect());
+  }
+
   public inspect(): IEntityQueryInspector {
     const inspect: IEntityQueryInspector = {link: this.link.inspect()};
     if (this.options) {

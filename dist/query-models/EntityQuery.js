@@ -15,6 +15,9 @@ class EntityQuery {
         const options = inspector.options && EntityQueryOptions_1.EntityQueryOptions.inspectorToObject(link, inspector.options);
         return new EntityQuery(link, options);
     }
+    serialize() {
+        return JSON.stringify(this.inspect());
+    }
     inspect() {
         const inspect = { link: this.link.inspect() };
         if (this.options) {
