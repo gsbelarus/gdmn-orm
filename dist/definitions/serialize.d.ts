@@ -6,6 +6,7 @@ export interface IAttribute {
     type: AttributeClasses;
     lName: LName;
     required: boolean;
+    semCategories: string;
     calculated: boolean;
 }
 export interface IEnumAttribute extends IAttribute {

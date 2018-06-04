@@ -25,7 +25,8 @@
   "homepage": "https://github.com/gsbelarus/gdmn-orm#readme",
   "dependencies": {
     "@types/clone": "^0.1.30",
-    "clone": "^2.1.1"
+    "clone": "^2.1.1",
+    "gdmn-nlp": "git+https://github.com/gsbelarus/gdmn-nlp.git"
   },
   "devDependencies": {
     "@types/jest": "^22.2.3",

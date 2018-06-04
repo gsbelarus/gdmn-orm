@@ -1,5 +1,6 @@
 import { LName, EnumValue, ContextVariables } from './types';
 import { ERModel, Entity, Attribute, EntityAttribute, StringAttribute, SetAttribute, SequenceAttribute, Sequence, IntegerAttribute, NumericAttribute, FloatAttribute, BooleanAttribute, DateAttribute, TimeStampAttribute, TimeAttribute, ParentAttribute, BlobAttribute, EnumAttribute, DetailAttribute } from './ermodel';
+import { str2SemCategory, str2SemCategories } from 'gdmn-nlp';
 
 export type AttributeClasses = 'EntityAttribute'
   | 'StringAttribute'
@@ -22,6 +23,7 @@ export interface IAttribute {
   type: AttributeClasses;
   lName: LName;
   required: boolean;
+  semCategories: string;
   calculated: boolean;
 }
 
@@ -116,41 +118,45 @@ export function deserializeERModel(serialized: IERModel): ERModel {
   };
 
   const createAttribute = (_attr: IAttribute): Attribute => {
-    const { name, lName, required, calculated } = _attr;
+    const { name, lName, required, calculated, semCategories } = _attr;
+    const cat = str2SemCategories(_attr.semCategories);
 
     switch (_attr.type) {
       case 'DetailAttribute':{
         const attr = _attr as IEntityAttribute;
         return new DetailAttribute(name, lName, required,
-          attr.references.map( e => erModel.entities[e] )
+          attr.references.map( e => erModel.entities[e] ),
+          cat
         );
       }
 
       case 'ParentAttribute':{
         const attr = _attr as IEntityAttribute;
         return new ParentAttribute(name, lName,
-          attr.references.map( e => erModel.entities[e] )
+          attr.references.map( e => erModel.entities[e] ),
+          cat
         );
       }
 
       case 'EntityAttribute': {
         const attr = _attr as IEntityAttribute;
         return new EntityAttribute(name, lName, required,
-          attr.references.map( e => erModel.entity(e) )
+          attr.references.map( e => erModel.entity(e) ),
+          cat
         );
       }
 
       case 'StringAttribute': {
         const attr = _attr as IStringAttribute;
         return new StringAttribute(name, lName, required, attr.minLength, attr.maxLength,
-            attr.defaultValue, attr.autoTrim, attr.mask
+            attr.defaultValue, attr.autoTrim, attr.mask, cat
         );
       }
 
       case 'SetAttribute': {
         const attr = _attr as ISetAttribute;
         const setAttribute = new SetAttribute(name, lName, required,
-            attr.references.map( e => erModel.entities[e] ), attr.presLen
+            attr.references.map( e => erModel.entities[e] ), attr.presLen, cat
         );
         attr.attributes.forEach( a => setAttribute.add(createAttribute(a)) );
         return setAttribute;
@@ -158,57 +164,57 @@ export function deserializeERModel(serialized: IERModel): ERModel {
 
       case 'SequenceAttribute': {
         const attr = _attr as ISequenceAttribute;
-        return new SequenceAttribute(name, lName, createSequence(attr.sequence));
+        return new SequenceAttribute(name, lName, createSequence(attr.sequence), cat);
       }
 
       case 'IntegerAttribute': {
         const attr = _attr as INumberAttribute<number>;
         return new IntegerAttribute(name, lName, required, attr.minValue, attr.maxValue,
-            attr.defaultValue
+            attr.defaultValue, cat
         );
       }
 
       case 'NumericAttribute': {
         const attr = _attr as INumericAttribute;
         return new NumericAttribute(name, lName, required, attr.precision, attr.scale,
-            attr.minValue, attr.maxValue, attr.defaultValue
+            attr.minValue, attr.maxValue, attr.defaultValue, cat
         );
       }
 
       case 'FloatAttribute': {
         const attr = _attr as INumberAttribute<number>;
         return new FloatAttribute(name, lName, required, attr.minValue, attr.maxValue,
-            attr.defaultValue
+            attr.defaultValue, cat
         );
       }
 
       case 'BooleanAttribute': {
         const attr = _attr as IBooleanAttribute;
-        return new BooleanAttribute(name, lName, required, attr.defaultValue);
+        return new BooleanAttribute(name, lName, required, attr.defaultValue, cat);
       }
 
       case 'DateAttribute': {
         const attr = _attr as IDateAttribute;
-        return new DateAttribute(name, lName, required, attr.minValue, attr.maxValue, attr.defaultValue);
+        return new DateAttribute(name, lName, required, attr.minValue, attr.maxValue, attr.defaultValue, cat);
       }
 
       case 'TimeStampAttribute': {
         const attr = _attr as IDateAttribute;
-        return new TimeStampAttribute(name, lName, required, attr.minValue, attr.maxValue, attr.defaultValue);
+        return new TimeStampAttribute(name, lName, required, attr.minValue, attr.maxValue, attr.defaultValue, cat);
       }
 
       case 'TimeAttribute': {
         const attr = _attr as IDateAttribute;
-        return new TimeAttribute(name, lName, required, attr.minValue, attr.maxValue, attr.defaultValue);
+        return new TimeAttribute(name, lName, required, attr.minValue, attr.maxValue, attr.defaultValue, cat);
       }
 
       case 'BlobAttribute': {
-        return new BlobAttribute(name, lName, required);
+        return new BlobAttribute(name, lName, required, cat);
       }
 
       case 'EnumAttribute': {
         const attr = _attr as IEnumAttribute;
-        return new EnumAttribute(name, lName, required, attr.values, attr.defaultValue);
+        return new EnumAttribute(name, lName, required, attr.values, attr.defaultValue, cat);
       }
 
       default:

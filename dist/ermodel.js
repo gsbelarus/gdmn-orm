@@ -4,12 +4,14 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 const rdbadapter_1 = require("./rdbadapter");
+const gdmn_nlp_1 = require("gdmn-nlp");
 class Attribute {
-    constructor(name, lName, required, adapter) {
+    constructor(name, lName, required, semCategories, adapter) {
         this._calculated = false;
         this._name = name;
         this._lName = lName;
         this._required = required;
+        this._semCategories = semCategories;
         this._adapter = adapter;
     }
     get adapter() {
@@ -24,6 +26,9 @@ class Attribute {
     get required() {
         return this._required;
     }
+    get semCategories() {
+        return this._semCategories;
+    }
     get calculated() {
         return this._calculated;
     }
@@ -33,6 +38,7 @@ class Attribute {
             type: this.constructor.name,
             lName: this._lName,
             required: this._required,
+            semCategories: gdmn_nlp_1.semCategories2Str(this._semCategories),
             calculated: this._calculated
         };
     }
@@ -68,8 +74,8 @@ class ScalarAttribute extends Attribute {
 }
 exports.ScalarAttribute = ScalarAttribute;
 class StringAttribute extends ScalarAttribute {
-    constructor(name, lName, required, minLength, maxLength, defaultValue, autoTrim, mask, adapter) {
-        super(name, lName, required, adapter);
+    constructor(name, lName, required, minLength, maxLength, defaultValue, autoTrim, mask, semCategories, adapter) {
+        super(name, lName, required, semCategories, adapter);
         this._autoTrim = true;
         this._minLength = minLength;
         this._maxLength = maxLength;
@@ -86,8 +92,8 @@ class StringAttribute extends ScalarAttribute {
 }
 exports.StringAttribute = StringAttribute;
 class SequenceAttribute extends ScalarAttribute {
-    constructor(name, lName, sequence, adapter) {
-        super(name, lName, true, adapter);
+    constructor(name, lName, sequence, semCategories, adapter) {
+        super(name, lName, true, semCategories, adapter);
         this._sequence = sequence;
     }
     serialize() {
@@ -96,8 +102,8 @@ class SequenceAttribute extends ScalarAttribute {
 }
 exports.SequenceAttribute = SequenceAttribute;
 class NumberAttribute extends ScalarAttribute {
-    constructor(name, lName, required, minValue, maxValue, defaultValue, adapter) {
-        super(name, lName, required, adapter);
+    constructor(name, lName, required, minValue, maxValue, defaultValue, semCategories, adapter) {
+        super(name, lName, required, semCategories, adapter);
         this._minValue = minValue;
         this._maxValue = maxValue;
         this._defaultValue = defaultValue;
@@ -132,8 +138,8 @@ class FloatAttribute extends NumberAttribute {
 }
 exports.FloatAttribute = FloatAttribute;
 class NumericAttribute extends NumberAttribute {
-    constructor(name, lName, required, precision, scale, minValue, maxValue, defaultValue, adapter) {
-        super(name, lName, required, minValue, maxValue, defaultValue, adapter);
+    constructor(name, lName, required, precision, scale, minValue, maxValue, defaultValue, semCategories, adapter) {
+        super(name, lName, required, minValue, maxValue, defaultValue, semCategories, adapter);
         this._precision = precision;
         this._scale = scale;
     }
@@ -164,8 +170,8 @@ class TimeStampAttribute extends NumberAttribute {
 }
 exports.TimeStampAttribute = TimeStampAttribute;
 class BooleanAttribute extends ScalarAttribute {
-    constructor(name, lName, required, defaultValue, adapter) {
-        super(name, lName, required, adapter);
+    constructor(name, lName, required, defaultValue, semCategories, adapter) {
+        super(name, lName, required, semCategories, adapter);
         this._defaultValue = defaultValue;
     }
     get defaultValue() {
@@ -183,8 +189,8 @@ class BlobAttribute extends ScalarAttribute {
 }
 exports.BlobAttribute = BlobAttribute;
 class EnumAttribute extends ScalarAttribute {
-    constructor(name, lName, required, values, defaultValue, adapter) {
-        super(name, lName, required, adapter);
+    constructor(name, lName, required, values, defaultValue, semCategories, adapter) {
+        super(name, lName, required, semCategories, adapter);
         this._values = values;
         this._defaultValue = defaultValue;
     }
@@ -212,8 +218,8 @@ class TimeIntervalAttribute extends ScalarAttribute {
 }
 exports.TimeIntervalAttribute = TimeIntervalAttribute;
 class EntityAttribute extends Attribute {
-    constructor(name, lName, required, entity, adapter) {
-        super(name, lName, required, adapter);
+    constructor(name, lName, required, entity, semCategories, adapter) {
+        super(name, lName, required, semCategories, adapter);
         this._entity = entity;
     }
     get entity() {
@@ -228,20 +234,20 @@ class EntityAttribute extends Attribute {
 }
 exports.EntityAttribute = EntityAttribute;
 class ParentAttribute extends EntityAttribute {
-    constructor(name, lName, entity, adapter) {
-        super(name, lName, false, entity, adapter);
+    constructor(name, lName, entity, semCategories, adapter) {
+        super(name, lName, false, entity, semCategories, adapter);
     }
 }
 exports.ParentAttribute = ParentAttribute;
 class DetailAttribute extends EntityAttribute {
-    constructor(name, lName, required, entity, adapter) {
-        super(name, lName, required, entity, adapter);
+    constructor(name, lName, required, entity, semCategories, adapter) {
+        super(name, lName, required, entity, semCategories, adapter);
     }
 }
 exports.DetailAttribute = DetailAttribute;
 class SetAttribute extends EntityAttribute {
-    constructor(name, lName, required, entity, presLen, adapter) {
-        super(name, lName, required, entity, adapter);
+    constructor(name, lName, required, entity, presLen, semCategories, adapter) {
+        super(name, lName, required, entity, semCategories, adapter);
         this._attributes = {};
         this._presLen = 0;
         this._presLen = presLen;

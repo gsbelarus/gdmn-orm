@@ -5,19 +5,27 @@
 import { LName, AttributeAdapter, SequenceAdapter, EnumValue, ContextVariables } from './types';
 import { IEntity, IAttribute, IERModel, AttributeClasses, IEntityAttribute, IStringAttribute, ISetAttribute, ISequenceAttribute, INumberAttribute, INumericAttribute, IBooleanAttribute, IEnumAttribute, IDateAttribute } from './serialize';
 import { Entity2RelationMap, relationName2Adapter, SetAttribute2CrossMap, CrossRelations, DetailAttributeMap } from './rdbadapter';
+import { SemCategory, semCategories2Str } from 'gdmn-nlp';
 
 export class Attribute {
   private _name: string;
   private _lName: LName;
   private _required: boolean;
+  private _semCategories: SemCategory[];
   private _calculated: boolean = false;
   protected _adapter?: AttributeAdapter;
 
-  constructor(name: string, lName: LName, required: boolean, adapter?: AttributeAdapter)
-  {
+  constructor(
+    name: string,
+    lName: LName,
+    required: boolean,
+    semCategories: SemCategory[],
+    adapter?: AttributeAdapter
+  ) {
     this._name = name;
     this._lName = lName;
     this._required = required;
+    this._semCategories = semCategories;
     this._adapter = adapter;
   }
 
@@ -37,6 +45,10 @@ export class Attribute {
     return this._required;
   }
 
+  get semCategories() {
+    return this._semCategories;
+  }
+
   get calculated() {
     return this._calculated;
   }
@@ -47,6 +59,7 @@ export class Attribute {
       type: this.constructor.name as AttributeClasses,
       lName: this._lName,
       required: this._required,
+      semCategories: semCategories2Str(this._semCategories),
       calculated: this._calculated
     }
   }
@@ -94,12 +107,19 @@ export class StringAttribute extends ScalarAttribute {
   private _mask?: RegExp;
   private _autoTrim: boolean = true;
 
-  constructor(name: string, lName: LName, required: boolean,
-    minLength: number | undefined, maxLength: number | undefined,
-    defaultValue: string | undefined, autoTrim: boolean,
-    mask: RegExp | undefined, adapter?: AttributeAdapter)
+  constructor(
+    name: string,
+    lName: LName,
+    required: boolean,
+    minLength: number | undefined,
+    maxLength: number | undefined,
+    defaultValue: string | undefined,
+    autoTrim: boolean,
+    mask: RegExp | undefined,
+    semCategories: SemCategory[],
+    adapter?: AttributeAdapter)
   {
-    super(name, lName, required, adapter);
+    super(name, lName, required, semCategories, adapter);
     this._minLength = minLength;
     this._maxLength = maxLength;
     this._defaultValue = defaultValue;
@@ -126,8 +146,14 @@ export class StringAttribute extends ScalarAttribute {
 export class SequenceAttribute extends ScalarAttribute {
   private _sequence: Sequence;
 
-  constructor(name: string, lName: LName, sequence: Sequence, adapter?: AttributeAdapter) {
-    super(name, lName, true, adapter);
+  constructor(
+    name: string,
+    lName: LName,
+    sequence: Sequence,
+    semCategories: SemCategory[],
+    adapter?: AttributeAdapter
+  ) {
+    super(name, lName, true, semCategories, adapter);
     this._sequence = sequence;
   }
 
@@ -144,11 +170,17 @@ export class NumberAttribute<T, DF = undefined> extends ScalarAttribute {
   private _maxValue?: T;
   private _defaultValue?: T | DF;
 
-  constructor(name: string, lName: LName, required: boolean,
-    minValue: T | undefined, maxValue: T | undefined,
-    defaultValue: T | undefined | DF, adapter?: AttributeAdapter)
+  constructor(
+    name: string,
+    lName: LName,
+    required: boolean,
+    minValue: T | undefined,
+    maxValue: T | undefined,
+    defaultValue: T | undefined | DF,
+    semCategories: SemCategory[],
+    adapter?: AttributeAdapter)
   {
-    super(name, lName, required, adapter);
+    super(name, lName, required, semCategories, adapter);
     this._minValue = minValue;
     this._maxValue = maxValue;
     this._defaultValue = defaultValue;
@@ -196,11 +228,19 @@ export class NumericAttribute extends NumberAttribute<number> {
   private _precision: number;
   private _scale: number;
 
-  constructor(name: string, lName: LName, required: boolean, precision: number,
-    scale: number, minValue: number | undefined, maxValue: number | undefined,
-    defaultValue: number | undefined, adapter?: AttributeAdapter)
+  constructor(
+    name: string,
+    lName: LName,
+    required: boolean,
+    precision: number,
+    scale: number,
+    minValue: number | undefined,
+    maxValue: number | undefined,
+    defaultValue: number | undefined,
+    semCategories: SemCategory[],
+    adapter?: AttributeAdapter)
   {
-    super(name, lName, required, minValue, maxValue, defaultValue, adapter);
+    super(name, lName, required, minValue, maxValue, defaultValue, semCategories, adapter);
     this._precision = precision;
     this._scale = scale;
   }
@@ -239,10 +279,15 @@ export class TimeStampAttribute extends NumberAttribute<Date, ContextVariables> 
 export class BooleanAttribute extends ScalarAttribute {
   private _defaultValue: boolean;
 
-  constructor(name: string, lName: LName, required: boolean,
-    defaultValue: boolean, adapter?: AttributeAdapter)
+  constructor(
+    name: string,
+    lName: LName,
+    required: boolean,
+    defaultValue: boolean,
+    semCategories: SemCategory[],
+    adapter?: AttributeAdapter)
   {
-    super(name, lName, required, adapter);
+    super(name, lName, required, semCategories, adapter);
     this._defaultValue = defaultValue;
   }
 
@@ -268,11 +313,16 @@ export class EnumAttribute extends ScalarAttribute {
   private _values: EnumValue[];
   private _defaultValue: string | number | undefined;
 
-  constructor(name: string, lName: LName, required: boolean,
-    values: EnumValue[], defaultValue: string | number | undefined,
+  constructor(
+    name: string,
+    lName: LName,
+    required: boolean,
+    values: EnumValue[],
+    defaultValue: string | number | undefined,
+    semCategories: SemCategory[],
     adapter?: AttributeAdapter)
   {
-    super(name, lName, required, adapter);
+    super(name, lName, required, semCategories, adapter);
     this._values = values;
     this._defaultValue = defaultValue;
   }
@@ -311,8 +361,15 @@ export class TimeIntervalAttribute extends ScalarAttribute { }
 export class EntityAttribute extends Attribute {
   private _entity: Entity[];
 
-  constructor(name: string, lName: LName, required: boolean, entity: Entity[], adapter?: AttributeAdapter) {
-    super(name, lName, required, adapter);
+  constructor(
+    name: string,
+    lName: LName,
+    required: boolean,
+    entity: Entity[],
+    semCategories: SemCategory[],
+    adapter?: AttributeAdapter)
+  {
+    super(name, lName, required, semCategories, adapter);
     this._entity = entity;
   }
 
@@ -333,14 +390,27 @@ export class EntityAttribute extends Attribute {
 }
 
 export class ParentAttribute extends EntityAttribute {
-  constructor(name: string, lName: LName, entity: Entity[], adapter?: AttributeAdapter) {
-    super(name, lName, false, entity, adapter);
+  constructor(
+    name: string,
+    lName: LName,
+    entity: Entity[],
+    semCategories: SemCategory[],
+    adapter?: AttributeAdapter)
+  {
+    super(name, lName, false, entity, semCategories, adapter);
   }
 }
 
 export class DetailAttribute extends EntityAttribute {
-  constructor(name: string, lName: LName, required: boolean, entity: Entity[], adapter?: DetailAttributeMap) {
-    super(name, lName, required, entity, adapter);
+  constructor(
+    name: string,
+    lName: LName,
+    required: boolean,
+    entity: Entity[],
+    semCategories: SemCategory[],
+    adapter?: DetailAttributeMap)
+  {
+    super(name, lName, required, entity, semCategories, adapter);
   }
 }
 
@@ -348,8 +418,16 @@ export class SetAttribute extends EntityAttribute {
   private _attributes: Attributes = {};
   private _presLen: number = 0;
 
-  constructor(name: string, lName: LName, required: boolean, entity: Entity[], presLen: number, adapter?: SetAttribute2CrossMap) {
-    super(name, lName, required, entity, adapter);
+  constructor(
+    name: string,
+    lName: LName,
+    required: boolean,
+    entity: Entity[],
+    presLen: number,
+    semCategories: SemCategory[],
+    adapter?: SetAttribute2CrossMap)
+  {
+    super(name, lName, required, entity, semCategories, adapter);
     this._presLen = presLen;
   }
 

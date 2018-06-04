@@ -4,17 +4,20 @@
 import { LName, AttributeAdapter, SequenceAdapter, EnumValue, ContextVariables } from './types';
 import { IEntity, IAttribute, IERModel, IEntityAttribute, IStringAttribute, ISetAttribute, ISequenceAttribute, INumberAttribute, INumericAttribute, IBooleanAttribute, IEnumAttribute, IDateAttribute } from './serialize';
 import { Entity2RelationMap, SetAttribute2CrossMap, DetailAttributeMap } from './rdbadapter';
+import { SemCategory } from 'gdmn-nlp';
 export declare class Attribute {
     private _name;
     private _lName;
     private _required;
+    private _semCategories;
     private _calculated;
     protected _adapter?: AttributeAdapter;
-    constructor(name: string, lName: LName, required: boolean, adapter?: AttributeAdapter);
+    constructor(name: string, lName: LName, required: boolean, semCategories: SemCategory[], adapter?: AttributeAdapter);
     readonly adapter: AttributeAdapter | undefined;
     readonly name: string;
     readonly lName: LName;
     readonly required: boolean;
+    readonly semCategories: SemCategory[];
     readonly calculated: boolean;
     serialize(): IAttribute;
     inspectDataType(): string;
@@ -31,20 +34,20 @@ export declare class StringAttribute extends ScalarAttribute {
     private _defaultValue?;
     private _mask?;
     private _autoTrim;
-    constructor(name: string, lName: LName, required: boolean, minLength: number | undefined, maxLength: number | undefined, defaultValue: string | undefined, autoTrim: boolean, mask: RegExp | undefined, adapter?: AttributeAdapter);
+    constructor(name: string, lName: LName, required: boolean, minLength: number | undefined, maxLength: number | undefined, defaultValue: string | undefined, autoTrim: boolean, mask: RegExp | undefined, semCategories: SemCategory[], adapter?: AttributeAdapter);
     serialize(): IStringAttribute;
     inspectDataType(): string;
 }
 export declare class SequenceAttribute extends ScalarAttribute {
     private _sequence;
-    constructor(name: string, lName: LName, sequence: Sequence, adapter?: AttributeAdapter);
+    constructor(name: string, lName: LName, sequence: Sequence, semCategories: SemCategory[], adapter?: AttributeAdapter);
     serialize(): ISequenceAttribute;
 }
 export declare class NumberAttribute<T, DF = undefined> extends ScalarAttribute {
     private _minValue?;
     private _maxValue?;
     private _defaultValue?;
-    constructor(name: string, lName: LName, required: boolean, minValue: T | undefined, maxValue: T | undefined, defaultValue: T | undefined | DF, adapter?: AttributeAdapter);
+    constructor(name: string, lName: LName, required: boolean, minValue: T | undefined, maxValue: T | undefined, defaultValue: T | undefined | DF, semCategories: SemCategory[], adapter?: AttributeAdapter);
     minValue: T | undefined;
     maxValue: T | undefined;
     defaultValue: T | DF | undefined;
@@ -57,7 +60,7 @@ export declare class FloatAttribute extends NumberAttribute<number> {
 export declare class NumericAttribute extends NumberAttribute<number> {
     private _precision;
     private _scale;
-    constructor(name: string, lName: LName, required: boolean, precision: number, scale: number, minValue: number | undefined, maxValue: number | undefined, defaultValue: number | undefined, adapter?: AttributeAdapter);
+    constructor(name: string, lName: LName, required: boolean, precision: number, scale: number, minValue: number | undefined, maxValue: number | undefined, defaultValue: number | undefined, semCategories: SemCategory[], adapter?: AttributeAdapter);
     inspectDataType(): string;
     serialize(): INumericAttribute;
 }
@@ -72,7 +75,7 @@ export declare class TimeStampAttribute extends NumberAttribute<Date, ContextVar
 }
 export declare class BooleanAttribute extends ScalarAttribute {
     private _defaultValue;
-    constructor(name: string, lName: LName, required: boolean, defaultValue: boolean, adapter?: AttributeAdapter);
+    constructor(name: string, lName: LName, required: boolean, defaultValue: boolean, semCategories: SemCategory[], adapter?: AttributeAdapter);
     defaultValue: boolean;
     serialize(): IBooleanAttribute;
 }
@@ -81,7 +84,7 @@ export declare class BlobAttribute extends ScalarAttribute {
 export declare class EnumAttribute extends ScalarAttribute {
     private _values;
     private _defaultValue;
-    constructor(name: string, lName: LName, required: boolean, values: EnumValue[], defaultValue: string | number | undefined, adapter?: AttributeAdapter);
+    constructor(name: string, lName: LName, required: boolean, values: EnumValue[], defaultValue: string | number | undefined, semCategories: SemCategory[], adapter?: AttributeAdapter);
     values: EnumValue[];
     defaultValue: string | number | undefined;
     inspectDataType(): string;
@@ -91,21 +94,21 @@ export declare class TimeIntervalAttribute extends ScalarAttribute {
 }
 export declare class EntityAttribute extends Attribute {
     private _entity;
-    constructor(name: string, lName: LName, required: boolean, entity: Entity[], adapter?: AttributeAdapter);
+    constructor(name: string, lName: LName, required: boolean, entity: Entity[], semCategories: SemCategory[], adapter?: AttributeAdapter);
     readonly entity: Entity[];
     serialize(): IEntityAttribute;
     inspectDataType(): string;
 }
 export declare class ParentAttribute extends EntityAttribute {
-    constructor(name: string, lName: LName, entity: Entity[], adapter?: AttributeAdapter);
+    constructor(name: string, lName: LName, entity: Entity[], semCategories: SemCategory[], adapter?: AttributeAdapter);
 }
 export declare class DetailAttribute extends EntityAttribute {
-    constructor(name: string, lName: LName, required: boolean, entity: Entity[], adapter?: DetailAttributeMap);
+    constructor(name: string, lName: LName, required: boolean, entity: Entity[], semCategories: SemCategory[], adapter?: DetailAttributeMap);
 }
 export declare class SetAttribute extends EntityAttribute {
     private _attributes;
     private _presLen;
-    constructor(name: string, lName: LName, required: boolean, entity: Entity[], presLen: number, adapter?: SetAttribute2CrossMap);
+    constructor(name: string, lName: LName, required: boolean, entity: Entity[], presLen: number, semCategories: SemCategory[], adapter?: SetAttribute2CrossMap);
     readonly adapter: SetAttribute2CrossMap | undefined;
     attribute(name: string): Attribute;
     add(attribute: Attribute): Attribute;
