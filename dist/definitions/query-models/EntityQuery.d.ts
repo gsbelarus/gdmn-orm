@@ -11,5 +11,6 @@ export declare class EntityQuery {
     constructor(query: EntityLink, options?: EntityQueryOptions);
     static deserialize(erModel: ERModel, text: string): EntityQuery;
     static inspectorToObject(erModel: ERModel, inspector: IEntityQueryInspector): EntityQuery;
+    serialize(): string;
     inspect(): IEntityQueryInspector;
 }
