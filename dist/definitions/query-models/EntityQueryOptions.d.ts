@@ -37,7 +37,7 @@ export interface IEntityLinkAlias<V> {
 }
 export declare enum EntityQueryOrder {
     ASC = "asc",
-    DESC = "desc",
+    DESC = "desc"
 }
 export declare class EntityQueryOptions {
     first?: number;
@@ -46,9 +46,9 @@ export declare class EntityQueryOptions {
     order?: IEntityLinkAlias<Map<Attribute, EntityQueryOrder>>;
     constructor(first?: number, skip?: number, where?: IEntityQueryWhere, order?: IEntityLinkAlias<Map<Attribute, EntityQueryOrder>>);
     static inspectorToObject(link: EntityLink, inspector: IEntityQueryOptionsInspector): EntityQueryOptions;
-    private static inspectorWhereToObject(link, inspector?);
-    private static _inspectorToObjectMap(link, map?);
-    private static _inspectMap(map?);
-    private static _inspectWhere(where?);
+    private static inspectorWhereToObject;
+    private static _inspectorToObjectMap;
+    private static _inspectMap;
+    private static _inspectWhere;
     inspect(): IEntityQueryOptionsInspector;
 }
