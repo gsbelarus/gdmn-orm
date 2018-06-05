@@ -19,7 +19,7 @@ export class Attribute {
     name: string,
     lName: LName,
     required: boolean,
-    semCategories: SemCategory[],
+    semCategories: SemCategory[] = [],
     adapter?: AttributeAdapter
   ) {
     this._name = name;
@@ -116,7 +116,7 @@ export class StringAttribute extends ScalarAttribute {
     defaultValue: string | undefined,
     autoTrim: boolean,
     mask: RegExp | undefined,
-    semCategories: SemCategory[],
+    semCategories: SemCategory[] = [],
     adapter?: AttributeAdapter)
   {
     super(name, lName, required, semCategories, adapter);
@@ -176,7 +176,7 @@ export class NumberAttribute<T, DF = undefined> extends ScalarAttribute {
     minValue: T | undefined,
     maxValue: T | undefined,
     defaultValue: T | undefined | DF,
-    semCategories: SemCategory[],
+    semCategories: SemCategory[] = [],
     adapter?: AttributeAdapter)
   {
     super(name, lName, required, semCategories, adapter);
@@ -236,7 +236,7 @@ export class NumericAttribute extends NumberAttribute<number> {
     minValue: number | undefined,
     maxValue: number | undefined,
     defaultValue: number | undefined,
-    semCategories: SemCategory[],
+    semCategories: SemCategory[] = [],
     adapter?: AttributeAdapter)
   {
     super(name, lName, required, minValue, maxValue, defaultValue, semCategories, adapter);
@@ -283,7 +283,7 @@ export class BooleanAttribute extends ScalarAttribute {
     lName: LName,
     required: boolean,
     defaultValue: boolean,
-    semCategories: SemCategory[],
+    semCategories: SemCategory[] = [],
     adapter?: AttributeAdapter)
   {
     super(name, lName, required, semCategories, adapter);
@@ -318,7 +318,7 @@ export class EnumAttribute extends ScalarAttribute {
     required: boolean,
     values: EnumValue[],
     defaultValue: string | number | undefined,
-    semCategories: SemCategory[],
+    semCategories: SemCategory[] = [],
     adapter?: AttributeAdapter)
   {
     super(name, lName, required, semCategories, adapter);
@@ -365,7 +365,7 @@ export class EntityAttribute extends Attribute {
     lName: LName,
     required: boolean,
     entity: Entity[],
-    semCategories: SemCategory[],
+    semCategories: SemCategory[] = [],
     adapter?: AttributeAdapter)
   {
     super(name, lName, required, semCategories, adapter);
@@ -393,7 +393,7 @@ export class ParentAttribute extends EntityAttribute {
     name: string,
     lName: LName,
     entity: Entity[],
-    semCategories: SemCategory[],
+    semCategories: SemCategory[] = [],
     adapter?: AttributeAdapter)
   {
     super(name, lName, false, entity, semCategories, adapter);
@@ -406,7 +406,7 @@ export class DetailAttribute extends EntityAttribute {
     lName: LName,
     required: boolean,
     entity: Entity[],
-    semCategories: SemCategory[],
+    semCategories: SemCategory[] = [],
     adapter?: DetailAttributeMap)
   {
     super(name, lName, required, entity, semCategories, adapter);
@@ -423,7 +423,7 @@ export class SetAttribute extends EntityAttribute {
     required: boolean,
     entity: Entity[],
     presLen: number,
-    semCategories: SemCategory[],
+    semCategories: SemCategory[] = [],
     adapter?: SetAttribute2CrossMap)
   {
     super(name, lName, required, entity, semCategories, adapter);
@@ -488,7 +488,7 @@ export class Entity {
     name: string,
     lName: LName,
     isAbstract: boolean,
-    semCategories: SemCategory[],
+    semCategories: SemCategory[] = [],
     adapter?: Entity2RelationMap)
   {
     /*

@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const rdbadapter_1 = require("./rdbadapter");
 const gdmn_nlp_1 = require("gdmn-nlp");
 class Attribute {
-    constructor(name, lName, required, semCategories, adapter) {
+    constructor(name, lName, required, semCategories = [], adapter) {
         this._calculated = false;
         this._name = name;
         this._lName = lName;
@@ -74,7 +74,7 @@ class ScalarAttribute extends Attribute {
 }
 exports.ScalarAttribute = ScalarAttribute;
 class StringAttribute extends ScalarAttribute {
-    constructor(name, lName, required, minLength, maxLength, defaultValue, autoTrim, mask, semCategories, adapter) {
+    constructor(name, lName, required, minLength, maxLength, defaultValue, autoTrim, mask, semCategories = [], adapter) {
         super(name, lName, required, semCategories, adapter);
         this._autoTrim = true;
         this._minLength = minLength;
@@ -102,7 +102,7 @@ class SequenceAttribute extends ScalarAttribute {
 }
 exports.SequenceAttribute = SequenceAttribute;
 class NumberAttribute extends ScalarAttribute {
-    constructor(name, lName, required, minValue, maxValue, defaultValue, semCategories, adapter) {
+    constructor(name, lName, required, minValue, maxValue, defaultValue, semCategories = [], adapter) {
         super(name, lName, required, semCategories, adapter);
         this._minValue = minValue;
         this._maxValue = maxValue;
@@ -138,7 +138,7 @@ class FloatAttribute extends NumberAttribute {
 }
 exports.FloatAttribute = FloatAttribute;
 class NumericAttribute extends NumberAttribute {
-    constructor(name, lName, required, precision, scale, minValue, maxValue, defaultValue, semCategories, adapter) {
+    constructor(name, lName, required, precision, scale, minValue, maxValue, defaultValue, semCategories = [], adapter) {
         super(name, lName, required, minValue, maxValue, defaultValue, semCategories, adapter);
         this._precision = precision;
         this._scale = scale;
@@ -170,7 +170,7 @@ class TimeStampAttribute extends NumberAttribute {
 }
 exports.TimeStampAttribute = TimeStampAttribute;
 class BooleanAttribute extends ScalarAttribute {
-    constructor(name, lName, required, defaultValue, semCategories, adapter) {
+    constructor(name, lName, required, defaultValue, semCategories = [], adapter) {
         super(name, lName, required, semCategories, adapter);
         this._defaultValue = defaultValue;
     }
@@ -189,7 +189,7 @@ class BlobAttribute extends ScalarAttribute {
 }
 exports.BlobAttribute = BlobAttribute;
 class EnumAttribute extends ScalarAttribute {
-    constructor(name, lName, required, values, defaultValue, semCategories, adapter) {
+    constructor(name, lName, required, values, defaultValue, semCategories = [], adapter) {
         super(name, lName, required, semCategories, adapter);
         this._values = values;
         this._defaultValue = defaultValue;
@@ -218,7 +218,7 @@ class TimeIntervalAttribute extends ScalarAttribute {
 }
 exports.TimeIntervalAttribute = TimeIntervalAttribute;
 class EntityAttribute extends Attribute {
-    constructor(name, lName, required, entity, semCategories, adapter) {
+    constructor(name, lName, required, entity, semCategories = [], adapter) {
         super(name, lName, required, semCategories, adapter);
         this._entity = entity;
     }
@@ -234,19 +234,19 @@ class EntityAttribute extends Attribute {
 }
 exports.EntityAttribute = EntityAttribute;
 class ParentAttribute extends EntityAttribute {
-    constructor(name, lName, entity, semCategories, adapter) {
+    constructor(name, lName, entity, semCategories = [], adapter) {
         super(name, lName, false, entity, semCategories, adapter);
     }
 }
 exports.ParentAttribute = ParentAttribute;
 class DetailAttribute extends EntityAttribute {
-    constructor(name, lName, required, entity, semCategories, adapter) {
+    constructor(name, lName, required, entity, semCategories = [], adapter) {
         super(name, lName, required, entity, semCategories, adapter);
     }
 }
 exports.DetailAttribute = DetailAttribute;
 class SetAttribute extends EntityAttribute {
-    constructor(name, lName, required, entity, presLen, semCategories, adapter) {
+    constructor(name, lName, required, entity, presLen, semCategories = [], adapter) {
         super(name, lName, required, entity, semCategories, adapter);
         this._attributes = {};
         this._presLen = 0;
@@ -285,7 +285,7 @@ class SetAttribute extends EntityAttribute {
 }
 exports.SetAttribute = SetAttribute;
 class Entity {
-    constructor(parent, name, lName, isAbstract, semCategories, adapter) {
+    constructor(parent, name, lName, isAbstract, semCategories = [], adapter) {
         /*
         if (!/^[a-zA-Z0-9_]+$/.test(name)) {
           throw new Error(`Invalid entity name ${name}`);
