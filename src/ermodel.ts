@@ -150,10 +150,9 @@ export class SequenceAttribute extends ScalarAttribute {
     name: string,
     lName: LName,
     sequence: Sequence,
-    semCategories: SemCategory[],
     adapter?: AttributeAdapter
   ) {
-    super(name, lName, true, semCategories, adapter);
+    super(name, lName, true, [], adapter);
     this._sequence = sequence;
   }
 
@@ -482,9 +481,15 @@ export class Entity {
   private _pk: Attribute[] = [];
   private _attributes: Attributes = {};
   private _unique: Attribute[][] = [];
+  private _semCategories: SemCategory[];
 
-  constructor(parent: Entity | undefined, name: string, lName: LName,
-    isAbstract: boolean, adapter?: Entity2RelationMap)
+  constructor(
+    parent: Entity | undefined,
+    name: string,
+    lName: LName,
+    isAbstract: boolean,
+    semCategories: SemCategory[],
+    adapter?: Entity2RelationMap)
   {
     /*
     if (!/^[a-zA-Z0-9_]+$/.test(name)) {
@@ -496,6 +501,7 @@ export class Entity {
     this.name = name;
     this.lName = lName;
     this.isAbstract = isAbstract;
+    this._semCategories = semCategories;
     this._adapter = adapter;
   }
 
@@ -525,6 +531,10 @@ export class Entity {
     } else {
       return this._attributes;
     }
+  }
+
+  get semCategories(): SemCategory[] {
+    return this._semCategories;
   }
 
   hasAttribute(name: string): boolean {
@@ -568,6 +578,7 @@ export class Entity {
       name: this.name,
       lName: this.lName,
       isAbstract: this.isAbstract,
+      semCategories: semCategories2Str(this._semCategories),
       attributes: Object.entries(this.attributes).map( a => a[1].serialize() )
     };
   }

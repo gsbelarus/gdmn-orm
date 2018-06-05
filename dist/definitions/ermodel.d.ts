@@ -40,7 +40,7 @@ export declare class StringAttribute extends ScalarAttribute {
 }
 export declare class SequenceAttribute extends ScalarAttribute {
     private _sequence;
-    constructor(name: string, lName: LName, sequence: Sequence, semCategories: SemCategory[], adapter?: AttributeAdapter);
+    constructor(name: string, lName: LName, sequence: Sequence, adapter?: AttributeAdapter);
     serialize(): ISequenceAttribute;
 }
 export declare class NumberAttribute<T, DF = undefined> extends ScalarAttribute {
@@ -125,12 +125,14 @@ export declare class Entity {
     private _pk;
     private _attributes;
     private _unique;
-    constructor(parent: Entity | undefined, name: string, lName: LName, isAbstract: boolean, adapter?: Entity2RelationMap);
+    private _semCategories;
+    constructor(parent: Entity | undefined, name: string, lName: LName, isAbstract: boolean, semCategories: SemCategory[], adapter?: Entity2RelationMap);
     readonly pk: Attribute[];
     readonly adapter: Entity2RelationMap;
     readonly unique: Attribute[][];
     addUnique(value: Attribute[]): void;
     readonly attributes: Attributes;
+    readonly semCategories: SemCategory[];
     hasAttribute(name: string): boolean;
     hasOwnAttribute(name: string): boolean;
     attribute(name: string): Attribute;

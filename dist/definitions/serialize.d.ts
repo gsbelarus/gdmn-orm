@@ -49,6 +49,7 @@ export interface IEntity {
     name: string;
     lName: LName;
     isAbstract: boolean;
+    semCategories: string;
     attributes: IAttribute[];
 }
 export interface IERModel {

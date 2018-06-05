@@ -75,6 +75,7 @@ export interface IEntity {
   name: string;
   lName: LName;
   isAbstract: boolean;
+  semCategories: string;
   attributes: IAttribute[];
 }
 
@@ -111,7 +112,9 @@ export function deserializeERModel(serialized: IERModel): ERModel {
         parent = createEntity(pe);
       }
 
-      erModel.add(result = new Entity(parent, e.name, e.lName, e.isAbstract));
+      erModel.add(
+        result = new Entity(parent, e.name, e.lName, e.isAbstract, str2SemCategories(e.semCategories))
+      );
     }
 
     return result;

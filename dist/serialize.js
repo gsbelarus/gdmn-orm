@@ -22,7 +22,7 @@ function deserializeERModel(serialized) {
                 }
                 parent = createEntity(pe);
             }
-            erModel.add(result = new ermodel_1.Entity(parent, e.name, e.lName, e.isAbstract));
+            erModel.add(result = new ermodel_1.Entity(parent, e.name, e.lName, e.isAbstract, gdmn_nlp_1.str2SemCategories(e.semCategories)));
         }
         return result;
     };

@@ -92,8 +92,8 @@ class StringAttribute extends ScalarAttribute {
 }
 exports.StringAttribute = StringAttribute;
 class SequenceAttribute extends ScalarAttribute {
-    constructor(name, lName, sequence, semCategories, adapter) {
-        super(name, lName, true, semCategories, adapter);
+    constructor(name, lName, sequence, adapter) {
+        super(name, lName, true, [], adapter);
         this._sequence = sequence;
     }
     serialize() {
@@ -285,7 +285,7 @@ class SetAttribute extends EntityAttribute {
 }
 exports.SetAttribute = SetAttribute;
 class Entity {
-    constructor(parent, name, lName, isAbstract, adapter) {
+    constructor(parent, name, lName, isAbstract, semCategories, adapter) {
         /*
         if (!/^[a-zA-Z0-9_]+$/.test(name)) {
           throw new Error(`Invalid entity name ${name}`);
@@ -298,6 +298,7 @@ class Entity {
         this.name = name;
         this.lName = lName;
         this.isAbstract = isAbstract;
+        this._semCategories = semCategories;
         this._adapter = adapter;
     }
     get pk() {
@@ -324,6 +325,9 @@ class Entity {
         else {
             return this._attributes;
         }
+    }
+    get semCategories() {
+        return this._semCategories;
     }
     hasAttribute(name) {
         return (this.parent && this.parent.hasAttribute(name)) || !!this._attributes[name];
@@ -359,6 +363,7 @@ class Entity {
             name: this.name,
             lName: this.lName,
             isAbstract: this.isAbstract,
+            semCategories: gdmn_nlp_1.semCategories2Str(this._semCategories),
             attributes: Object.entries(this.attributes).map(a => a[1].serialize())
         };
     }
