@@ -136,6 +136,7 @@ export declare class Entity {
     hasAttribute(name: string): boolean;
     hasOwnAttribute(name: string): boolean;
     attribute(name: string): Attribute;
+    attributesBySemCategory(cat: SemCategory): Attribute[];
     add(attribute: Attribute): Attribute;
     hasAncestor(a: Entity): boolean;
     serialize(): IEntity;

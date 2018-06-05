@@ -556,6 +556,11 @@ export class Entity {
     return found;
   }
 
+  attributesBySemCategory(cat: SemCategory): Attribute[] {
+    const attrArr = Object.entries(this._attributes).map( ([name, attr]) => attr );
+    return attrArr.filter( attr => attr.semCategories.some( c => c === cat) );
+  }
+
   add(attribute: Attribute) {
     if (this._attributes[attribute.name]) {
       throw new Error(`Attribute ${attribute.name} of entity ${this.name} already exists`);
