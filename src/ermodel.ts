@@ -88,9 +88,13 @@ export class Attribute {
     const adapter = this.adapter ? ', ' + JSON.stringify(this.adapter) : '';
     const lName = this.lName.ru ? ' - ' + this.lName.ru.name: '';
 
-    return [
+    const result = [
       `${indent}${this._name}${this.required ? '*' : ''}${lName}: ${this.inspectDataType()}${adapter}`
     ];
+    if (this._semCategories.length) {
+      result.push(`  ${indent}categories: ${semCategories2Str(this._semCategories)}`);
+    }
+    return result;
   }
 }
 
@@ -590,13 +594,18 @@ export class Entity {
 
   inspect(): string[] {
     const lName = this.lName.ru ? ' - ' + this.lName.ru.name : '';
-    return [`${this.isAbstract ? '!' : ''}${this.name}${this.parent ? '(' + this.parent.name + ')': ''}${lName}:`,
+    const result = [
+      `${this.isAbstract ? '!' : ''}${this.name}${this.parent ? '(' + this.parent.name + ')': ''}${lName}:`,
       `  adapter: ${JSON.stringify(this.adapter)}`,
       '  Attributes:',
       ...Object.entries(this.attributes).reduce( (p, a) => {
         return [...p, ...a[1].inspect()];
       }, [] as string[])
     ];
+    if (this._semCategories.length) {
+      result.splice(1, 0, `  categories: ${semCategories2Str(this._semCategories)}`);
+    }
+    return result;
   }
 }
 
