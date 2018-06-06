@@ -87,14 +87,11 @@ export class Attribute {
   inspect(indent: string = '    '): string[] {
     const adapter = this.adapter ? ', ' + JSON.stringify(this.adapter) : '';
     const lName = this.lName.ru ? ' - ' + this.lName.ru.name: '';
+    const cat = this._semCategories.length ? `, categories: ${semCategories2Str(this._semCategories)}` : '';
 
-    const result = [
-      `${indent}${this._name}${this.required ? '*' : ''}${lName}: ${this.inspectDataType()}${adapter}`
+    return [
+      `${indent}${this._name}${this.required ? '*' : ''}${lName}: ${this.inspectDataType()}${cat}${adapter}`
     ];
-    if (this._semCategories.length) {
-      result.push(`  ${indent}categories: ${semCategories2Str(this._semCategories)}`);
-    }
-    return result;
   }
 }
 
