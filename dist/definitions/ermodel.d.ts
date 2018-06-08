@@ -133,6 +133,7 @@ export declare class Entity {
     addUnique(value: Attribute[]): void;
     readonly attributes: Attributes;
     readonly semCategories: SemCategory[];
+    readonly isTree: boolean;
     hasAttribute(name: string): boolean;
     hasOwnAttribute(name: string): boolean;
     attribute(name: string): Attribute;

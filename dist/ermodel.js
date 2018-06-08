@@ -330,6 +330,9 @@ class Entity {
     get semCategories() {
         return this._semCategories;
     }
+    get isTree() {
+        return this.hasAttribute('PARENT');
+    }
     hasAttribute(name) {
         return (this.parent && this.parent.hasAttribute(name)) || !!this._attributes[name];
     }

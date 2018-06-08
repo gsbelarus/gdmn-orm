@@ -20,4 +20,5 @@ test("erModel", () => {
   const erModel2 = deserializeERModel(serialized);
 
   expect(erModel).toEqual(erModel2);
+  expect(erModel2.entities.Test.isTree).toBeFalsy();
 }, 40000);

@@ -538,6 +538,10 @@ export class Entity {
     return this._semCategories;
   }
 
+  get isTree(): boolean {
+    return this.hasAttribute('PARENT');
+  }
+
   hasAttribute(name: string): boolean {
     return (this.parent && this.parent.hasAttribute(name)) || !!this._attributes[name];
   }
