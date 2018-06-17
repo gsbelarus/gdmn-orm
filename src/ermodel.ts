@@ -4,7 +4,7 @@
 
 import { LName, AttributeAdapter, SequenceAdapter, EnumValue, ContextVariables } from './types';
 import { IEntity, IAttribute, IERModel, AttributeClasses, IEntityAttribute, IStringAttribute, ISetAttribute, ISequenceAttribute, INumberAttribute, INumericAttribute, IBooleanAttribute, IEnumAttribute, IDateAttribute } from './serialize';
-import { Entity2RelationMap, relationName2Adapter, SetAttribute2CrossMap, CrossRelations, DetailAttributeMap } from './rdbadapter';
+import { Entity2RelationMap, relationName2Adapter, SetAttribute2CrossMap, DetailAttributeMap } from './rdbadapter';
 import { SemCategory, semCategories2Str } from 'gdmn-nlp';
 
 export class Attribute {
@@ -562,7 +562,7 @@ export class Entity {
   }
 
   attributesBySemCategory(cat: SemCategory): Attribute[] {
-    const attrArr = Object.entries(this._attributes).map( ([name, attr]) => attr );
+    const attrArr = Object.entries(this._attributes).map( ([, attr]) => attr );
     return attrArr.filter( attr => attr.semCategories.some( c => c === cat) );
   }
 
@@ -629,6 +629,10 @@ export class Sequence {
 
   set name(value) {
     this._name = value;
+  }
+
+  get adapter(): SequenceAdapter | undefined {
+    return this._adapter;
   }
 }
 

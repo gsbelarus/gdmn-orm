@@ -1,7 +1,5 @@
 
-import { AttributeAdapter, SequenceAdapter, EntityAdapter, LName } from './types';
-import { Entity, Attribute } from './ermodel';
-import { ExecSyncOptionsWithBufferEncoding } from 'child_process';
+import { AttributeAdapter, SequenceAdapter, EntityAdapter } from './types';
 import clone from 'clone';
 
 export const MIN_64BIT_INT = -9223372036854775808;

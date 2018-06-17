@@ -1,6 +1,6 @@
 import { LName, EnumValue, ContextVariables } from './types';
 import { ERModel, Entity, Attribute, EntityAttribute, StringAttribute, SetAttribute, SequenceAttribute, Sequence, IntegerAttribute, NumericAttribute, FloatAttribute, BooleanAttribute, DateAttribute, TimeStampAttribute, TimeAttribute, ParentAttribute, BlobAttribute, EnumAttribute, DetailAttribute } from './ermodel';
-import { str2SemCategory, str2SemCategories } from 'gdmn-nlp';
+import { str2SemCategories } from 'gdmn-nlp';
 
 export type AttributeClasses = 'EntityAttribute'
   | 'StringAttribute'
@@ -121,7 +121,7 @@ export function deserializeERModel(serialized: IERModel): ERModel {
   };
 
   const createAttribute = (_attr: IAttribute): Attribute => {
-    const { name, lName, required, calculated, semCategories } = _attr;
+    const { name, lName, required } = _attr;
     const cat = str2SemCategories(_attr.semCategories);
 
     switch (_attr.type) {

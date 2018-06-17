@@ -151,6 +151,7 @@ export declare class Sequence {
     private _adapter?;
     constructor(name: string, adapter?: SequenceAdapter);
     name: string;
+    readonly adapter: SequenceAdapter | undefined;
 }
 export interface Sequencies {
     [name: string]: Sequence;

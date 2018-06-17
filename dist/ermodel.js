@@ -350,7 +350,7 @@ class Entity {
         return found;
     }
     attributesBySemCategory(cat) {
-        const attrArr = Object.entries(this._attributes).map(([name, attr]) => attr);
+        const attrArr = Object.entries(this._attributes).map(([, attr]) => attr);
         return attrArr.filter(attr => attr.semCategories.some(c => c === cat));
     }
     add(attribute) {
@@ -402,6 +402,9 @@ class Sequence {
     }
     set name(value) {
         this._name = value;
+    }
+    get adapter() {
+        return this._adapter;
     }
 }
 exports.Sequence = Sequence;

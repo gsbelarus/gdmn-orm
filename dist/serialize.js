@@ -27,7 +27,7 @@ function deserializeERModel(serialized) {
         return result;
     };
     const createAttribute = (_attr) => {
-        const { name, lName, required, calculated, semCategories } = _attr;
+        const { name, lName, required } = _attr;
         const cat = gdmn_nlp_1.str2SemCategories(_attr.semCategories);
         switch (_attr.type) {
             case 'DetailAttribute': {
