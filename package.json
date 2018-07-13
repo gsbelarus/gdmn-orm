@@ -29,11 +29,11 @@
     "gdmn-nlp": "git+https://github.com/gsbelarus/gdmn-nlp.git"
   },
   "devDependencies": {
-    "@types/jest": "^23.1.0",
-    "@types/node": "^10.3.3",
-    "jest": "^23.1.0",
-    "ts-jest": "^22.4.6",
-    "ts-node": "^6.1.1",
-    "typescript": "^2.9.2"
+    "@types/jest": "^23.1.5",
+    "@types/node": "^10.5.2",
+    "jest": "^23.4.0",
+    "ts-jest": "^23.0.0",
+    "ts-node": "^7.0.0",
+    "typescript": "^3.0.0-rc"
   }
 }

@@ -84,6 +84,21 @@ class StringAttribute extends ScalarAttribute {
         this._autoTrim = autoTrim;
         this._mask = mask;
     }
+    get minLength() {
+        return this._minLength;
+    }
+    get maxLength() {
+        return this._maxLength;
+    }
+    get defaultValue() {
+        return this._defaultValue;
+    }
+    get mask() {
+        return this._mask;
+    }
+    get autoTrim() {
+        return this._autoTrim;
+    }
     serialize() {
         return Object.assign({}, super.serialize(), { minLength: this._minLength, maxLength: this._maxLength, defaultValue: this._defaultValue, mask: this._mask, autoTrim: this._autoTrim });
     }
@@ -96,6 +111,9 @@ class SequenceAttribute extends ScalarAttribute {
     constructor(name, lName, sequence, adapter) {
         super(name, lName, true, [], adapter);
         this._sequence = sequence;
+    }
+    get sequence() {
+        return this._sequence;
     }
     serialize() {
         return Object.assign({}, super.serialize(), { sequence: this._sequence.name });
@@ -112,20 +130,11 @@ class NumberAttribute extends ScalarAttribute {
     get minValue() {
         return this._minValue;
     }
-    set minValue(value) {
-        this._minValue = value;
-    }
     get maxValue() {
         return this._maxValue;
     }
-    set maxValue(value) {
-        this._maxValue = value;
-    }
     get defaultValue() {
         return this._defaultValue;
-    }
-    set defaultValue(value) {
-        this._defaultValue = value;
     }
     serialize() {
         return Object.assign({}, super.serialize(), { minValue: this._minValue, maxValue: this._maxValue, defaultValue: this._defaultValue });
@@ -143,6 +152,12 @@ class NumericAttribute extends NumberAttribute {
         super(name, lName, required, minValue, maxValue, defaultValue, semCategories, adapter);
         this._precision = precision;
         this._scale = scale;
+    }
+    get precision() {
+        return this._precision;
+    }
+    get scale() {
+        return this._scale;
     }
     inspectDataType() {
         return `${super.inspectDataType()}(${this._precision}, ${Math.abs(this._scale)})`;

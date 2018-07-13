@@ -2,17 +2,31 @@
  *
  */
 
-import { LName, AttributeAdapter, SequenceAdapter, EnumValue, ContextVariables } from './types';
-import { IEntity, IAttribute, IERModel, AttributeClasses, IEntityAttribute, IStringAttribute, ISetAttribute, ISequenceAttribute, INumberAttribute, INumericAttribute, IBooleanAttribute, IEnumAttribute, IDateAttribute } from './serialize';
-import { Entity2RelationMap, relationName2Adapter, SetAttribute2CrossMap, DetailAttributeMap } from './rdbadapter';
-import { SemCategory, semCategories2Str } from 'gdmn-nlp';
+import {AttributeAdapter, ContextVariables, EnumValue, LName, SequenceAdapter} from './types';
+import {
+  AttributeClasses,
+  IAttribute,
+  IBooleanAttribute,
+  IDateAttribute,
+  IEntity,
+  IEntityAttribute,
+  IEnumAttribute,
+  IERModel,
+  INumberAttribute,
+  INumericAttribute,
+  ISequenceAttribute,
+  ISetAttribute,
+  IStringAttribute
+} from './serialize';
+import {DetailAttributeMap, Entity2RelationMap, relationName2Adapter, SetAttribute2CrossMap} from './rdbadapter';
+import {semCategories2Str, SemCategory} from 'gdmn-nlp';
 
 export class Attribute {
-  private _name: string;
-  private _lName: LName;
-  private _required: boolean;
-  private _semCategories: SemCategory[];
-  private _calculated: boolean = false;
+  private readonly _name: string;
+  private readonly _lName: LName;
+  private readonly _required: boolean;
+  private readonly _semCategories: SemCategory[];
+  private readonly _calculated: boolean = false;
   protected _adapter?: AttributeAdapter;
 
   constructor(
@@ -102,11 +116,11 @@ export interface Attributes {
 export class ScalarAttribute extends Attribute { }
 
 export class StringAttribute extends ScalarAttribute {
-  private _minLength?: number;
-  private _maxLength?: number;
-  private _defaultValue?: string;
-  private _mask?: RegExp;
-  private _autoTrim: boolean = true;
+  private readonly _minLength?: number;
+  private readonly _maxLength?: number;
+  private readonly _defaultValue?: string;
+  private readonly _mask?: RegExp;
+  private readonly _autoTrim: boolean = true;
 
   constructor(
     name: string,
@@ -128,6 +142,26 @@ export class StringAttribute extends ScalarAttribute {
     this._mask = mask;
   }
 
+  get minLength(): number | undefined {
+    return this._minLength;
+  }
+
+  get maxLength(): number | undefined {
+    return this._maxLength;
+  }
+
+  get defaultValue(): string | undefined {
+    return this._defaultValue;
+  }
+
+  get mask(): RegExp | undefined {
+    return this._mask;
+  }
+
+  get autoTrim(): boolean {
+    return this._autoTrim;
+  }
+
   serialize(): IStringAttribute {
     return {
       ...super.serialize(),
@@ -145,7 +179,7 @@ export class StringAttribute extends ScalarAttribute {
 }
 
 export class SequenceAttribute extends ScalarAttribute {
-  private _sequence: Sequence;
+  private readonly _sequence: Sequence;
 
   constructor(
     name: string,
@@ -157,6 +191,10 @@ export class SequenceAttribute extends ScalarAttribute {
     this._sequence = sequence;
   }
 
+  get sequence(): Sequence {
+    return this._sequence;
+  }
+
   serialize(): ISequenceAttribute {
     return {
       ...super.serialize(),
@@ -166,9 +204,9 @@ export class SequenceAttribute extends ScalarAttribute {
 }
 
 export class NumberAttribute<T, DF = undefined> extends ScalarAttribute {
-  private _minValue?: T;
-  private _maxValue?: T;
-  private _defaultValue?: T | DF;
+  private readonly _minValue?: T;
+  private readonly _maxValue?: T;
+  private readonly _defaultValue?: T | DF;
 
   constructor(
     name: string,
@@ -186,28 +224,16 @@ export class NumberAttribute<T, DF = undefined> extends ScalarAttribute {
     this._defaultValue = defaultValue;
   }
 
-  get minValue() {
+  get minValue(): T | undefined {
     return this._minValue;
   }
 
-  set minValue(value) {
-    this._minValue = value;
-  }
-
-  get maxValue() {
+  get maxValue(): T | undefined {
     return this._maxValue;
   }
 
-  set maxValue(value) {
-    this._maxValue = value;
-  }
-
-  get defaultValue() {
+  get defaultValue(): T | DF | undefined {
     return this._defaultValue;
-  }
-
-  set defaultValue(value) {
-    this._defaultValue = value;
   }
 
   serialize(): INumberAttribute<T, DF> {
@@ -225,8 +251,8 @@ export class IntegerAttribute extends NumberAttribute<number> { }
 export class FloatAttribute extends NumberAttribute<number> { }
 
 export class NumericAttribute extends NumberAttribute<number> {
-  private _precision: number;
-  private _scale: number;
+  private readonly _precision: number;
+  private readonly _scale: number;
 
   constructor(
     name: string,
@@ -243,6 +269,14 @@ export class NumericAttribute extends NumberAttribute<number> {
     super(name, lName, required, minValue, maxValue, defaultValue, semCategories, adapter);
     this._precision = precision;
     this._scale = scale;
+  }
+
+  get precision(): number {
+    return this._precision;
+  }
+
+  get scale(): number {
+    return this._scale;
   }
 
   inspectDataType() {
@@ -415,8 +449,8 @@ export class DetailAttribute extends EntityAttribute {
 }
 
 export class SetAttribute extends EntityAttribute {
-  private _attributes: Attributes = {};
-  private _presLen: number = 0;
+  private readonly _attributes: Attributes = {};
+  private readonly _presLen: number = 0;
 
   constructor(
     name: string,
@@ -478,11 +512,11 @@ export class Entity {
   readonly name: string;
   readonly lName: LName;
   readonly isAbstract: boolean;
-  private _adapter?: Entity2RelationMap;
-  private _pk: Attribute[] = [];
-  private _attributes: Attributes = {};
-  private _unique: Attribute[][] = [];
-  private _semCategories: SemCategory[];
+  private readonly _adapter?: Entity2RelationMap;
+  private readonly _pk: Attribute[] = [];
+  private readonly _attributes: Attributes = {};
+  private readonly _unique: Attribute[][] = [];
+  private readonly _semCategories: SemCategory[];
 
   constructor(
     parent: Entity | undefined,
