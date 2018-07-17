@@ -34,6 +34,6 @@
     "jest": "^23.4.1",
     "ts-jest": "^23.0.1",
     "ts-node": "^7.0.0",
-    "typescript": "^3.0.0-rc"
+    "typescript": "^2.9.2"
   }
 }
