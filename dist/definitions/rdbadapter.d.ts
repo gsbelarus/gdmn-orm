@@ -23,7 +23,7 @@ export interface EntityAdapter {
     relation: Relation[];
     refresh?: boolean;
 }
-export interface AttributeAdapter1 {
+export interface AttributeAdapter {
     relation: string;
     field: string;
 }

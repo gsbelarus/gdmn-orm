@@ -41,7 +41,7 @@ export interface EntityAdapter {
   refresh?: boolean;
 }
 
-export interface AttributeAdapter1 {
+export interface AttributeAdapter {
   relation: string;
   field: string;
 }

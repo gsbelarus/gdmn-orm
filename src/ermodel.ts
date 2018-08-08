@@ -4,7 +4,7 @@
 
 import {semCategories2Str, SemCategory} from 'gdmn-nlp';
 import {
-  AttributeAdapter1,
+  AttributeAdapter,
   DetailAttributeAdapter, EntityAdapter,
   relationName2Adapter,
   SequenceAdapter,
@@ -119,7 +119,7 @@ export interface Attributes {
   [name: string]: Attribute
 }
 
-export class ScalarAttribute extends Attribute<AttributeAdapter1> {
+export class ScalarAttribute extends Attribute<AttributeAdapter> {
 }
 
 export class StringAttribute extends ScalarAttribute {
@@ -139,7 +139,7 @@ export class StringAttribute extends ScalarAttribute {
               autoTrim: boolean,
               mask: RegExp | undefined,
               semCategories: SemCategory[] = [],
-              adapter?: AttributeAdapter1) {
+              adapter?: AttributeAdapter) {
     super(name, lName, required, semCategories, adapter);
     this._minLength = minLength;
     this._maxLength = maxLength;
@@ -192,7 +192,7 @@ export class SequenceAttribute extends ScalarAttribute {
               lName: LName,
               sequence: Sequence,
               semCategories: SemCategory[] = [],
-              adapter?: AttributeAdapter1) {
+              adapter?: AttributeAdapter) {
     super(name, lName, true, semCategories, adapter);
     this._sequence = sequence;
   }
@@ -222,7 +222,7 @@ export class NumberAttribute<T, DF = undefined> extends ScalarAttribute {
               maxValue: T | undefined,
               defaultValue: T | undefined | DF,
               semCategories: SemCategory[] = [],
-              adapter?: AttributeAdapter1) {
+              adapter?: AttributeAdapter) {
     super(name, lName, required, semCategories, adapter);
     this._minValue = minValue;
     this._maxValue = maxValue;
@@ -271,7 +271,7 @@ export class NumericAttribute extends NumberAttribute<number> {
               maxValue: number | undefined,
               defaultValue: number | undefined,
               semCategories: SemCategory[] = [],
-              adapter?: AttributeAdapter1) {
+              adapter?: AttributeAdapter) {
     super(name, lName, required, minValue, maxValue, defaultValue, semCategories, adapter);
     this._precision = precision;
     this._scale = scale;
@@ -325,7 +325,7 @@ export class BooleanAttribute extends ScalarAttribute {
               required: boolean,
               defaultValue: boolean,
               semCategories: SemCategory[] = [],
-              adapter?: AttributeAdapter1) {
+              adapter?: AttributeAdapter) {
     super(name, lName, required, semCategories, adapter);
     this._defaultValue = defaultValue;
   }
@@ -356,7 +356,7 @@ export class EnumAttribute extends ScalarAttribute {
               values: EnumValue[],
               defaultValue: string | number | undefined,
               semCategories: SemCategory[] = [],
-              adapter?: AttributeAdapter1) {
+              adapter?: AttributeAdapter) {
     super(name, lName, required, semCategories, adapter);
     this._values = values;
     this._defaultValue = defaultValue;
