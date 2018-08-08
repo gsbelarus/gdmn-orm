@@ -1,10 +1,9 @@
 import {AttributeAdapter} from '../../rdbadapter';
 import {IStringAttribute} from '../../serialize';
-import {IBaseSemOptions} from '../../types';
-import {Attribute} from '../Attribute';
+import {Attribute, IAttributeOptions} from '../Attribute';
 import {ScalarAttribute} from './ScalarAttribute';
 
-export interface IStringAttributeOptions extends IBaseSemOptions<AttributeAdapter> {
+export interface IStringAttributeOptions extends IAttributeOptions<AttributeAdapter> {
   minLength?: number;
   maxLength?: number;
   defaultValue?: string;
