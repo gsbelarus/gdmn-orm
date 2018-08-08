@@ -1,4 +1,4 @@
-import { ERModel } from './ermodel';
+import { ERModel } from './model/ERModel';
 import { ContextVariables, EnumValue, LName } from './types';
 export declare type AttributeClasses = 'EntityAttribute' | 'StringAttribute' | 'SetAttribute' | 'ParentAttribute' | 'DetailAttribute' | 'SequenceAttribute' | 'IntegerAttribute' | 'NumericAttribute' | 'FloatAttribute' | 'BooleanAttribute' | 'DateAttribute' | 'TimeStampAttribute' | 'TimeAttribute' | 'BlobAttribute' | 'EnumAttribute';
 export interface IAttribute {
@@ -7,7 +7,6 @@ export interface IAttribute {
     lName: LName;
     required: boolean;
     semCategories: string;
-    calculated: boolean;
 }
 export interface IEnumAttribute extends IAttribute {
     values: EnumValue[];

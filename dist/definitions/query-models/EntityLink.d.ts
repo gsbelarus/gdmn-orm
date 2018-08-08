@@ -1,4 +1,5 @@
-import { Entity, ERModel } from '../ermodel';
+import { Entity } from '../model/Entity';
+import { ERModel } from '../model/ERModel';
 import { EntityQueryField, IEntityQueryFieldInspector } from './EntityQueryField';
 export interface IEntitySubQueryInspector {
     entity: string;

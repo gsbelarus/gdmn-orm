@@ -1,3 +1,5 @@
+import {SemCategory} from 'gdmn-nlp';
+
 export interface TName {
   name: string;
   fullName?: string;
@@ -15,3 +17,15 @@ export interface EnumValue {
 }
 
 export type ContextVariables = 'CURRENT_TIMESTAMP' | 'CURRENT_TIMESTAMP(0)' | 'CURRENT_DATE' | 'CURRENT_TIME';
+
+export interface IBaseOptions<Adapter = any> {
+  name: string;
+  adapter?: Adapter;
+
+  [name: string]: any;
+}
+
+export interface IBaseSemOptions<Adapter = any> extends IBaseOptions<Adapter> {
+  lName: LName;
+  semCategories?: SemCategory[];
+}

@@ -1,4 +1,4 @@
-import { ERModel } from '../ermodel';
+import { ERModel } from '../model/ERModel';
 import { EntityLink, IEntitySubQueryInspector } from './EntityLink';
 import { EntityQueryOptions, IEntityQueryOptionsInspector } from './EntityQueryOptions';
 export interface IEntityQueryInspector {

@@ -1,4 +1,4 @@
-import {Attribute} from '../ermodel';
+import {Attribute} from '../model/Attribute';
 import {EntityLink} from './EntityLink';
 
 export interface IEntityQueryWhereInspector {
