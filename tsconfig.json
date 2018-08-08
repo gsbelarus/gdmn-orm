@@ -12,6 +12,7 @@
     "noUnusedParameters": true
   },
   "exclude": [
-    "./dist"
+    "./dist",
+    "./test"
   ]
 }
