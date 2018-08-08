@@ -3,8 +3,8 @@
  *
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-const rdbadapter_1 = require("./rdbadapter");
 const gdmn_nlp_1 = require("gdmn-nlp");
+const rdbadapter_1 = require("./rdbadapter");
 class Attribute {
     constructor(name, lName, required, semCategories = [], adapter) {
         this._calculated = false;
@@ -100,7 +100,14 @@ class StringAttribute extends ScalarAttribute {
         return this._autoTrim;
     }
     serialize() {
-        return Object.assign({}, super.serialize(), { minLength: this._minLength, maxLength: this._maxLength, defaultValue: this._defaultValue, mask: this._mask, autoTrim: this._autoTrim });
+        return {
+            ...super.serialize(),
+            minLength: this._minLength,
+            maxLength: this._maxLength,
+            defaultValue: this._defaultValue,
+            mask: this._mask,
+            autoTrim: this._autoTrim
+        };
     }
     inspectDataType() {
         return super.inspectDataType() + (this._maxLength ? '(' + this._maxLength + ')' : '');
@@ -108,15 +115,18 @@ class StringAttribute extends ScalarAttribute {
 }
 exports.StringAttribute = StringAttribute;
 class SequenceAttribute extends ScalarAttribute {
-    constructor(name, lName, sequence, adapter) {
-        super(name, lName, true, [], adapter);
+    constructor(name, lName, sequence, semCategories = [], adapter) {
+        super(name, lName, true, semCategories, adapter);
         this._sequence = sequence;
     }
     get sequence() {
         return this._sequence;
     }
     serialize() {
-        return Object.assign({}, super.serialize(), { sequence: this._sequence.name });
+        return {
+            ...super.serialize(),
+            sequence: this._sequence.name
+        };
     }
 }
 exports.SequenceAttribute = SequenceAttribute;
@@ -137,7 +147,12 @@ class NumberAttribute extends ScalarAttribute {
         return this._defaultValue;
     }
     serialize() {
-        return Object.assign({}, super.serialize(), { minValue: this._minValue, maxValue: this._maxValue, defaultValue: this._defaultValue });
+        return {
+            ...super.serialize(),
+            minValue: this._minValue,
+            maxValue: this._maxValue,
+            defaultValue: this._defaultValue
+        };
     }
 }
 exports.NumberAttribute = NumberAttribute;
@@ -163,7 +178,11 @@ class NumericAttribute extends NumberAttribute {
         return `${super.inspectDataType()}(${this._precision}, ${Math.abs(this._scale)})`;
     }
     serialize() {
-        return Object.assign({}, super.serialize(), { precision: this._precision, scale: this._scale });
+        return {
+            ...super.serialize(),
+            precision: this._precision,
+            scale: this._scale
+        };
     }
 }
 exports.NumericAttribute = NumericAttribute;
@@ -193,11 +212,11 @@ class BooleanAttribute extends ScalarAttribute {
     get defaultValue() {
         return this._defaultValue;
     }
-    set defaultValue(value) {
-        this._defaultValue = value;
-    }
     serialize() {
-        return Object.assign({}, super.serialize(), { defaultValue: this._defaultValue });
+        return {
+            ...super.serialize(),
+            defaultValue: this._defaultValue
+        };
     }
 }
 exports.BooleanAttribute = BooleanAttribute;
@@ -213,20 +232,18 @@ class EnumAttribute extends ScalarAttribute {
     get values() {
         return this._values;
     }
-    set values(value) {
-        this._values = value;
-    }
     get defaultValue() {
         return this._defaultValue;
-    }
-    set defaultValue(value) {
-        this._defaultValue = value;
     }
     inspectDataType() {
         return super.inspectDataType() + ' ' + JSON.stringify(this._values);
     }
     serialize() {
-        return Object.assign({}, super.serialize(), { values: this._values, defaultValue: this._defaultValue });
+        return {
+            ...super.serialize(),
+            values: this._values,
+            defaultValue: this._defaultValue
+        };
     }
 }
 exports.EnumAttribute = EnumAttribute;
@@ -242,7 +259,10 @@ class EntityAttribute extends Attribute {
         return this._entity;
     }
     serialize() {
-        return Object.assign({}, super.serialize(), { references: this._entity.map(ent => ent.name) });
+        return {
+            ...super.serialize(),
+            references: this._entity.map(ent => ent.name)
+        };
     }
     inspectDataType() {
         return super.inspectDataType() + ' [' + this._entity.reduce((p, e, idx) => p + (idx ? ', ' : '') + e.name, '') + ']';
@@ -268,8 +288,8 @@ class SetAttribute extends EntityAttribute {
         this._presLen = 0;
         this._presLen = presLen;
     }
-    get adapter() {
-        return super.adapter;
+    get attributes() {
+        return this._attributes;
     }
     attribute(name) {
         const found = this._attributes[name];
@@ -284,11 +304,12 @@ class SetAttribute extends EntityAttribute {
         }
         return this._attributes[attribute.name] = attribute;
     }
-    get attributes() {
-        return this._attributes;
-    }
     serialize() {
-        return Object.assign({}, super.serialize(), { attributes: Object.entries(this._attributes).map(a => a[1].serialize()), presLen: this._presLen });
+        return {
+            ...super.serialize(),
+            attributes: Object.entries(this._attributes).map(a => a[1].serialize()),
+            presLen: this._presLen
+        };
     }
     inspect(indent = '    ') {
         const result = super.inspect();
@@ -331,12 +352,9 @@ class Entity {
     get unique() {
         return this._unique;
     }
-    addUnique(value) {
-        this._unique.push(value);
-    }
     get attributes() {
         if (this.parent) {
-            return Object.assign({}, this.parent.attributes, this._attributes);
+            return { ...this.parent.attributes, ...this._attributes };
         }
         else {
             return this._attributes;
@@ -347,6 +365,9 @@ class Entity {
     }
     get isTree() {
         return this.hasAttribute('PARENT');
+    }
+    addUnique(value) {
+        this._unique.push(value);
     }
     hasAttribute(name) {
         return (this.parent && this.parent.hasAttribute(name)) || !!this._attributes[name];
@@ -414,9 +435,6 @@ class Sequence {
     }
     get name() {
         return this._name;
-    }
-    set name(value) {
-        this._name = value;
     }
     get adapter() {
         return this._adapter;

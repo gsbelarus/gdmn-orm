@@ -1,7 +1,7 @@
-import { Entity, ERModel } from '../ermodel';
-import { deserializeERModel } from '../serialize';
+import { Entity, ERModel } from '../src/ermodel';
+import { deserializeERModel } from '../src/serialize';
 
-test("erModel", () => {
+it("erModel", () => {
 
   const erModel = new ERModel();
 

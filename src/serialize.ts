@@ -1,6 +1,26 @@
-import { LName, EnumValue, ContextVariables } from './types';
-import { ERModel, Entity, Attribute, EntityAttribute, StringAttribute, SetAttribute, SequenceAttribute, Sequence, IntegerAttribute, NumericAttribute, FloatAttribute, BooleanAttribute, DateAttribute, TimeStampAttribute, TimeAttribute, ParentAttribute, BlobAttribute, EnumAttribute, DetailAttribute } from './ermodel';
-import { str2SemCategories } from 'gdmn-nlp';
+import {str2SemCategories} from 'gdmn-nlp';
+import {
+  Attribute,
+  BlobAttribute,
+  BooleanAttribute,
+  DateAttribute,
+  DetailAttribute,
+  Entity,
+  EntityAttribute,
+  EnumAttribute,
+  ERModel,
+  FloatAttribute,
+  IntegerAttribute,
+  NumericAttribute,
+  ParentAttribute,
+  Sequence,
+  SequenceAttribute,
+  SetAttribute,
+  StringAttribute,
+  TimeAttribute,
+  TimeStampAttribute
+} from './ermodel';
+import {ContextVariables, EnumValue, LName} from './types';
 
 export type AttributeClasses = 'EntityAttribute'
   | 'StringAttribute'
@@ -47,7 +67,8 @@ export interface INumericAttribute extends INumberAttribute<number> {
   scale: number;
 }
 
-export interface IDateAttribute extends INumberAttribute<Date, ContextVariables> { }
+export interface IDateAttribute extends INumberAttribute<Date, ContextVariables> {
+}
 
 export interface ISequenceAttribute extends IAttribute {
   sequence: string;
@@ -94,7 +115,7 @@ export function deserializeERModel(serialized: IERModel): ERModel {
     }
 
     return result;
-  }
+  };
 
   const createEntity = (e: IEntity): Entity => {
     let result = erModel.entities[e.name];
@@ -103,7 +124,7 @@ export function deserializeERModel(serialized: IERModel): ERModel {
       let parent: Entity | undefined = undefined;
 
       if (e.parent) {
-        const pe = serialized.entities.find( p => p.name === e.parent );
+        const pe = serialized.entities.find(p => p.name === e.parent);
 
         if (!pe) {
           throw new Error(`Unknown entity ${e.parent}`);
@@ -121,22 +142,22 @@ export function deserializeERModel(serialized: IERModel): ERModel {
   };
 
   const createAttribute = (_attr: IAttribute): Attribute => {
-    const { name, lName, required } = _attr;
+    const {name, lName, required} = _attr;
     const cat = str2SemCategories(_attr.semCategories);
 
     switch (_attr.type) {
-      case 'DetailAttribute':{
+      case 'DetailAttribute': {
         const attr = _attr as IEntityAttribute;
         return new DetailAttribute(name, lName, required,
-          attr.references.map( e => erModel.entities[e] ),
+          attr.references.map(e => erModel.entities[e]),
           cat
         );
       }
 
-      case 'ParentAttribute':{
+      case 'ParentAttribute': {
         const attr = _attr as IEntityAttribute;
         return new ParentAttribute(name, lName,
-          attr.references.map( e => erModel.entities[e] ),
+          attr.references.map(e => erModel.entities[e]),
           cat
         );
       }
@@ -144,7 +165,7 @@ export function deserializeERModel(serialized: IERModel): ERModel {
       case 'EntityAttribute': {
         const attr = _attr as IEntityAttribute;
         return new EntityAttribute(name, lName, required,
-          attr.references.map( e => erModel.entity(e) ),
+          attr.references.map(e => erModel.entity(e)),
           cat
         );
       }
@@ -152,16 +173,16 @@ export function deserializeERModel(serialized: IERModel): ERModel {
       case 'StringAttribute': {
         const attr = _attr as IStringAttribute;
         return new StringAttribute(name, lName, required, attr.minLength, attr.maxLength,
-            attr.defaultValue, attr.autoTrim, attr.mask, cat
+          attr.defaultValue, attr.autoTrim, attr.mask, cat
         );
       }
 
       case 'SetAttribute': {
         const attr = _attr as ISetAttribute;
         const setAttribute = new SetAttribute(name, lName, required,
-            attr.references.map( e => erModel.entities[e] ), attr.presLen, cat
+          attr.references.map(e => erModel.entities[e]), attr.presLen, cat
         );
-        attr.attributes.forEach( a => setAttribute.add(createAttribute(a)) );
+        attr.attributes.forEach(a => setAttribute.add(createAttribute(a)));
         return setAttribute;
       }
 
@@ -173,21 +194,21 @@ export function deserializeERModel(serialized: IERModel): ERModel {
       case 'IntegerAttribute': {
         const attr = _attr as INumberAttribute<number>;
         return new IntegerAttribute(name, lName, required, attr.minValue, attr.maxValue,
-            attr.defaultValue, cat
+          attr.defaultValue, cat
         );
       }
 
       case 'NumericAttribute': {
         const attr = _attr as INumericAttribute;
         return new NumericAttribute(name, lName, required, attr.precision, attr.scale,
-            attr.minValue, attr.maxValue, attr.defaultValue, cat
+          attr.minValue, attr.maxValue, attr.defaultValue, cat
         );
       }
 
       case 'FloatAttribute': {
         const attr = _attr as INumberAttribute<number>;
         return new FloatAttribute(name, lName, required, attr.minValue, attr.maxValue,
-            attr.defaultValue, cat
+          attr.defaultValue, cat
         );
       }
 
@@ -223,15 +244,15 @@ export function deserializeERModel(serialized: IERModel): ERModel {
       default:
         throw new Error(`Unknown attribyte type ${_attr.type}`);
     }
-  }
+  };
 
   const createAttributes = (e: IEntity): void => {
     const entity = erModel.entity(e.name);
-    e.attributes.forEach( _attr => entity.add(createAttribute(_attr)) );
+    e.attributes.forEach(_attr => entity.add(createAttribute(_attr)));
   };
 
-  serialized.entities.forEach( e => createEntity(e) );
-  serialized.entities.forEach( e => createAttributes(e) );
+  serialized.entities.forEach(e => createEntity(e));
+  serialized.entities.forEach(e => createAttributes(e));
 
   return erModel;
 }

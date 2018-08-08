@@ -1,5 +1,5 @@
-import { LName, EnumValue, ContextVariables } from './types';
 import { ERModel } from './ermodel';
+import { ContextVariables, EnumValue, LName } from './types';
 export declare type AttributeClasses = 'EntityAttribute' | 'StringAttribute' | 'SetAttribute' | 'ParentAttribute' | 'DetailAttribute' | 'SequenceAttribute' | 'IntegerAttribute' | 'NumericAttribute' | 'FloatAttribute' | 'BooleanAttribute' | 'DateAttribute' | 'TimeStampAttribute' | 'TimeAttribute' | 'BlobAttribute' | 'EnumAttribute';
 export interface IAttribute {
     name: string;

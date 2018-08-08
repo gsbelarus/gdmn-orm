@@ -1,5 +1,3 @@
-
-import { AttributeAdapter, SequenceAdapter, EntityAdapter } from './types';
 import clone from 'clone';
 
 export const MIN_64BIT_INT = -9223372036854775808;
@@ -20,7 +18,7 @@ export const systemFields = [
   'EDITORKEY'
 ];
 
-export interface Sequence2SequenceMap extends SequenceAdapter {
+export interface SequenceAdapter {
   sequence: string;
 }
 
@@ -38,17 +36,17 @@ export interface Relation {
   weak?: Weak;
 }
 
-export interface Entity2RelationMap extends EntityAdapter {
+export interface EntityAdapter {
   relation: Relation[];
   refresh?: boolean;
 }
 
-export interface Attribute2FieldMap extends AttributeAdapter {
+export interface AttributeAdapter1 {
   relation: string;
   field: string;
 }
 
-export interface SetAttribute2CrossMap extends AttributeAdapter {
+export interface SetAttributeAdapter {
   crossRelation: string;
   presentationField?: string;
 }
@@ -84,7 +82,7 @@ export interface SetAttribute2CrossMap extends AttributeAdapter {
  *   }
  * ]
  */
-export interface DetailAttributeMap extends AttributeAdapter {
+export interface DetailAttributeAdapter {
   masterLinks: {
     detailRelation: string;
     link2masterField: string;
@@ -100,7 +98,7 @@ export interface CrossRelations {
   [name: string]: CrossRelation;
 }
 
-export function relationName2Adapter(relationName: string): Entity2RelationMap {
+export function relationName2Adapter(relationName: string): EntityAdapter {
   return {
     relation: [{
       relationName
@@ -108,34 +106,34 @@ export function relationName2Adapter(relationName: string): Entity2RelationMap {
   };
 }
 
-export function relationNames2Adapter(relationNames: string[]): Entity2RelationMap {
-  return { relation: relationNames.map( relationName => ({ relationName }) ) }
+export function relationNames2Adapter(relationNames: string[]): EntityAdapter {
+  return {relation: relationNames.map(relationName => ({relationName}))};
 }
 
-export function appendAdapter(src: Entity2RelationMap, relationName: string): Entity2RelationMap {
+export function appendAdapter(src: EntityAdapter, relationName: string): EntityAdapter {
   const em = clone(src);
-  if (relationName && !em.relation.find( r => r.relationName === relationName )) {
-    em.relation.push({ relationName });
+  if (relationName && !em.relation.find(r => r.relationName === relationName)) {
+    em.relation.push({relationName});
   }
   return em;
 }
 
-export function sameAdapter(mapA: Entity2RelationMap, mapB: Entity2RelationMap): boolean {
-  const arrA = mapA.relation.filter( r => !r.weak );
-  const arrB = mapB.relation.filter( r => !r.weak );
+export function sameAdapter(mapA: EntityAdapter, mapB: EntityAdapter): boolean {
+  const arrA = mapA.relation.filter(r => !r.weak);
+  const arrB = mapB.relation.filter(r => !r.weak);
   return arrA.length === arrB.length
-    && arrA.every( (a, idx) => a.relationName === arrB[idx].relationName
+    && arrA.every((a, idx) => a.relationName === arrB[idx].relationName
       && JSON.stringify(a.selector) === JSON.stringify(arrB[idx].selector));
 }
 
-export function hasField(em: Entity2RelationMap, rn: string, fn: string): boolean {
-  const r = em.relation.find( ar => ar.relationName === rn );
+export function hasField(em: EntityAdapter, rn: string, fn: string): boolean {
+  const r = em.relation.find(ar => ar.relationName === rn);
 
   if (!r) {
     throw new Error(`Can't find relation ${rn} in adapter`);
   }
 
-  return !r.fields || !!r.fields.find( f => f === fn );
+  return !r.fields || !!r.fields.find(f => f === fn);
 }
 
 export function isUserDefined(name: string) {
@@ -162,7 +160,7 @@ export function condition2Selectors(cond: string): EntitySelector[] {
     const result = [];
     let matchC = regExpC.exec(values);
     while (matchC) {
-      result.push({ field: matchB[1].toUpperCase(), value: Number.parseInt(matchC[0]) });
+      result.push({field: matchB[1].toUpperCase(), value: Number.parseInt(matchC[0])});
       matchC = regExpC.exec(values);
     }
     return result;

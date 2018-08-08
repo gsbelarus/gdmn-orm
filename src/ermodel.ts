@@ -2,7 +2,14 @@
  *
  */
 
-import {AttributeAdapter, ContextVariables, EnumValue, LName, SequenceAdapter} from './types';
+import {semCategories2Str, SemCategory} from 'gdmn-nlp';
+import {
+  AttributeAdapter1,
+  DetailAttributeAdapter, EntityAdapter,
+  relationName2Adapter,
+  SequenceAdapter,
+  SetAttributeAdapter
+} from './rdbadapter';
 import {
   AttributeClasses,
   IAttribute,
@@ -18,24 +25,23 @@ import {
   ISetAttribute,
   IStringAttribute
 } from './serialize';
-import {DetailAttributeMap, Entity2RelationMap, relationName2Adapter, SetAttribute2CrossMap} from './rdbadapter';
-import {semCategories2Str, SemCategory} from 'gdmn-nlp';
+import {ContextVariables, EnumValue, LName} from './types';
 
-export class Attribute {
+export class Attribute<Adapter = any> {
+
+  protected _adapter?: Adapter;
+
   private readonly _name: string;
   private readonly _lName: LName;
   private readonly _required: boolean;
   private readonly _semCategories: SemCategory[];
   private readonly _calculated: boolean = false;
-  protected _adapter?: AttributeAdapter;
 
-  constructor(
-    name: string,
-    lName: LName,
-    required: boolean,
-    semCategories: SemCategory[] = [],
-    adapter?: AttributeAdapter
-  ) {
+  constructor(name: string,
+              lName: LName,
+              required: boolean,
+              semCategories: SemCategory[] = [],
+              adapter?: Adapter) {
     this._name = name;
     this._lName = lName;
     this._required = required;
@@ -43,27 +49,27 @@ export class Attribute {
     this._adapter = adapter;
   }
 
-  get adapter() {
+  get adapter(): Adapter | undefined {
     return this._adapter;
   }
 
-  get name() {
+  get name(): string {
     return this._name;
   }
 
-  get lName() {
+  get lName(): LName {
     return this._lName;
   }
 
-  get required() {
+  get required(): boolean {
     return this._required;
   }
 
-  get semCategories() {
+  get semCategories(): SemCategory[] {
     return this._semCategories;
   }
 
-  get calculated() {
+  get calculated(): boolean {
     return this._calculated;
   }
 
@@ -75,7 +81,7 @@ export class Attribute {
       required: this._required,
       semCategories: semCategories2Str(this._semCategories),
       calculated: this._calculated
-    }
+    };
   }
 
   inspectDataType(): string {
@@ -94,13 +100,13 @@ export class Attribute {
       'TimeAttribute': 'TM',
       'BlobAttribute': 'BLOB',
       'EnumAttribute': 'E'
-    } as {[name: string]: string};
+    } as { [name: string]: string };
     return sn[this.constructor.name] ? sn[this.constructor.name] : this.constructor.name;
   }
 
   inspect(indent: string = '    '): string[] {
     const adapter = this.adapter ? ', ' + JSON.stringify(this.adapter) : '';
-    const lName = this.lName.ru ? ' - ' + this.lName.ru.name: '';
+    const lName = this.lName.ru ? ' - ' + this.lName.ru.name : '';
     const cat = this._semCategories.length ? `, categories: ${semCategories2Str(this._semCategories)}` : '';
 
     return [
@@ -113,27 +119,27 @@ export interface Attributes {
   [name: string]: Attribute
 }
 
-export class ScalarAttribute extends Attribute { }
+export class ScalarAttribute extends Attribute<AttributeAdapter1> {
+}
 
 export class StringAttribute extends ScalarAttribute {
+
   private readonly _minLength?: number;
   private readonly _maxLength?: number;
   private readonly _defaultValue?: string;
   private readonly _mask?: RegExp;
   private readonly _autoTrim: boolean = true;
 
-  constructor(
-    name: string,
-    lName: LName,
-    required: boolean,
-    minLength: number | undefined,
-    maxLength: number | undefined,
-    defaultValue: string | undefined,
-    autoTrim: boolean,
-    mask: RegExp | undefined,
-    semCategories: SemCategory[] = [],
-    adapter?: AttributeAdapter)
-  {
+  constructor(name: string,
+              lName: LName,
+              required: boolean,
+              minLength: number | undefined,
+              maxLength: number | undefined,
+              defaultValue: string | undefined,
+              autoTrim: boolean,
+              mask: RegExp | undefined,
+              semCategories: SemCategory[] = [],
+              adapter?: AttributeAdapter1) {
     super(name, lName, required, semCategories, adapter);
     this._minLength = minLength;
     this._maxLength = maxLength;
@@ -170,24 +176,24 @@ export class StringAttribute extends ScalarAttribute {
       defaultValue: this._defaultValue,
       mask: this._mask,
       autoTrim: this._autoTrim
-    }
+    };
   }
 
-  inspectDataType() {
+  inspectDataType(): string {
     return super.inspectDataType() + (this._maxLength ? '(' + this._maxLength + ')' : '');
   }
 }
 
 export class SequenceAttribute extends ScalarAttribute {
+
   private readonly _sequence: Sequence;
 
-  constructor(
-    name: string,
-    lName: LName,
-    sequence: Sequence,
-    adapter?: AttributeAdapter
-  ) {
-    super(name, lName, true, [], adapter);
+  constructor(name: string,
+              lName: LName,
+              sequence: Sequence,
+              semCategories: SemCategory[] = [],
+              adapter?: AttributeAdapter1) {
+    super(name, lName, true, semCategories, adapter);
     this._sequence = sequence;
   }
 
@@ -199,25 +205,24 @@ export class SequenceAttribute extends ScalarAttribute {
     return {
       ...super.serialize(),
       sequence: this._sequence.name
-    }
+    };
   }
 }
 
 export class NumberAttribute<T, DF = undefined> extends ScalarAttribute {
+
   private readonly _minValue?: T;
   private readonly _maxValue?: T;
   private readonly _defaultValue?: T | DF;
 
-  constructor(
-    name: string,
-    lName: LName,
-    required: boolean,
-    minValue: T | undefined,
-    maxValue: T | undefined,
-    defaultValue: T | undefined | DF,
-    semCategories: SemCategory[] = [],
-    adapter?: AttributeAdapter)
-  {
+  constructor(name: string,
+              lName: LName,
+              required: boolean,
+              minValue: T | undefined,
+              maxValue: T | undefined,
+              defaultValue: T | undefined | DF,
+              semCategories: SemCategory[] = [],
+              adapter?: AttributeAdapter1) {
     super(name, lName, required, semCategories, adapter);
     this._minValue = minValue;
     this._maxValue = maxValue;
@@ -242,30 +247,31 @@ export class NumberAttribute<T, DF = undefined> extends ScalarAttribute {
       minValue: this._minValue,
       maxValue: this._maxValue,
       defaultValue: this._defaultValue
-    }
+    };
   }
 }
 
-export class IntegerAttribute extends NumberAttribute<number> { }
+export class IntegerAttribute extends NumberAttribute<number> {
+}
 
-export class FloatAttribute extends NumberAttribute<number> { }
+export class FloatAttribute extends NumberAttribute<number> {
+}
 
 export class NumericAttribute extends NumberAttribute<number> {
+
   private readonly _precision: number;
   private readonly _scale: number;
 
-  constructor(
-    name: string,
-    lName: LName,
-    required: boolean,
-    precision: number,
-    scale: number,
-    minValue: number | undefined,
-    maxValue: number | undefined,
-    defaultValue: number | undefined,
-    semCategories: SemCategory[] = [],
-    adapter?: AttributeAdapter)
-  {
+  constructor(name: string,
+              lName: LName,
+              required: boolean,
+              precision: number,
+              scale: number,
+              minValue: number | undefined,
+              maxValue: number | undefined,
+              defaultValue: number | undefined,
+              semCategories: SemCategory[] = [],
+              adapter?: AttributeAdapter1) {
     super(name, lName, required, minValue, maxValue, defaultValue, semCategories, adapter);
     this._precision = precision;
     this._scale = scale;
@@ -279,7 +285,7 @@ export class NumericAttribute extends NumberAttribute<number> {
     return this._scale;
   }
 
-  inspectDataType() {
+  inspectDataType(): string {
     return `${super.inspectDataType()}(${this._precision}, ${Math.abs(this._scale)})`;
   }
 
@@ -288,7 +294,7 @@ export class NumericAttribute extends NumberAttribute<number> {
       ...super.serialize(),
       precision: this._precision,
       scale: this._scale
-    }
+    };
   }
 }
 
@@ -311,70 +317,57 @@ export class TimeStampAttribute extends NumberAttribute<Date, ContextVariables> 
 }
 
 export class BooleanAttribute extends ScalarAttribute {
-  private _defaultValue: boolean;
 
-  constructor(
-    name: string,
-    lName: LName,
-    required: boolean,
-    defaultValue: boolean,
-    semCategories: SemCategory[] = [],
-    adapter?: AttributeAdapter)
-  {
+  private readonly _defaultValue: boolean;
+
+  constructor(name: string,
+              lName: LName,
+              required: boolean,
+              defaultValue: boolean,
+              semCategories: SemCategory[] = [],
+              adapter?: AttributeAdapter1) {
     super(name, lName, required, semCategories, adapter);
     this._defaultValue = defaultValue;
   }
 
-  get defaultValue() {
+  get defaultValue(): boolean {
     return this._defaultValue;
-  }
-
-  set defaultValue(value) {
-    this._defaultValue = value;
   }
 
   serialize(): IBooleanAttribute {
     return {
       ...super.serialize(),
       defaultValue: this._defaultValue
-    }
+    };
   }
 }
 
-export class BlobAttribute extends ScalarAttribute { }
+export class BlobAttribute extends ScalarAttribute {
+}
 
 export class EnumAttribute extends ScalarAttribute {
-  private _values: EnumValue[];
-  private _defaultValue: string | number | undefined;
 
-  constructor(
-    name: string,
-    lName: LName,
-    required: boolean,
-    values: EnumValue[],
-    defaultValue: string | number | undefined,
-    semCategories: SemCategory[] = [],
-    adapter?: AttributeAdapter)
-  {
+  private readonly _values: EnumValue[];
+  private readonly _defaultValue: string | number | undefined;
+
+  constructor(name: string,
+              lName: LName,
+              required: boolean,
+              values: EnumValue[],
+              defaultValue: string | number | undefined,
+              semCategories: SemCategory[] = [],
+              adapter?: AttributeAdapter1) {
     super(name, lName, required, semCategories, adapter);
     this._values = values;
     this._defaultValue = defaultValue;
   }
 
-  get values() {
+  get values(): EnumValue[] {
     return this._values;
   }
 
-  set values(value) {
-    this._values = value;
-  }
-
-  get defaultValue() {
+  get defaultValue(): string | number | undefined {
     return this._defaultValue;
-  }
-
-  set defaultValue(value) {
-    this._defaultValue = value;
   }
 
   inspectDataType(): string {
@@ -386,23 +379,23 @@ export class EnumAttribute extends ScalarAttribute {
       ...super.serialize(),
       values: this._values,
       defaultValue: this._defaultValue
-    }
+    };
   }
 }
 
-export class TimeIntervalAttribute extends ScalarAttribute { }
+export class TimeIntervalAttribute extends ScalarAttribute {
+}
 
-export class EntityAttribute extends Attribute {
-  private _entity: Entity[];
+export class EntityAttribute<Adapter = any> extends Attribute<Adapter> {
 
-  constructor(
-    name: string,
-    lName: LName,
-    required: boolean,
-    entity: Entity[],
-    semCategories: SemCategory[] = [],
-    adapter?: AttributeAdapter)
-  {
+  private readonly _entity: Entity[];
+
+  constructor(name: string,
+              lName: LName,
+              required: boolean,
+              entity: Entity[],
+              semCategories: SemCategory[] = [],
+              adapter?: Adapter) {
     super(name, lName, required, semCategories, adapter);
     this._entity = entity;
   }
@@ -414,62 +407,59 @@ export class EntityAttribute extends Attribute {
   serialize(): IEntityAttribute {
     return {
       ...super.serialize(),
-      references: this._entity.map( ent => ent.name )
-    }
+      references: this._entity.map(ent => ent.name)
+    };
   }
 
   inspectDataType() {
-    return super.inspectDataType() + ' [' + this._entity.reduce( (p, e, idx) => p + (idx ? ', ' : '') + e.name, '') + ']';
+    return super.inspectDataType() + ' [' + this._entity.reduce((p, e, idx) => p + (idx ? ', ' : '') + e.name, '') + ']';
   }
 }
 
 export class ParentAttribute extends EntityAttribute {
-  constructor(
-    name: string,
-    lName: LName,
-    entity: Entity[],
-    semCategories: SemCategory[] = [],
-    adapter?: AttributeAdapter)
-  {
+
+  constructor(name: string,
+              lName: LName,
+              entity: Entity[],
+              semCategories: SemCategory[] = [],
+              adapter?: string) {
     super(name, lName, false, entity, semCategories, adapter);
   }
 }
 
-export class DetailAttribute extends EntityAttribute {
-  constructor(
-    name: string,
-    lName: LName,
-    required: boolean,
-    entity: Entity[],
-    semCategories: SemCategory[] = [],
-    adapter?: DetailAttributeMap)
-  {
+export class DetailAttribute extends EntityAttribute<DetailAttributeAdapter> {
+
+  constructor(name: string,
+              lName: LName,
+              required: boolean,
+              entity: Entity[],
+              semCategories: SemCategory[] = [],
+              adapter?: DetailAttributeAdapter) {
     super(name, lName, required, entity, semCategories, adapter);
   }
 }
 
-export class SetAttribute extends EntityAttribute {
+export class SetAttribute extends EntityAttribute<SetAttributeAdapter> {
+
   private readonly _attributes: Attributes = {};
   private readonly _presLen: number = 0;
 
-  constructor(
-    name: string,
-    lName: LName,
-    required: boolean,
-    entity: Entity[],
-    presLen: number,
-    semCategories: SemCategory[] = [],
-    adapter?: SetAttribute2CrossMap)
-  {
+  constructor(name: string,
+              lName: LName,
+              required: boolean,
+              entity: Entity[],
+              presLen: number,
+              semCategories: SemCategory[] = [],
+              adapter?: SetAttributeAdapter) {
     super(name, lName, required, entity, semCategories, adapter);
     this._presLen = presLen;
   }
 
-  get adapter(): SetAttribute2CrossMap | undefined {
-    return super.adapter as SetAttribute2CrossMap;
+  get attributes(): Attributes {
+    return this._attributes;
   }
 
-  attribute(name: string) {
+  attribute(name: string): Attribute | never {
     const found = this._attributes[name];
     if (!found) {
       throw new Error(`Unknown attribute ${name}`);
@@ -477,7 +467,7 @@ export class SetAttribute extends EntityAttribute {
     return found;
   }
 
-  add(attribute: Attribute) {
+  add(attribute: Attribute): Attribute | never {
     if (this._attributes[attribute.name]) {
       throw new Error(`Attribute ${attribute.name} already exists`);
     }
@@ -485,22 +475,18 @@ export class SetAttribute extends EntityAttribute {
     return this._attributes[attribute.name] = attribute;
   }
 
-  get attributes() {
-    return this._attributes;
-  }
-
   serialize(): ISetAttribute {
     return {
       ...super.serialize(),
-      attributes: Object.entries(this._attributes).map( a => a[1].serialize() ),
+      attributes: Object.entries(this._attributes).map(a => a[1].serialize()),
       presLen: this._presLen
-    }
+    };
   }
 
   inspect(indent: string = '    '): string[] {
     const result = super.inspect();
     return [...result,
-      ...Object.entries(this._attributes).reduce( (p, a) => {
+      ...Object.entries(this._attributes).reduce((p, a) => {
         return [...p, ...a[1].inspect(indent + '  ')];
       }, [] as string[])
     ];
@@ -508,24 +494,23 @@ export class SetAttribute extends EntityAttribute {
 }
 
 export class Entity {
+
   readonly parent?: Entity;
   readonly name: string;
   readonly lName: LName;
   readonly isAbstract: boolean;
-  private readonly _adapter?: Entity2RelationMap;
+  private readonly _adapter?: EntityAdapter;
   private readonly _pk: Attribute[] = [];
   private readonly _attributes: Attributes = {};
   private readonly _unique: Attribute[][] = [];
   private readonly _semCategories: SemCategory[];
 
-  constructor(
-    parent: Entity | undefined,
-    name: string,
-    lName: LName,
-    isAbstract: boolean,
-    semCategories: SemCategory[] = [],
-    adapter?: Entity2RelationMap)
-  {
+  constructor(parent: Entity | undefined,
+              name: string,
+              lName: LName,
+              isAbstract: boolean,
+              semCategories: SemCategory[] = [],
+              adapter?: EntityAdapter) {
     /*
     if (!/^[a-zA-Z0-9_]+$/.test(name)) {
       throw new Error(`Invalid entity name ${name}`);
@@ -540,11 +525,11 @@ export class Entity {
     this._adapter = adapter;
   }
 
-  get pk() {
+  get pk(): Attribute[] {
     return this._pk;
   }
 
-  get adapter(): Entity2RelationMap {
+  get adapter(): EntityAdapter {
     if (this._adapter) {
       return this._adapter;
     } else {
@@ -552,12 +537,8 @@ export class Entity {
     }
   }
 
-  get unique() {
+  get unique(): Attribute[][] {
     return this._unique;
-  }
-
-  addUnique(value: Attribute[]) {
-    this._unique.push(value);
   }
 
   get attributes(): Attributes {
@@ -576,6 +557,10 @@ export class Entity {
     return this.hasAttribute('PARENT');
   }
 
+  addUnique(value: Attribute[]): void {
+    this._unique.push(value);
+  }
+
   hasAttribute(name: string): boolean {
     return (this.parent && this.parent.hasAttribute(name)) || !!this._attributes[name];
   }
@@ -584,7 +569,7 @@ export class Entity {
     return !!this._attributes[name];
   }
 
-  attribute(name: string) {
+  attribute(name: string): Attribute | never {
     let found = this._attributes[name];
     if (!found && this.parent) {
       found = this.parent.attribute(name);
@@ -596,11 +581,11 @@ export class Entity {
   }
 
   attributesBySemCategory(cat: SemCategory): Attribute[] {
-    const attrArr = Object.entries(this._attributes).map( ([, attr]) => attr );
-    return attrArr.filter( attr => attr.semCategories.some( c => c === cat) );
+    const attrArr = Object.entries(this._attributes).map(([, attr]) => attr);
+    return attrArr.filter(attr => attr.semCategories.some(c => c === cat));
   }
 
-  add(attribute: Attribute) {
+  add(attribute: Attribute): Attribute | never {
     if (this._attributes[attribute.name]) {
       throw new Error(`Attribute ${attribute.name} of entity ${this.name} already exists`);
     }
@@ -623,17 +608,17 @@ export class Entity {
       lName: this.lName,
       isAbstract: this.isAbstract,
       semCategories: semCategories2Str(this._semCategories),
-      attributes: Object.entries(this.attributes).map( a => a[1].serialize() )
+      attributes: Object.entries(this.attributes).map(a => a[1].serialize())
     };
   }
 
   inspect(): string[] {
     const lName = this.lName.ru ? ' - ' + this.lName.ru.name : '';
     const result = [
-      `${this.isAbstract ? '!' : ''}${this.name}${this.parent ? '(' + this.parent.name + ')': ''}${lName}:`,
+      `${this.isAbstract ? '!' : ''}${this.name}${this.parent ? '(' + this.parent.name + ')' : ''}${lName}:`,
       `  adapter: ${JSON.stringify(this.adapter)}`,
       '  Attributes:',
-      ...Object.entries(this.attributes).reduce( (p, a) => {
+      ...Object.entries(this.attributes).reduce((p, a) => {
         return [...p, ...a[1].inspect()];
       }, [] as string[])
     ];
@@ -648,24 +633,21 @@ export interface Entities {
   [name: string]: Entity
 }
 
-export class Sequence {
-  private _name: string;
-  private _adapter?: SequenceAdapter;
+export class Sequence<Adapter = SequenceAdapter> {
 
-  constructor (name: string, adapter?: SequenceAdapter) {
+  private readonly _name: string;
+  private readonly _adapter?: Adapter;
+
+  constructor(name: string, adapter?: Adapter) {
     this._name = name;
     this._adapter = adapter;
   }
 
-  get name() {
+  get name(): string {
     return this._name;
   }
 
-  set name(value) {
-    this._name = value;
-  }
-
-  get adapter(): SequenceAdapter | undefined {
+  get adapter(): Adapter | undefined {
     return this._adapter;
   }
 }
@@ -675,18 +657,19 @@ export interface Sequencies {
 }
 
 export class ERModel {
+
   private _entities: Entities = {};
   private _sequencies: Sequencies = {};
 
-  get sequencies() {
+  get sequencies(): Sequencies {
     return this._sequencies;
   }
 
-  get entities() {
+  get entities(): Entities {
     return this._entities;
   }
 
-  entity(name: string) {
+  entity(name: string): Entity | never {
     const found = this._entities[name];
     if (!found) {
       throw new Error(`Unknown entity ${name}`);
@@ -694,14 +677,14 @@ export class ERModel {
     return found;
   }
 
-  add(entity: Entity) {
+  add(entity: Entity): Entity | never {
     if (this._entities[entity.name]) {
       throw new Error(`Entity ${entity.name} already exists`);
     }
     return this._entities[entity.name] = entity;
   }
 
-  addSequence(sequence: Sequence) {
+  addSequence(sequence: Sequence): Sequence | never {
     if (this._sequencies[sequence.name]) {
       throw new Error(`Sequence ${sequence.name} already exists`);
     }
@@ -709,11 +692,11 @@ export class ERModel {
   }
 
   serialize(): IERModel {
-    return { entities: Object.entries(this._entities).map( e => e[1].serialize() ) };
+    return {entities: Object.entries(this._entities).map(e => e[1].serialize())};
   }
 
   inspect(): string[] {
-    return Object.entries(this._entities).reduce( (p, e) => {
+    return Object.entries(this._entities).reduce((p, e) => {
       return [...e[1].inspect(), ...p];
     }, [] as string[]);
   }

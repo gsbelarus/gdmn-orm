@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const ermodel_1 = require("./ermodel");
 const gdmn_nlp_1 = require("gdmn-nlp");
+const ermodel_1 = require("./ermodel");
 function deserializeERModel(serialized) {
     const erModel = new ermodel_1.ERModel();
     const createSequence = (sequence) => {
