@@ -11,6 +11,7 @@ export declare class SetAttribute extends EntityAttribute<SetAttributeAdapter> {
     private readonly _presLen;
     constructor(options: ISetAttributeOptions);
     readonly attributes: Attributes;
+    static isType(type: Attribute): type is SetAttribute;
     attribute(name: string): Attribute | never;
     add(attribute: Attribute): Attribute | never;
     serialize(): ISetAttribute;

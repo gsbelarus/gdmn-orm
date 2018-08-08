@@ -22,6 +22,10 @@ export class SetAttribute extends EntityAttribute<SetAttributeAdapter> {
     return this._attributes;
   }
 
+  public static isType(type: Attribute): type is SetAttribute {
+    return type instanceof SetAttribute;
+  }
+
   attribute(name: string): Attribute | never {
     const found = this._attributes[name];
     if (!found) {

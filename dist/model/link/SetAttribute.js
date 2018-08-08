@@ -10,6 +10,9 @@ class SetAttribute extends EntityAttribute_1.EntityAttribute {
     get attributes() {
         return this._attributes;
     }
+    static isType(type) {
+        return type instanceof SetAttribute;
+    }
     attribute(name) {
         const found = this._attributes[name];
         if (!found) {
