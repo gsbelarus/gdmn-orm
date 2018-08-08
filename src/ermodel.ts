@@ -422,7 +422,7 @@ export class ParentAttribute extends EntityAttribute {
               lName: LName,
               entity: Entity[],
               semCategories: SemCategory[] = [],
-              adapter?: string) {
+              adapter?: any) {
     super(name, lName, false, entity, semCategories, adapter);
   }
 }

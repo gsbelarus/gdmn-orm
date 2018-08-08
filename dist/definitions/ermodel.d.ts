@@ -108,7 +108,7 @@ export declare class EntityAttribute<Adapter = any> extends Attribute<Adapter> {
     inspectDataType(): string;
 }
 export declare class ParentAttribute extends EntityAttribute {
-    constructor(name: string, lName: LName, entity: Entity[], semCategories?: SemCategory[], adapter?: string);
+    constructor(name: string, lName: LName, entity: Entity[], semCategories?: SemCategory[], adapter?: any);
 }
 export declare class DetailAttribute extends EntityAttribute<DetailAttributeAdapter> {
     constructor(name: string, lName: LName, required: boolean, entity: Entity[], semCategories?: SemCategory[], adapter?: DetailAttributeAdapter);
