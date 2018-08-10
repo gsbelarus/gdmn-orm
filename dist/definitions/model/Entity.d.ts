@@ -36,7 +36,7 @@ export declare class Entity {
     hasOwnAttribute(name: string): boolean;
     attribute(name: string): Attribute | never;
     attributesBySemCategory(cat: SemCategory): Attribute[];
-    add(attribute: Attribute): Attribute | never;
+    add<T extends Attribute>(attribute: T): T | never;
     hasAncestor(a: Entity): boolean;
     serialize(): IEntity;
     inspect(): string[];

@@ -117,7 +117,7 @@ export class Entity {
     return attrArr.filter(attr => attr.semCategories.some(c => c === cat));
   }
 
-  add(attribute: Attribute): Attribute | never {
+  add<T extends Attribute>(attribute: T): T | never {
     if (this._attributes[attribute.name]) {
       throw new Error(`Attribute ${attribute.name} of entity ${this._name} already exists`);
     }

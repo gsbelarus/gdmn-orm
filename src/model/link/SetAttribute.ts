@@ -38,7 +38,7 @@ export class SetAttribute extends EntityAttribute<SetAttributeAdapter> {
     return found;
   }
 
-  add(attribute: Attribute): Attribute | never {
+  add<T extends Attribute>(attribute: T): T | never {
     if (this._attributes[attribute.name]) {
       throw new Error(`Attribute ${attribute.name} already exists`);
     }

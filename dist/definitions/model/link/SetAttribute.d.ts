@@ -14,7 +14,7 @@ export declare class SetAttribute extends EntityAttribute<SetAttributeAdapter> {
     readonly presLen: number;
     static isType(type: Attribute): type is SetAttribute;
     attribute(name: string): Attribute | never;
-    add(attribute: Attribute): Attribute | never;
+    add<T extends Attribute>(attribute: T): T | never;
     serialize(): ISetAttribute;
     inspect(indent?: string): string[];
 }
