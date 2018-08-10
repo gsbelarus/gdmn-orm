@@ -22,6 +22,10 @@ export class SetAttribute extends EntityAttribute<SetAttributeAdapter> {
     return this._attributes;
   }
 
+  get presLen(): number {
+    return this._presLen;
+  }
+
   public static isType(type: Attribute): type is SetAttribute {
     return type instanceof SetAttribute;
   }

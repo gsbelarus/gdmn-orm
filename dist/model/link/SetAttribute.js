@@ -10,6 +10,9 @@ class SetAttribute extends EntityAttribute_1.EntityAttribute {
     get attributes() {
         return this._attributes;
     }
+    get presLen() {
+        return this._presLen;
+    }
     static isType(type) {
         return type instanceof SetAttribute;
     }
