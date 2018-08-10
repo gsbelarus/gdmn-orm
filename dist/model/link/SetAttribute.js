@@ -5,7 +5,7 @@ class SetAttribute extends EntityAttribute_1.EntityAttribute {
     constructor(options) {
         super(options);
         this._attributes = {};
-        this._presLen = options.presLen || 0;
+        this._presLen = options.presLen || 1;
     }
     get attributes() {
         return this._attributes;

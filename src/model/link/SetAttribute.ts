@@ -15,7 +15,7 @@ export class SetAttribute extends EntityAttribute<SetAttributeAdapter> {
 
   constructor(options: ISetAttributeOptions) {
     super(options);
-    this._presLen = options.presLen || 0;
+    this._presLen = options.presLen || 1;
   }
 
   get attributes(): Attributes {
