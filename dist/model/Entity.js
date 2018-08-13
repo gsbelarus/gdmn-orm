@@ -2,13 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const gdmn_nlp_1 = require("gdmn-nlp");
 const rdbadapter_1 = require("../rdbadapter");
+const ParentAttribute_1 = require("./link/ParentAttribute");
 class Entity {
     constructor(options) {
-        /*
-        if (!/^[a-zA-Z0-9_]+$/.test(name)) {
-          throw new Error(`Invalid entity name ${name}`);
-        }
-        */
         this._pk = [];
         this._attributes = {};
         this._unique = [];
@@ -53,30 +49,37 @@ class Entity {
             return this._attributes;
         }
     }
+    get ownAttributes() {
+        return this._attributes;
+    }
     get semCategories() {
         return this._semCategories;
     }
     get isTree() {
-        return this.hasAttribute('PARENT');
+        return Object.values(this.attributes).some((attr) => ParentAttribute_1.ParentAttribute.isType(attr));
     }
     addUnique(value) {
         this._unique.push(value);
     }
     hasAttribute(name) {
-        return (this._parent && this._parent.hasAttribute(name)) || !!this._attributes[name];
+        return !!this.attributes[name];
     }
     hasOwnAttribute(name) {
-        return !!this._attributes[name];
+        return !!this.ownAttributes[name];
     }
     attribute(name) {
-        let found = this._attributes[name];
-        if (!found && this._parent) {
-            found = this._parent.attribute(name);
-        }
-        if (!found) {
+        const attribute = this.attributes[name];
+        if (!attribute) {
             throw new Error(`Unknown attribute ${name} of entity ${this._name}`);
         }
-        return found;
+        return attribute;
+    }
+    ownAttribute(name) {
+        const attribute = this.ownAttributes[name];
+        if (!attribute) {
+            throw new Error(`Unknown attribute ${name} of entity ${this._name}`);
+        }
+        return attribute;
     }
     attributesBySemCategory(cat) {
         const attrArr = Object.entries(this._attributes).map(([, attr]) => attr);

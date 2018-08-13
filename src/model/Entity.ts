@@ -3,6 +3,7 @@ import {EntityAdapter, relationName2Adapter} from '../rdbadapter';
 import {IEntity} from '../serialize';
 import {IBaseSemOptions, LName} from '../types';
 import {Attribute} from './Attribute';
+import {ParentAttribute} from './link/ParentAttribute';
 
 export interface Attributes {
   [name: string]: Attribute
@@ -27,12 +28,6 @@ export class Entity {
   private readonly _unique: Attribute[][] = [];
 
   constructor(options: IEntityOptions) {
-    /*
-    if (!/^[a-zA-Z0-9_]+$/.test(name)) {
-      throw new Error(`Invalid entity name ${name}`);
-    }
-    */
-
     this._parent = options.parent || undefined;
     this._name = options.name;
     this._lName = options.lName;
@@ -81,12 +76,16 @@ export class Entity {
     }
   }
 
+  get ownAttributes(): Attributes {
+    return this._attributes;
+  }
+
   get semCategories(): SemCategory[] {
     return this._semCategories;
   }
 
   get isTree(): boolean {
-    return this.hasAttribute('PARENT');
+    return Object.values(this.attributes).some((attr) => ParentAttribute.isType(attr));
   }
 
   addUnique(value: Attribute[]): void {
@@ -94,22 +93,27 @@ export class Entity {
   }
 
   hasAttribute(name: string): boolean {
-    return (this._parent && this._parent.hasAttribute(name)) || !!this._attributes[name];
+    return !!this.attributes[name];
   }
 
   hasOwnAttribute(name: string): boolean {
-    return !!this._attributes[name];
+    return !!this.ownAttributes[name];
   }
 
   attribute(name: string): Attribute | never {
-    let found = this._attributes[name];
-    if (!found && this._parent) {
-      found = this._parent.attribute(name);
-    }
-    if (!found) {
+    const attribute = this.attributes[name];
+    if (!attribute) {
       throw new Error(`Unknown attribute ${name} of entity ${this._name}`);
     }
-    return found;
+    return attribute;
+  }
+
+  ownAttribute(name: string): Attribute | never {
+    const attribute = this.ownAttributes[name];
+    if (!attribute) {
+      throw new Error(`Unknown attribute ${name} of entity ${this._name}`);
+    }
+    return attribute;
   }
 
   attributesBySemCategory(cat: SemCategory): Attribute[] {

@@ -29,12 +29,14 @@ export declare class Entity {
     readonly adapter: EntityAdapter;
     readonly unique: Attribute[][];
     readonly attributes: Attributes;
+    readonly ownAttributes: Attributes;
     readonly semCategories: SemCategory[];
     readonly isTree: boolean;
     addUnique(value: Attribute[]): void;
     hasAttribute(name: string): boolean;
     hasOwnAttribute(name: string): boolean;
     attribute(name: string): Attribute | never;
+    ownAttribute(name: string): Attribute | never;
     attributesBySemCategory(cat: SemCategory): Attribute[];
     add<T extends Attribute>(attribute: T): T | never;
     hasAncestor(a: Entity): boolean;
