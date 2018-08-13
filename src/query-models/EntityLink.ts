@@ -2,7 +2,7 @@ import {Entity} from '../model/Entity';
 import {ERModel} from '../model/ERModel';
 import {EntityQueryField, IEntityQueryFieldInspector} from './EntityQueryField';
 
-export interface IEntitySubQueryInspector {
+export interface IEntityLinkInspector {
   entity: string;
   alias: string;
   fields: IEntityQueryFieldInspector[];
@@ -20,7 +20,7 @@ export class EntityLink {
     this.fields = fields;
   }
 
-  public static inspectorToObject(erModel: ERModel, inspector: IEntitySubQueryInspector): EntityLink {
+  public static inspectorToObject(erModel: ERModel, inspector: IEntityLinkInspector): EntityLink {
     const entity = erModel.entity(inspector.entity);
     const alias = inspector.alias;
     const fields = inspector.fields.map((inspectorField) => (
@@ -63,7 +63,7 @@ export class EntityLink {
     }
   }
 
-  public inspect(): IEntitySubQueryInspector {
+  public inspect(): IEntityLinkInspector {
     return {
       entity: this.entity.name,
       alias: this.alias,
