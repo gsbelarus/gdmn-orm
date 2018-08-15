@@ -6,7 +6,7 @@ class EntityAttribute extends Attribute_1.Attribute {
         super(options);
         this._entities = options.entities;
     }
-    get entity() {
+    get entities() {
         return this._entities;
     }
     static isType(type) {
@@ -15,11 +15,12 @@ class EntityAttribute extends Attribute_1.Attribute {
     serialize() {
         return {
             ...super.serialize(),
-            references: this._entities.map(ent => ent.name)
+            references: this._entities.map((ent) => ent.name)
         };
     }
     inspectDataType() {
-        return super.inspectDataType() + ' [' + this._entities.reduce((p, e, idx) => p + (idx ? ', ' : '') + e.name, '') + ']';
+        return super.inspectDataType() + " [" +
+            this._entities.reduce((p, e, idx) => p + (idx ? ", " : "") + e.name, "") + "]";
     }
 }
 exports.EntityAttribute = EntityAttribute;

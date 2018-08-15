@@ -1,6 +1,6 @@
-import {semCategories2Str, SemCategory} from 'gdmn-nlp';
-import {AttributeClasses, IAttribute} from '../serialize';
-import {IBaseSemOptions, LName} from '../types';
+import {semCategories2Str, SemCategory} from "gdmn-nlp";
+import {AttributeClasses, IAttribute} from "../serialize";
+import {IBaseSemOptions, ILName} from "../types";
 
 export interface IAttributeOptions<Adapter> extends IBaseSemOptions<Adapter> {
   required?: boolean;
@@ -11,7 +11,7 @@ export abstract class Attribute<Adapter = any> {
   protected _adapter?: Adapter;
 
   private readonly _name: string;
-  private readonly _lName: LName;
+  private readonly _lName: ILName;
   private readonly _required: boolean;
   private readonly _semCategories: SemCategory[];
 
@@ -31,7 +31,7 @@ export abstract class Attribute<Adapter = any> {
     return this._name;
   }
 
-  get lName(): LName {
+  get lName(): ILName {
     return this._lName;
   }
 
@@ -43,7 +43,7 @@ export abstract class Attribute<Adapter = any> {
     return this._semCategories;
   }
 
-  serialize(): IAttribute {
+  public serialize(): IAttribute {
     return {
       name: this.name,
       type: this.constructor.name as AttributeClasses,
@@ -53,33 +53,33 @@ export abstract class Attribute<Adapter = any> {
     };
   }
 
-  inspectDataType(): string {
+  public inspectDataType(): string {
     const sn = {
-      'EntityAttribute': '->',
-      'StringAttribute': 'S',
-      'SetAttribute': '<->',
-      'ParentAttribute': '-^',
-      'SequenceAttribute': 'PK',
-      'IntegerAttribute': 'I',
-      'NumericAttribute': 'N',
-      'FloatAttribute': 'F',
-      'BooleanAttribute': 'B',
-      'DateAttribute': 'DT',
-      'TimeStampAttribute': 'TS',
-      'TimeAttribute': 'TM',
-      'BlobAttribute': 'BLOB',
-      'EnumAttribute': 'E'
+      EntityAttribute: "->",
+      StringAttribute: "S",
+      SetAttribute: "<->",
+      ParentAttribute: "-^",
+      SequenceAttribute: "PK",
+      IntegerAttribute: "I",
+      NumericAttribute: "N",
+      FloatAttribute: "F",
+      BooleanAttribute: "B",
+      DateAttribute: "DT",
+      TimeStampAttribute: "TS",
+      TimeAttribute: "TM",
+      BlobAttribute: "BLOB",
+      EnumAttribute: "E"
     } as { [name: string]: string };
     return sn[this.constructor.name] ? sn[this.constructor.name] : this.constructor.name;
   }
 
-  inspect(indent: string = '    '): string[] {
-    const adapter = this.adapter ? ', ' + JSON.stringify(this.adapter) : '';
-    const lName = this.lName.ru ? ' - ' + this.lName.ru.name : '';
-    const cat = this._semCategories.length ? `, categories: ${semCategories2Str(this._semCategories)}` : '';
+  public inspect(indent: string = "    "): string[] {
+    const adapter = this.adapter ? ", " + JSON.stringify(this.adapter) : "";
+    const lName = this.lName.ru ? " - " + this.lName.ru.name : "";
+    const cat = this._semCategories.length ? `, categories: ${semCategories2Str(this._semCategories)}` : "";
 
     return [
-      `${indent}${this._name}${this.required ? '*' : ''}${lName}: ${this.inspectDataType()}${cat}${adapter}`
+      `${indent}${this._name}${this.required ? "*" : ""}${lName}: ${this.inspectDataType()}${cat}${adapter}`
     ];
   }
 }

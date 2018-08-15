@@ -1,6 +1,6 @@
-import { Entity } from '../model/Entity';
-import { ERModel } from '../model/ERModel';
-import { EntityQueryField, IEntityQueryFieldInspector } from './EntityQueryField';
+import { Entity } from "../model/Entity";
+import { ERModel } from "../model/ERModel";
+import { EntityQueryField, IEntityQueryFieldInspector } from "./EntityQueryField";
 export interface IEntityLinkInspector {
     entity: string;
     alias: string;

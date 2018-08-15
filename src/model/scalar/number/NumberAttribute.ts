@@ -1,17 +1,18 @@
-import {AttributeAdapter} from '../../../rdbadapter';
-import {INumberAttribute} from '../../../serialize';
-import {IBaseSemOptions} from '../../../types';
-import {Attribute} from '../../Attribute';
-import {ScalarAttribute} from '../ScalarAttribute';
+import {IAttributeAdapter} from "../../../rdbadapter";
+import {INumberAttribute} from "../../../serialize";
+import {IBaseSemOptions} from "../../../types";
+import {Attribute} from "../../Attribute";
+import {ScalarAttribute} from "../ScalarAttribute";
 
-export interface INumberAttributeOptions<T, DF = undefined, Adapter = AttributeAdapter> extends IBaseSemOptions<Adapter> {
+export interface INumberAttributeOptions<T, DF = undefined, Adapter = IAttributeAdapter>
+  extends IBaseSemOptions<Adapter> {
   minValue?: T;
   maxValue?: T;
   defaultValue?: T | DF;
   required?: boolean;
 }
 
-export abstract class NumberAttribute<T, DF = undefined, Adapter = AttributeAdapter> extends ScalarAttribute<Adapter> {
+export abstract class NumberAttribute<T, DF = undefined, Adapter = IAttributeAdapter> extends ScalarAttribute<Adapter> {
 
   private readonly _minValue?: T;
   private readonly _maxValue?: T;
@@ -40,7 +41,7 @@ export abstract class NumberAttribute<T, DF = undefined, Adapter = AttributeAdap
     return type instanceof NumberAttribute;
   }
 
-  serialize(): INumberAttribute<T, DF> {
+  public serialize(): INumberAttribute<T, DF> {
     return {
       ...super.serialize(),
       minValue: this._minValue,

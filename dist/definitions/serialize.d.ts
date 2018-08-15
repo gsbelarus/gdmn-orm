@@ -1,15 +1,15 @@
-import { ERModel } from './model/ERModel';
-import { ContextVariables, EnumValue, LName } from './types';
-export declare type AttributeClasses = 'EntityAttribute' | 'StringAttribute' | 'SetAttribute' | 'ParentAttribute' | 'DetailAttribute' | 'SequenceAttribute' | 'IntegerAttribute' | 'NumericAttribute' | 'FloatAttribute' | 'BooleanAttribute' | 'DateAttribute' | 'TimeStampAttribute' | 'TimeAttribute' | 'BlobAttribute' | 'EnumAttribute';
+import { ERModel } from "./model/ERModel";
+import { ContextVariables, IEnumValue, ILName } from "./types";
+export declare type AttributeClasses = "EntityAttribute" | "StringAttribute" | "SetAttribute" | "ParentAttribute" | "DetailAttribute" | "SequenceAttribute" | "IntegerAttribute" | "NumericAttribute" | "FloatAttribute" | "BooleanAttribute" | "DateAttribute" | "TimeStampAttribute" | "TimeAttribute" | "BlobAttribute" | "EnumAttribute";
 export interface IAttribute {
     name: string;
     type: AttributeClasses;
-    lName: LName;
+    lName: ILName;
     required: boolean;
     semCategories: string;
 }
 export interface IEnumAttribute extends IAttribute {
-    values: EnumValue[];
+    values: IEnumValue[];
     defaultValue: string | number | undefined;
 }
 export interface IBooleanAttribute extends IAttribute {
@@ -46,7 +46,7 @@ export interface ISetAttribute extends IEntityAttribute {
 export interface IEntity {
     parent?: string;
     name: string;
-    lName: LName;
+    lName: ILName;
     isAbstract: boolean;
     semCategories: string;
     attributes: IAttribute[];

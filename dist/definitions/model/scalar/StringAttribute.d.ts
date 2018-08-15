@@ -1,8 +1,8 @@
-import { AttributeAdapter } from '../../rdbadapter';
-import { IStringAttribute } from '../../serialize';
-import { Attribute, IAttributeOptions } from '../Attribute';
-import { ScalarAttribute } from './ScalarAttribute';
-export interface IStringAttributeOptions extends IAttributeOptions<AttributeAdapter> {
+import { IAttributeAdapter } from "../../rdbadapter";
+import { IStringAttribute } from "../../serialize";
+import { Attribute, IAttributeOptions } from "../Attribute";
+import { ScalarAttribute } from "./ScalarAttribute";
+export interface IStringAttributeOptions extends IAttributeOptions<IAttributeAdapter> {
     minLength?: number;
     maxLength?: number;
     defaultValue?: string;

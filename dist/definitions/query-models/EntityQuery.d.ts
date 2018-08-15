@@ -1,6 +1,6 @@
-import { ERModel } from '../model/ERModel';
-import { EntityLink, IEntityLinkInspector } from './EntityLink';
-import { EntityQueryOptions, IEntityQueryOptionsInspector } from './EntityQueryOptions';
+import { ERModel } from "../model/ERModel";
+import { EntityLink, IEntityLinkInspector } from "./EntityLink";
+import { EntityQueryOptions, IEntityQueryOptionsInspector } from "./EntityQueryOptions";
 export interface IEntityQueryInspector {
     link: IEntityLinkInspector;
     options?: IEntityQueryOptionsInspector;

@@ -1,15 +1,15 @@
-import { AttributeAdapter } from '../../../rdbadapter';
-import { INumberAttribute } from '../../../serialize';
-import { IBaseSemOptions } from '../../../types';
-import { Attribute } from '../../Attribute';
-import { ScalarAttribute } from '../ScalarAttribute';
-export interface INumberAttributeOptions<T, DF = undefined, Adapter = AttributeAdapter> extends IBaseSemOptions<Adapter> {
+import { IAttributeAdapter } from "../../../rdbadapter";
+import { INumberAttribute } from "../../../serialize";
+import { IBaseSemOptions } from "../../../types";
+import { Attribute } from "../../Attribute";
+import { ScalarAttribute } from "../ScalarAttribute";
+export interface INumberAttributeOptions<T, DF = undefined, Adapter = IAttributeAdapter> extends IBaseSemOptions<Adapter> {
     minValue?: T;
     maxValue?: T;
     defaultValue?: T | DF;
     required?: boolean;
 }
-export declare abstract class NumberAttribute<T, DF = undefined, Adapter = AttributeAdapter> extends ScalarAttribute<Adapter> {
+export declare abstract class NumberAttribute<T, DF = undefined, Adapter = IAttributeAdapter> extends ScalarAttribute<Adapter> {
     private readonly _minValue?;
     private readonly _maxValue?;
     private readonly _defaultValue?;

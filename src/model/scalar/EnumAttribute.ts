@@ -1,17 +1,17 @@
-import {AttributeAdapter} from '../../rdbadapter';
-import {IEnumAttribute} from '../../serialize';
-import {EnumValue} from '../../types';
-import {Attribute, IAttributeOptions} from '../Attribute';
-import {ScalarAttribute} from './ScalarAttribute';
+import {IAttributeAdapter} from "../../rdbadapter";
+import {IEnumAttribute} from "../../serialize";
+import {IEnumValue} from "../../types";
+import {Attribute, IAttributeOptions} from "../Attribute";
+import {ScalarAttribute} from "./ScalarAttribute";
 
-export interface IEnumAttributeOptions extends IAttributeOptions<AttributeAdapter> {
-  values: EnumValue[];
+export interface IEnumAttributeOptions extends IAttributeOptions<IAttributeAdapter> {
+  values: IEnumValue[];
   defaultValue?: string | number;
 }
 
 export class EnumAttribute extends ScalarAttribute {
 
-  private readonly _values: EnumValue[];
+  private readonly _values: IEnumValue[];
   private readonly _defaultValue?: string | number;
 
   constructor(options: IEnumAttributeOptions) {
@@ -20,7 +20,7 @@ export class EnumAttribute extends ScalarAttribute {
     this._defaultValue = options.defaultValue;
   }
 
-  get values(): EnumValue[] {
+  get values(): IEnumValue[] {
     return this._values;
   }
 
@@ -32,11 +32,11 @@ export class EnumAttribute extends ScalarAttribute {
     return type instanceof EnumAttribute;
   }
 
-  inspectDataType(): string {
-    return super.inspectDataType() + ' ' + JSON.stringify(this._values);
+  public inspectDataType(): string {
+    return super.inspectDataType() + " " + JSON.stringify(this._values);
   }
 
-  serialize(): IEnumAttribute {
+  public serialize(): IEnumAttribute {
     return {
       ...super.serialize(),
       values: this._values,

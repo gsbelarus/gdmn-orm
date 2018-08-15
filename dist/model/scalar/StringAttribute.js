@@ -39,7 +39,7 @@ class StringAttribute extends ScalarAttribute_1.ScalarAttribute {
         };
     }
     inspectDataType() {
-        return super.inspectDataType() + (this._maxLength ? '(' + this._maxLength + ')' : '');
+        return super.inspectDataType() + (this._maxLength ? "(" + this._maxLength + ")" : "");
     }
 }
 exports.StringAttribute = StringAttribute;

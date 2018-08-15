@@ -1,11 +1,11 @@
-import {Entity, ERModel} from '../src';
-import {deserializeERModel} from '../src/serialize';
+import {Entity, ERModel} from "../src";
+import {deserializeERModel} from "../src/serialize";
 
-it('erModel', () => {
+it("erModel", () => {
 
   const erModel = new ERModel();
 
-  erModel.add(new Entity({name: 'Test', lName: {en: {name: 'Test'}}}));
+  erModel.add(new Entity({name: "Test", lName: {en: {name: "Test"}}}));
 
   const serialized = erModel.serialize();
 

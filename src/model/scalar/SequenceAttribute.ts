@@ -1,19 +1,19 @@
-import {AttributeAdapter} from '../../rdbadapter';
-import {ISequenceAttribute} from '../../serialize';
-import {IBaseSemOptions} from '../../types';
-import {Attribute} from '../Attribute';
-import {Sequence} from '../Sequence';
-import {ScalarAttribute} from './ScalarAttribute';
+import {IAttributeAdapter} from "../../rdbadapter";
+import {ISequenceAttribute} from "../../serialize";
+import {IBaseSemOptions} from "../../types";
+import {Attribute} from "../Attribute";
+import {Sequence} from "../Sequence";
+import {ScalarAttribute} from "./ScalarAttribute";
 
 export interface ISequenceAttributeOptions<Adapter> extends IBaseSemOptions<Adapter> {
   sequence: Sequence;
 }
 
-export class SequenceAttribute extends ScalarAttribute<AttributeAdapter> {
+export class SequenceAttribute extends ScalarAttribute<IAttributeAdapter> {
 
   private readonly _sequence: Sequence;
 
-  constructor(options: ISequenceAttributeOptions<AttributeAdapter>) {
+  constructor(options: ISequenceAttributeOptions<IAttributeAdapter>) {
     super({...options, required: true});
     this._sequence = options.sequence;
   }
@@ -26,7 +26,7 @@ export class SequenceAttribute extends ScalarAttribute<AttributeAdapter> {
     return type instanceof SequenceAttribute;
   }
 
-  serialize(): ISequenceAttribute {
+  public serialize(): ISequenceAttribute {
     return {
       ...super.serialize(),
       sequence: this._sequence.name

@@ -1,16 +1,16 @@
-import { SetAttributeAdapter } from '../../rdbadapter';
-import { ISetAttribute } from '../../serialize';
-import { Attribute } from '../Attribute';
-import { Attributes } from '../Entity';
-import { EntityAttribute, IEntityAttributeOptions } from './EntityAttribute';
-export interface ISetAttributeOptions extends IEntityAttributeOptions<SetAttributeAdapter> {
+import { ISetAttributeAdapter } from "../../rdbadapter";
+import { ISetAttribute } from "../../serialize";
+import { Attribute } from "../Attribute";
+import { IAttributes } from "../Entity";
+import { EntityAttribute, IEntityAttributeOptions } from "./EntityAttribute";
+export interface ISetAttributeOptions extends IEntityAttributeOptions<ISetAttributeAdapter> {
     presLen?: number;
 }
-export declare class SetAttribute extends EntityAttribute<SetAttributeAdapter> {
+export declare class SetAttribute extends EntityAttribute<ISetAttributeAdapter> {
     private readonly _attributes;
     private readonly _presLen;
     constructor(options: ISetAttributeOptions);
-    readonly attributes: Attributes;
+    readonly attributes: IAttributes;
     readonly presLen: number;
     static isType(type: Attribute): type is SetAttribute;
     attribute(name: string): Attribute | never;

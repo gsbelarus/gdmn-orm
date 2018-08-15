@@ -1,9 +1,9 @@
-import {AttributeAdapter} from '../../rdbadapter';
-import {IBooleanAttribute} from '../../serialize';
-import {Attribute, IAttributeOptions} from '../Attribute';
-import {ScalarAttribute} from './ScalarAttribute';
+import {IAttributeAdapter} from "../../rdbadapter";
+import {IBooleanAttribute} from "../../serialize";
+import {Attribute, IAttributeOptions} from "../Attribute";
+import {ScalarAttribute} from "./ScalarAttribute";
 
-export interface IBooleanAttributeOptions extends IAttributeOptions<AttributeAdapter> {
+export interface IBooleanAttributeOptions extends IAttributeOptions<IAttributeAdapter> {
   defaultValue?: boolean;
 }
 
@@ -24,7 +24,7 @@ export class BooleanAttribute extends ScalarAttribute {
     return type instanceof BooleanAttribute;
   }
 
-  serialize(): IBooleanAttribute {
+  public serialize(): IBooleanAttribute {
     return {
       ...super.serialize(),
       defaultValue: this._defaultValue

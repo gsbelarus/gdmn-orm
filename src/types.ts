@@ -1,22 +1,22 @@
-import {SemCategory} from 'gdmn-nlp';
+import {SemCategory} from "gdmn-nlp";
 
-export interface TName {
+export interface ITName {
   name: string;
   fullName?: string;
 }
 
-export interface LName {
-  ru?: TName;
-  by?: TName;
-  en?: TName;
+export interface ILName {
+  ru?: ITName;
+  by?: ITName;
+  en?: ITName;
 }
 
-export interface EnumValue {
+export interface IEnumValue {
   value: string | number;
-  lName?: LName;
+  lName?: ILName;
 }
 
-export type ContextVariables = 'CURRENT_TIMESTAMP' | 'CURRENT_TIMESTAMP(0)' | 'CURRENT_DATE' | 'CURRENT_TIME';
+export type ContextVariables = "CURRENT_TIMESTAMP" | "CURRENT_TIMESTAMP(0)" | "CURRENT_DATE" | "CURRENT_TIME";
 
 export interface IBaseOptions<Adapter = any> {
   name: string;
@@ -26,6 +26,6 @@ export interface IBaseOptions<Adapter = any> {
 }
 
 export interface IBaseSemOptions<Adapter = any> extends IBaseOptions<Adapter> {
-  lName: LName;
+  lName: ILName;
   semCategories?: SemCategory[];
 }

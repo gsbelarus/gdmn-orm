@@ -31,7 +31,7 @@ class ERModel {
         return this._sequencies[sequence.name] = sequence;
     }
     serialize() {
-        return { entities: Object.entries(this._entities).map(e => e[1].serialize()) };
+        return { entities: Object.entries(this._entities).map((e) => e[1].serialize()) };
     }
     inspect() {
         return Object.entries(this._entities).reduce((p, e) => {

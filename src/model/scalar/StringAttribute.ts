@@ -1,9 +1,9 @@
-import {AttributeAdapter} from '../../rdbadapter';
-import {IStringAttribute} from '../../serialize';
-import {Attribute, IAttributeOptions} from '../Attribute';
-import {ScalarAttribute} from './ScalarAttribute';
+import {IAttributeAdapter} from "../../rdbadapter";
+import {IStringAttribute} from "../../serialize";
+import {Attribute, IAttributeOptions} from "../Attribute";
+import {ScalarAttribute} from "./ScalarAttribute";
 
-export interface IStringAttributeOptions extends IAttributeOptions<AttributeAdapter> {
+export interface IStringAttributeOptions extends IAttributeOptions<IAttributeAdapter> {
   minLength?: number;
   maxLength?: number;
   defaultValue?: string;
@@ -52,7 +52,7 @@ export class StringAttribute extends ScalarAttribute {
     return type instanceof StringAttribute;
   }
 
-  serialize(): IStringAttribute {
+  public serialize(): IStringAttribute {
     return {
       ...super.serialize(),
       minLength: this._minLength,
@@ -63,7 +63,7 @@ export class StringAttribute extends ScalarAttribute {
     };
   }
 
-  inspectDataType(): string {
-    return super.inspectDataType() + (this._maxLength ? '(' + this._maxLength + ')' : '');
+  public inspectDataType(): string {
+    return super.inspectDataType() + (this._maxLength ? "(" + this._maxLength + ")" : "");
   }
 }

@@ -11,14 +11,14 @@ exports.MAX_32BIT_INT = +2147483647;
 exports.MIN_16BIT_INT = -32768;
 exports.MAX_16BIT_INT = +32767;
 exports.systemFields = [
-    'AVIEW',
-    'ACHAG',
-    'AFULL',
-    'DISABLED',
-    'CREATIONDATE',
-    'CREATORKEY',
-    'EDITIONDATE',
-    'EDITORKEY'
+    "AVIEW",
+    "ACHAG",
+    "AFULL",
+    "DISABLED",
+    "CREATIONDATE",
+    "CREATORKEY",
+    "EDITIONDATE",
+    "EDITORKEY"
 ];
 function relationName2Adapter(relationName) {
     return {
@@ -29,35 +29,35 @@ function relationName2Adapter(relationName) {
 }
 exports.relationName2Adapter = relationName2Adapter;
 function relationNames2Adapter(relationNames) {
-    return { relation: relationNames.map(relationName => ({ relationName })) };
+    return { relation: relationNames.map((relationName) => ({ relationName })) };
 }
 exports.relationNames2Adapter = relationNames2Adapter;
 function appendAdapter(src, relationName) {
     const em = clone_1.default(src);
-    if (relationName && !em.relation.find(r => r.relationName === relationName)) {
+    if (relationName && !em.relation.find((r) => r.relationName === relationName)) {
         em.relation.push({ relationName });
     }
     return em;
 }
 exports.appendAdapter = appendAdapter;
 function sameAdapter(mapA, mapB) {
-    const arrA = mapA.relation.filter(r => !r.weak);
-    const arrB = mapB.relation.filter(r => !r.weak);
+    const arrA = mapA.relation.filter((r) => !r.weak);
+    const arrB = mapB.relation.filter((r) => !r.weak);
     return arrA.length === arrB.length
         && arrA.every((a, idx) => a.relationName === arrB[idx].relationName
             && JSON.stringify(a.selector) === JSON.stringify(arrB[idx].selector));
 }
 exports.sameAdapter = sameAdapter;
 function hasField(em, rn, fn) {
-    const r = em.relation.find(ar => ar.relationName === rn);
+    const r = em.relation.find((ar) => ar.relationName === rn);
     if (!r) {
         throw new Error(`Can't find relation ${rn} in adapter`);
     }
-    return !r.fields || !!r.fields.find(f => f === fn);
+    return !r.fields || !!r.fields.find((f) => f === fn);
 }
 exports.hasField = hasField;
 function isUserDefined(name) {
-    return name.substring(0, 4) === 'USR$';
+    return name.substring(0, 4) === "USR$";
 }
 exports.isUserDefined = isUserDefined;
 function condition2Selectors(cond) {
@@ -67,7 +67,7 @@ function condition2Selectors(cond) {
         return [
             {
                 field: matchA[1].toUpperCase(),
-                value: Number.parseInt(matchA[2])
+                value: Number.parseInt(matchA[2], 10)
             }
         ];
     }
@@ -79,7 +79,7 @@ function condition2Selectors(cond) {
         const result = [];
         let matchC = regExpC.exec(values);
         while (matchC) {
-            result.push({ field: matchB[1].toUpperCase(), value: Number.parseInt(matchC[0]) });
+            result.push({ field: matchB[1].toUpperCase(), value: Number.parseInt(matchC[0], 10) });
             matchC = regExpC.exec(values);
         }
         return result;

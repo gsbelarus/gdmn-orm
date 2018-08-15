@@ -5,29 +5,29 @@ export declare const MAX_32BIT_INT = 2147483647;
 export declare const MIN_16BIT_INT = -32768;
 export declare const MAX_16BIT_INT = 32767;
 export declare const systemFields: string[];
-export interface SequenceAdapter {
+export interface ISequenceAdapter {
     sequence: string;
 }
-export interface EntitySelector {
+export interface IEntitySelector {
     field: string;
     value: number | string;
 }
 export declare type Weak = true;
-export interface Relation {
+export interface IRelation {
     relationName: string;
-    selector?: EntitySelector;
+    selector?: IEntitySelector;
     fields?: string[];
     weak?: Weak;
 }
-export interface EntityAdapter {
-    relation: Relation[];
+export interface IEntityAdapter {
+    relation: IRelation[];
     refresh?: boolean;
 }
-export interface AttributeAdapter {
+export interface IAttributeAdapter {
     relation: string;
     field: string;
 }
-export interface SetAttributeAdapter {
+export interface ISetAttributeAdapter {
     crossRelation: string;
     presentationField?: string;
 }
@@ -62,24 +62,24 @@ export interface SetAttributeAdapter {
  *   }
  * ]
  */
-export interface DetailAttributeAdapter {
-    masterLinks: {
+export interface IDetailAttributeAdapter {
+    masterLinks: Array<{
         detailRelation: string;
         link2masterField: string;
-    }[];
+    }>;
 }
-export interface CrossRelation {
+export interface ICrossRelation {
     owner: string;
-    selector?: EntitySelector;
+    selector?: IEntitySelector;
 }
-export interface CrossRelations {
-    [name: string]: CrossRelation;
+export interface ICrossRelations {
+    [name: string]: ICrossRelation;
 }
-export declare function relationName2Adapter(relationName: string): EntityAdapter;
-export declare function relationNames2Adapter(relationNames: string[]): EntityAdapter;
-export declare function appendAdapter(src: EntityAdapter, relationName: string): EntityAdapter;
-export declare function sameAdapter(mapA: EntityAdapter, mapB: EntityAdapter): boolean;
-export declare function hasField(em: EntityAdapter, rn: string, fn: string): boolean;
+export declare function relationName2Adapter(relationName: string): IEntityAdapter;
+export declare function relationNames2Adapter(relationNames: string[]): IEntityAdapter;
+export declare function appendAdapter(src: IEntityAdapter, relationName: string): IEntityAdapter;
+export declare function sameAdapter(mapA: IEntityAdapter, mapB: IEntityAdapter): boolean;
+export declare function hasField(em: IEntityAdapter, rn: string, fn: string): boolean;
 export declare function isUserDefined(name: string): boolean;
-export declare function condition2Selectors(cond: string): EntitySelector[];
+export declare function condition2Selectors(cond: string): IEntitySelector[];
 export declare function adjustName(relationName: string): string;

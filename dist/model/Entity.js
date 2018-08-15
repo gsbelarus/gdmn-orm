@@ -43,10 +43,10 @@ class Entity {
     }
     get attributes() {
         if (this._parent) {
-            return { ...this._parent.attributes, ...this._attributes };
+            return { ...this._parent.attributes, ...this.ownAttributes };
         }
         else {
-            return this._attributes;
+            return this.ownAttributes;
         }
     }
     get ownAttributes() {
@@ -82,8 +82,7 @@ class Entity {
         return attribute;
     }
     attributesBySemCategory(cat) {
-        const attrArr = Object.entries(this._attributes).map(([, attr]) => attr);
-        return attrArr.filter(attr => attr.semCategories.some(c => c === cat));
+        return Object.values(this._attributes).filter((attr) => attr.semCategories.some((c) => c === cat));
     }
     add(attribute) {
         if (this._attributes[attribute.name]) {
@@ -104,17 +103,17 @@ class Entity {
             lName: this._lName,
             isAbstract: this._isAbstract,
             semCategories: gdmn_nlp_1.semCategories2Str(this._semCategories),
-            attributes: Object.entries(this.attributes).map(a => a[1].serialize())
+            attributes: Object.values(this.attributes).map((attr) => attr.serialize())
         };
     }
     inspect() {
-        const lName = this._lName.ru ? ' - ' + this._lName.ru.name : '';
+        const lName = this._lName.ru ? " - " + this._lName.ru.name : "";
         const result = [
-            `${this._isAbstract ? '!' : ''}${this._name}${this._parent ? '(' + this._parent._name + ')' : ''}${lName}:`,
+            `${this._isAbstract ? "!" : ""}${this._name}${this._parent ? "(" + this._parent._name + ")" : ""}${lName}:`,
             `  adapter: ${JSON.stringify(this.adapter)}`,
-            '  Attributes:',
-            ...Object.entries(this.attributes).reduce((p, a) => {
-                return [...p, ...a[1].inspect()];
+            "  IAttributes:",
+            ...Object.values(this.attributes).reduce((p, attr) => {
+                return [...p, ...attr.inspect()];
             }, [])
         ];
         if (this._semCategories.length) {

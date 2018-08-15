@@ -1,10 +1,10 @@
-import {DetailAttributeAdapter} from '../../rdbadapter';
-import {Attribute} from '../Attribute';
-import {EntityAttribute, IEntityAttributeOptions} from './EntityAttribute';
+import {IDetailAttributeAdapter} from "../../rdbadapter";
+import {Attribute} from "../Attribute";
+import {EntityAttribute, IEntityAttributeOptions} from "./EntityAttribute";
 
-export class DetailAttribute extends EntityAttribute<DetailAttributeAdapter> {
+export class DetailAttribute extends EntityAttribute<IDetailAttributeAdapter> {
 
-  constructor(options: IEntityAttributeOptions<DetailAttributeAdapter>) {
+  constructor(options: IEntityAttributeOptions<IDetailAttributeAdapter>) {
     super(options);
   }
 

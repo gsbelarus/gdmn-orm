@@ -1,5 +1,5 @@
-import {Attribute} from '../model/Attribute';
-import {EntityLink} from './EntityLink';
+import {Attribute} from "../model/Attribute";
+import {EntityLink} from "./EntityLink";
 
 export interface IEntityQueryWhereInspector {
   not?: IEntityQueryWhereInspector;
@@ -35,8 +35,8 @@ export interface IEntityLinkAlias<V> {
 }
 
 export enum EntityQueryOrder {
-  ASC = 'asc',
-  DESC = 'desc'
+  ASC = "asc",
+  DESC = "desc"
 }
 
 export class EntityQueryOptions {
@@ -87,7 +87,7 @@ export class EntityQueryOptions {
         const isNull = Object.entries(inspector.isNull).reduce((aliases, [alias, value]) => {
           const findLink = link.deepFindLinkByAlias(alias);
           if (!findLink) {
-            throw new Error('Alias not found');
+            throw new Error("Alias not found");
           }
           aliases[alias] = findLink.entity.attribute(value);
           return aliases;
@@ -121,7 +121,7 @@ export class EntityQueryOptions {
         .reduce((aliases, [alias, condition]) => {
           const findLink = link.deepFindLinkByAlias(alias);
           if (!findLink) {
-            throw new Error('Alias not found');
+            throw new Error("Alias not found");
           }
           aliases[alias] = Object.entries(condition)
             .reduce((newMap, [key, value]) => {

@@ -34,7 +34,7 @@ class EntityQueryOptions {
                 const isNull = Object.entries(inspector.isNull).reduce((aliases, [alias, value]) => {
                     const findLink = link.deepFindLinkByAlias(alias);
                     if (!findLink) {
-                        throw new Error('Alias not found');
+                        throw new Error("Alias not found");
                     }
                     aliases[alias] = findLink.entity.attribute(value);
                     return aliases;
@@ -64,7 +64,7 @@ class EntityQueryOptions {
                 .reduce((aliases, [alias, condition]) => {
                 const findLink = link.deepFindLinkByAlias(alias);
                 if (!findLink) {
-                    throw new Error('Alias not found');
+                    throw new Error("Alias not found");
                 }
                 aliases[alias] = Object.entries(condition)
                     .reduce((newMap, [key, value]) => {

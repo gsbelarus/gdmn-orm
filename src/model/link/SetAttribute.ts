@@ -1,16 +1,16 @@
-import {SetAttributeAdapter} from '../../rdbadapter';
-import {ISetAttribute} from '../../serialize';
-import {Attribute} from '../Attribute';
-import {Attributes} from '../Entity';
-import {EntityAttribute, IEntityAttributeOptions} from './EntityAttribute';
+import {ISetAttributeAdapter} from "../../rdbadapter";
+import {ISetAttribute} from "../../serialize";
+import {Attribute} from "../Attribute";
+import {IAttributes} from "../Entity";
+import {EntityAttribute, IEntityAttributeOptions} from "./EntityAttribute";
 
-export interface ISetAttributeOptions extends IEntityAttributeOptions<SetAttributeAdapter> {
+export interface ISetAttributeOptions extends IEntityAttributeOptions<ISetAttributeAdapter> {
   presLen?: number;
 }
 
-export class SetAttribute extends EntityAttribute<SetAttributeAdapter> {
+export class SetAttribute extends EntityAttribute<ISetAttributeAdapter> {
 
-  private readonly _attributes: Attributes = {};
+  private readonly _attributes: IAttributes = {};
   private readonly _presLen: number;
 
   constructor(options: ISetAttributeOptions) {
@@ -18,7 +18,7 @@ export class SetAttribute extends EntityAttribute<SetAttributeAdapter> {
     this._presLen = options.presLen || 1;
   }
 
-  get attributes(): Attributes {
+  get attributes(): IAttributes {
     return this._attributes;
   }
 
@@ -30,7 +30,7 @@ export class SetAttribute extends EntityAttribute<SetAttributeAdapter> {
     return type instanceof SetAttribute;
   }
 
-  attribute(name: string): Attribute | never {
+  public attribute(name: string): Attribute | never {
     const found = this._attributes[name];
     if (!found) {
       throw new Error(`Unknown attribute ${name}`);
@@ -38,7 +38,7 @@ export class SetAttribute extends EntityAttribute<SetAttributeAdapter> {
     return found;
   }
 
-  add<T extends Attribute>(attribute: T): T | never {
+  public add<T extends Attribute>(attribute: T): T | never {
     if (this._attributes[attribute.name]) {
       throw new Error(`Attribute ${attribute.name} already exists`);
     }
@@ -46,19 +46,19 @@ export class SetAttribute extends EntityAttribute<SetAttributeAdapter> {
     return this._attributes[attribute.name] = attribute;
   }
 
-  serialize(): ISetAttribute {
+  public serialize(): ISetAttribute {
     return {
       ...super.serialize(),
-      attributes: Object.entries(this._attributes).map(a => a[1].serialize()),
+      attributes: Object.entries(this._attributes).map((a) => a[1].serialize()),
       presLen: this._presLen
     };
   }
 
-  inspect(indent: string = '    '): string[] {
+  public inspect(indent: string = "    "): string[] {
     const result = super.inspect();
     return [...result,
       ...Object.entries(this._attributes).reduce((p, a) => {
-        return [...p, ...a[1].inspect(indent + '  ')];
+        return [...p, ...a[1].inspect(indent + "  ")];
       }, [] as string[])
     ];
   }

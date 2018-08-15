@@ -1,7 +1,7 @@
-import {AttributeAdapter} from '../../rdbadapter';
-import {Attribute, IAttributeOptions} from '../Attribute';
+import {IAttributeAdapter} from "../../rdbadapter";
+import {Attribute, IAttributeOptions} from "../Attribute";
 
-export abstract class ScalarAttribute<Adapter = AttributeAdapter> extends Attribute<Adapter> {
+export abstract class ScalarAttribute<Adapter = IAttributeAdapter> extends Attribute<Adapter> {
 
   protected constructor(options: IAttributeOptions<Adapter>) {
     super(options);

@@ -1,7 +1,7 @@
-import {SequenceAdapter} from '../rdbadapter';
-import {IBaseOptions} from '../types';
+import {ISequenceAdapter} from "../rdbadapter";
+import {IBaseOptions} from "../types";
 
-export class Sequence<Adapter = SequenceAdapter> {
+export class Sequence<Adapter = ISequenceAdapter> {
 
   private readonly _name: string;
   private readonly _adapter?: Adapter;

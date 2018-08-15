@@ -1,13 +1,13 @@
-import {AttributeAdapter} from '../../rdbadapter';
-import {IEntityAttribute} from '../../serialize';
-import {Attribute, IAttributeOptions} from '../Attribute';
-import {Entity} from '../Entity';
+import {IAttributeAdapter} from "../../rdbadapter";
+import {IEntityAttribute} from "../../serialize";
+import {Attribute, IAttributeOptions} from "../Attribute";
+import {Entity} from "../Entity";
 
-export interface IEntityAttributeOptions<Adapter = AttributeAdapter> extends IAttributeOptions<Adapter> {
+export interface IEntityAttributeOptions<Adapter = IAttributeAdapter> extends IAttributeOptions<Adapter> {
   entities: Entity[];
 }
 
-export class EntityAttribute<Adapter = AttributeAdapter> extends Attribute<Adapter> {
+export class EntityAttribute<Adapter = IAttributeAdapter> extends Attribute<Adapter> {
 
   private readonly _entities: Entity[];
 
@@ -16,7 +16,7 @@ export class EntityAttribute<Adapter = AttributeAdapter> extends Attribute<Adapt
     this._entities = options.entities;
   }
 
-  get entity() {
+  get entities(): Entity[] {
     return this._entities;
   }
 
@@ -24,14 +24,15 @@ export class EntityAttribute<Adapter = AttributeAdapter> extends Attribute<Adapt
     return type instanceof EntityAttribute;
   }
 
-  serialize(): IEntityAttribute {
+  public serialize(): IEntityAttribute {
     return {
       ...super.serialize(),
-      references: this._entities.map(ent => ent.name)
+      references: this._entities.map((ent) => ent.name)
     };
   }
 
-  inspectDataType() {
-    return super.inspectDataType() + ' [' + this._entities.reduce((p, e, idx) => p + (idx ? ', ' : '') + e.name, '') + ']';
+  public inspectDataType(): string {
+    return super.inspectDataType() + " [" +
+      this._entities.reduce((p, e, idx) => p + (idx ? ", " : "") + e.name, "") + "]";
   }
 }

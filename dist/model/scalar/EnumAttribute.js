@@ -17,7 +17,7 @@ class EnumAttribute extends ScalarAttribute_1.ScalarAttribute {
         return type instanceof EnumAttribute;
     }
     inspectDataType() {
-        return super.inspectDataType() + ' ' + JSON.stringify(this._values);
+        return super.inspectDataType() + " " + JSON.stringify(this._values);
     }
     serialize() {
         return {

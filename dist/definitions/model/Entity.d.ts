@@ -1,12 +1,12 @@
-import { SemCategory } from 'gdmn-nlp';
-import { EntityAdapter } from '../rdbadapter';
-import { IEntity } from '../serialize';
-import { IBaseSemOptions, LName } from '../types';
-import { Attribute } from './Attribute';
-export interface Attributes {
+import { SemCategory } from "gdmn-nlp";
+import { IEntityAdapter } from "../rdbadapter";
+import { IEntity } from "../serialize";
+import { IBaseSemOptions, ILName } from "../types";
+import { Attribute } from "./Attribute";
+export interface IAttributes {
     [name: string]: Attribute;
 }
-export interface IEntityOptions extends IBaseSemOptions<EntityAdapter> {
+export interface IEntityOptions extends IBaseSemOptions<IEntityAdapter> {
     parent?: Entity;
     isAbstract?: boolean;
 }
@@ -23,13 +23,13 @@ export declare class Entity {
     constructor(options: IEntityOptions);
     readonly pk: Attribute[];
     readonly parent: Entity | undefined;
-    readonly lName: LName;
+    readonly lName: ILName;
     readonly name: string;
     readonly isAbstract: boolean;
-    readonly adapter: EntityAdapter;
+    readonly adapter: IEntityAdapter;
     readonly unique: Attribute[][];
-    readonly attributes: Attributes;
-    readonly ownAttributes: Attributes;
+    readonly attributes: IAttributes;
+    readonly ownAttributes: IAttributes;
     readonly semCategories: SemCategory[];
     readonly isTree: boolean;
     addUnique(value: Attribute[]): void;

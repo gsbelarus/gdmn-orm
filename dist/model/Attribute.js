@@ -35,29 +35,29 @@ class Attribute {
     }
     inspectDataType() {
         const sn = {
-            'EntityAttribute': '->',
-            'StringAttribute': 'S',
-            'SetAttribute': '<->',
-            'ParentAttribute': '-^',
-            'SequenceAttribute': 'PK',
-            'IntegerAttribute': 'I',
-            'NumericAttribute': 'N',
-            'FloatAttribute': 'F',
-            'BooleanAttribute': 'B',
-            'DateAttribute': 'DT',
-            'TimeStampAttribute': 'TS',
-            'TimeAttribute': 'TM',
-            'BlobAttribute': 'BLOB',
-            'EnumAttribute': 'E'
+            EntityAttribute: "->",
+            StringAttribute: "S",
+            SetAttribute: "<->",
+            ParentAttribute: "-^",
+            SequenceAttribute: "PK",
+            IntegerAttribute: "I",
+            NumericAttribute: "N",
+            FloatAttribute: "F",
+            BooleanAttribute: "B",
+            DateAttribute: "DT",
+            TimeStampAttribute: "TS",
+            TimeAttribute: "TM",
+            BlobAttribute: "BLOB",
+            EnumAttribute: "E"
         };
         return sn[this.constructor.name] ? sn[this.constructor.name] : this.constructor.name;
     }
-    inspect(indent = '    ') {
-        const adapter = this.adapter ? ', ' + JSON.stringify(this.adapter) : '';
-        const lName = this.lName.ru ? ' - ' + this.lName.ru.name : '';
-        const cat = this._semCategories.length ? `, categories: ${gdmn_nlp_1.semCategories2Str(this._semCategories)}` : '';
+    inspect(indent = "    ") {
+        const adapter = this.adapter ? ", " + JSON.stringify(this.adapter) : "";
+        const lName = this.lName.ru ? " - " + this.lName.ru.name : "";
+        const cat = this._semCategories.length ? `, categories: ${gdmn_nlp_1.semCategories2Str(this._semCategories)}` : "";
         return [
-            `${indent}${this._name}${this.required ? '*' : ''}${lName}: ${this.inspectDataType()}${cat}${adapter}`
+            `${indent}${this._name}${this.required ? "*" : ""}${lName}: ${this.inspectDataType()}${cat}${adapter}`
         ];
     }
 }

@@ -1,10 +1,10 @@
-import {AttributeAdapter} from '../../../rdbadapter';
-import {Attribute} from '../../Attribute';
-import {INumberAttributeOptions, NumberAttribute} from './NumberAttribute';
+import {IAttributeAdapter} from "../../../rdbadapter";
+import {Attribute} from "../../Attribute";
+import {INumberAttributeOptions, NumberAttribute} from "./NumberAttribute";
 
 export class FloatAttribute extends NumberAttribute<number> {
 
-  constructor(options: INumberAttributeOptions<number, undefined, AttributeAdapter>) {
+  constructor(options: INumberAttributeOptions<number, undefined, IAttributeAdapter>) {
     super(options);
   }
 

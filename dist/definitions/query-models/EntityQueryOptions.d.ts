@@ -1,5 +1,5 @@
-import { Attribute } from '../model/Attribute';
-import { EntityLink } from './EntityLink';
+import { Attribute } from "../model/Attribute";
+import { EntityLink } from "./EntityLink";
 export interface IEntityQueryWhereInspector {
     not?: IEntityQueryWhereInspector;
     or?: IEntityQueryWhereInspector;

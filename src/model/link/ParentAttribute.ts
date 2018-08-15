@@ -1,10 +1,10 @@
-import {AttributeAdapter} from '../../rdbadapter';
-import {IBaseSemOptions} from '../../types';
-import {Attribute} from '../Attribute';
-import {Entity} from '../Entity';
-import {EntityAttribute} from './EntityAttribute';
+import {IAttributeAdapter} from "../../rdbadapter";
+import {IBaseSemOptions} from "../../types";
+import {Attribute} from "../Attribute";
+import {Entity} from "../Entity";
+import {EntityAttribute} from "./EntityAttribute";
 
-export interface IParentAttributeOptions extends IBaseSemOptions<AttributeAdapter> {
+export interface IParentAttributeOptions extends IBaseSemOptions<IAttributeAdapter> {
   entities: Entity[];
 }
 

@@ -32,15 +32,15 @@ class SetAttribute extends EntityAttribute_1.EntityAttribute {
     serialize() {
         return {
             ...super.serialize(),
-            attributes: Object.entries(this._attributes).map(a => a[1].serialize()),
+            attributes: Object.entries(this._attributes).map((a) => a[1].serialize()),
             presLen: this._presLen
         };
     }
-    inspect(indent = '    ') {
+    inspect(indent = "    ") {
         const result = super.inspect();
         return [...result,
             ...Object.entries(this._attributes).reduce((p, a) => {
-                return [...p, ...a[1].inspect(indent + '  ')];
+                return [...p, ...a[1].inspect(indent + "  ")];
             }, [])
         ];
     }
