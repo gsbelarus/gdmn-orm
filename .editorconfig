@@ -21,15 +21,7 @@ indent_size=2
 indent_style=space
 indent_size=2
 
-[{.analysis_options,*.yml,*.yaml}]
-indent_style=space
-indent_size=2
-
-[yarn.lock]
-indent_style=space
-indent_size=2
-
-[tslint.json]
+[{.analysis_options,*.yaml,*.yml}]
 indent_style=space
 indent_size=2
 
