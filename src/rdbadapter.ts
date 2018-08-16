@@ -51,6 +51,11 @@ export interface ISetAttributeAdapter {
   presentationField?: string;
 }
 
+export interface IParentAttributeAdapter extends IAttributeAdapter {
+  lbField: string;
+  rbField: string;
+}
+
 /**
  * Адаптер для атрибута детальной сущности это массив из объектов,
  * каждый из которых содержит имя детальной таблицы и имя её поля,
