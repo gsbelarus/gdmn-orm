@@ -8,7 +8,7 @@ export interface IParentAttributeOptions extends IBaseSemOptions<IParentAttribut
   entities: Entity[];
 }
 
-export class ParentAttribute extends EntityAttribute {
+export class ParentAttribute extends EntityAttribute<IParentAttributeAdapter> {
 
   constructor(options: IParentAttributeOptions) {
     super(options);
