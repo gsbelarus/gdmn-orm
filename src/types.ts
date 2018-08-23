@@ -53,8 +53,6 @@ export interface IBaseCreatableSource<ParentType, CurType> extends IBaseSource<C
 }
 
 export interface IDataSource extends IBaseSource<ERModel> {
-  transactions: ITransaction[];
-
   startTransaction(): Promise<ITransaction>;
 
   getEntitySource(): IEntitySource;

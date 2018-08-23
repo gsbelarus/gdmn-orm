@@ -39,7 +39,6 @@ export interface IBaseCreatableSource<ParentType, CurType> extends IBaseSource<C
     delete(transaction: ITransaction, parent: ParentType, obj: CurType): Promise<void>;
 }
 export interface IDataSource extends IBaseSource<ERModel> {
-    transactions: ITransaction[];
     startTransaction(): Promise<ITransaction>;
     getEntitySource(): IEntitySource;
     getSequenceSource(): ISequenceSource;
