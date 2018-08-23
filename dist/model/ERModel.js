@@ -16,14 +16,18 @@ class ERModel {
     }
     async initDataSource(_source) {
         this._source = _source;
+        let entitySource;
+        let sequenceSource;
         if (this._source) {
             await this._source.init(this);
-            for (const entity of Object.values(this._entities)) {
-                await entity.initDataSource(this._source.getEntitySource());
-            }
-            for (const sequence of Object.values(this._sequencies)) {
-                await sequence.initDataSource(this._source.getSequenceSource());
-            }
+            entitySource = this._source.getEntitySource();
+            sequenceSource = this._source.getSequenceSource();
+        }
+        for (const entity of Object.values(this._entities)) {
+            await entity.initDataSource(entitySource);
+        }
+        for (const sequence of Object.values(this._sequencies)) {
+            await sequence.initDataSource(sequenceSource);
         }
     }
     entity(name) {

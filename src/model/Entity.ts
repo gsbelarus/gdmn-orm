@@ -1,7 +1,7 @@
 import {semCategories2Str, SemCategory} from "gdmn-nlp";
 import {IEntityAdapter, relationName2Adapter} from "../rdbadapter";
 import {IEntity} from "../serialize";
-import {IBaseSemOptions, IEntitySource, ILName, ITransaction} from "../types";
+import {IAttributeSource, IBaseSemOptions, IEntitySource, ILName, ITransaction} from "../types";
 import {Attribute} from "./Attribute";
 import {ParentAttribute} from "./link/ParentAttribute";
 
@@ -92,11 +92,13 @@ export class Entity {
 
   public async initDataSource(source?: IEntitySource): Promise<void> {
     this._source = source;
+    let attributeSource: IAttributeSource | undefined;
     if (this._source) {
       await this._source.init(this);
-      for (const attribute of Object.values(this.ownAttributes)) {
-        await attribute.initDataSource(this._source.getAttributeSource());
-      }
+      attributeSource = this._source.getAttributeSource();
+    }
+    for (const attribute of Object.values(this.ownAttributes)) {
+      await attribute.initDataSource(attributeSource);
     }
   }
 

@@ -61,11 +61,13 @@ class Entity {
     }
     async initDataSource(source) {
         this._source = source;
+        let attributeSource;
         if (this._source) {
             await this._source.init(this);
-            for (const attribute of Object.values(this.ownAttributes)) {
-                await attribute.initDataSource(this._source.getAttributeSource());
-            }
+            attributeSource = this._source.getAttributeSource();
+        }
+        for (const attribute of Object.values(this.ownAttributes)) {
+            await attribute.initDataSource(attributeSource);
         }
     }
     attributesBySemCategory(cat) {

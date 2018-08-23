@@ -1,5 +1,5 @@
 import {IERModel} from "../serialize";
-import {IDataSource, ITransaction} from "../types";
+import {IDataSource, IEntitySource, ISequenceSource, ITransaction} from "../types";
 import {DefaultTransaction} from "./DefaultTransaction";
 import {Entity} from "./Entity";
 import {Sequence} from "./Sequence";
@@ -29,14 +29,18 @@ export class ERModel {
 
   public async initDataSource(_source?: IDataSource): Promise<void> {
     this._source = _source;
+    let entitySource: IEntitySource | undefined;
+    let sequenceSource: ISequenceSource | undefined;
     if (this._source) {
       await this._source.init(this);
-      for (const entity of Object.values(this._entities)) {
-        await entity.initDataSource(this._source.getEntitySource());
-      }
-      for (const sequence of Object.values(this._sequencies)) {
-        await sequence.initDataSource(this._source.getSequenceSource());
-      }
+      entitySource = this._source.getEntitySource();
+      sequenceSource = this._source.getSequenceSource();
+    }
+    for (const entity of Object.values(this._entities)) {
+      await entity.initDataSource(entitySource);
+    }
+    for (const sequence of Object.values(this._sequencies)) {
+      await sequence.initDataSource(sequenceSource);
     }
   }
 
