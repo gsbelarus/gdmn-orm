@@ -42,15 +42,17 @@ export interface ITransaction {
   rollback(): Promise<void>;
 }
 
-export interface IBaseSource<ParentType, CurType> {
+export interface IBaseSource<CurType> {
   init(obj: CurType): Promise<CurType>;
+}
 
+export interface IBaseCreatableSource<ParentType, CurType> extends IBaseSource<CurType> {
   create<T extends CurType>(transaction: ITransaction, parent: ParentType, obj: T): Promise<T>;
 
   delete(transaction: ITransaction, parent: ParentType, obj: CurType): Promise<void>;
 }
 
-export interface IDataSource extends IBaseSource<ERModel, ERModel> {
+export interface IDataSource extends IBaseSource<ERModel> {
   transactions: ITransaction[];
 
   startTransaction(): Promise<ITransaction>;
@@ -60,11 +62,11 @@ export interface IDataSource extends IBaseSource<ERModel, ERModel> {
   getSequenceSource(): ISequenceSource;
 }
 
-export interface ISequenceSource extends IBaseSource<ERModel, Sequence> {
+export interface ISequenceSource extends IBaseCreatableSource<ERModel, Sequence> {
   // empty
 }
 
-export interface IEntitySource extends IBaseSource<ERModel, Entity> {
+export interface IEntitySource extends IBaseCreatableSource<ERModel, Entity> {
   getAttributeSource(): IAttributeSource;
 
   addUnique(transaction: ITransaction, attrs: Attribute[]): Promise<void>;
@@ -72,6 +74,6 @@ export interface IEntitySource extends IBaseSource<ERModel, Entity> {
   removeUnique(transaction: ITransaction, attrs: Attribute[]): Promise<void>;
 }
 
-export interface IAttributeSource extends IBaseSource<Entity, Attribute> {
+export interface IAttributeSource extends IBaseCreatableSource<Entity, Attribute> {
   // empty
 }
