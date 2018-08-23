@@ -63,6 +63,9 @@ class Entity {
         this._source = source;
         if (this._source) {
             await this._source.init(this);
+            for (const attribute of Object.values(this.ownAttributes)) {
+                await attribute.initDataSource(this._source.getAttributeSource());
+            }
         }
     }
     attributesBySemCategory(cat) {
