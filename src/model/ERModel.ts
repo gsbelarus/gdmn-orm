@@ -1,5 +1,6 @@
 import {IERModel} from "../serialize";
 import {IDataSource, ITransaction} from "../types";
+import {DefaultTransaction} from "./DefaultTransaction";
 import {Entity} from "./Entity";
 import {Sequence} from "./Sequence";
 
@@ -150,28 +151,24 @@ export class ERModel {
     if (this._source) {
       return await this._source.startTransaction();
     }
-    return {active: true};
+    return new DefaultTransaction();
   }
 
   public async commitTransaction(transaction: ITransaction): Promise<void> {
-    if (this._source && transaction.active) {
-      await this._source.commitTransaction(transaction);
-    }
+    await transaction.commit();
   }
 
   public async rollbackTransaction(transaction: ITransaction): Promise<void> {
-    if (this._source && transaction.active) {
-      await this._source.rollbackTransaction(transaction);
-    }
+    await transaction.rollback();
   }
 
   public serialize(): IERModel {
-    return {entities: Object.entries(this._entities).map((e) => e[1].serialize())};
+    return {entities: Object.values(this._entities).map((e) => e.serialize())};
   }
 
   public inspect(): string[] {
-    return Object.entries(this._entities).reduce((p, e) => {
-      return [...e[1].inspect(), ...p];
+    return Object.values(this._entities).reduce((p, e) => {
+      return [...e.inspect(), ...p];
     }, [] as string[]);
   }
 }

@@ -27,7 +27,9 @@ export interface IBaseSemOptions<Adapter = any> extends IBaseOptions<Adapter> {
     semCategories?: SemCategory[];
 }
 export interface ITransaction {
-    active: boolean;
+    finished: boolean;
+    commit(): Promise<void>;
+    rollback(): Promise<void>;
 }
 export interface IBaseSource<ParentType, CurType> {
     init(obj: CurType): Promise<CurType>;
@@ -35,9 +37,8 @@ export interface IBaseSource<ParentType, CurType> {
     delete(transaction: ITransaction, parent: ParentType, obj: CurType): Promise<void>;
 }
 export interface IDataSource extends IBaseSource<undefined, ERModel> {
+    transactions: ITransaction[];
     startTransaction(): Promise<ITransaction>;
-    commitTransaction(transaction: ITransaction): Promise<void>;
-    rollbackTransaction(transaction: ITransaction): Promise<void>;
     getEntitySource(): IEntitySource;
     getSequenceSource(): ISequenceSource;
 }

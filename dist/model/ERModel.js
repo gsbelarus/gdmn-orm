@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const DefaultTransaction_1 = require("./DefaultTransaction");
 const Entity_1 = require("./Entity");
 const Sequence_1 = require("./Sequence");
 class ERModel {
@@ -122,24 +123,20 @@ class ERModel {
         if (this._source) {
             return await this._source.startTransaction();
         }
-        return { active: true };
+        return new DefaultTransaction_1.DefaultTransaction();
     }
     async commitTransaction(transaction) {
-        if (this._source && transaction.active) {
-            await this._source.commitTransaction(transaction);
-        }
+        await transaction.commit();
     }
     async rollbackTransaction(transaction) {
-        if (this._source && transaction.active) {
-            await this._source.rollbackTransaction(transaction);
-        }
+        await transaction.rollback();
     }
     serialize() {
-        return { entities: Object.entries(this._entities).map((e) => e[1].serialize()) };
+        return { entities: Object.values(this._entities).map((e) => e.serialize()) };
     }
     inspect() {
-        return Object.entries(this._entities).reduce((p, e) => {
-            return [...e[1].inspect(), ...p];
+        return Object.values(this._entities).reduce((p, e) => {
+            return [...e.inspect(), ...p];
         }, []);
     }
 }

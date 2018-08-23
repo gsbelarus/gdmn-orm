@@ -35,7 +35,11 @@ export interface IBaseSemOptions<Adapter = any> extends IBaseOptions<Adapter> {
 }
 
 export interface ITransaction {
-  active: boolean;
+  finished: boolean;
+
+  commit(): Promise<void>;
+
+  rollback(): Promise<void>;
 }
 
 export interface IBaseSource<ParentType, CurType> {
@@ -47,11 +51,9 @@ export interface IBaseSource<ParentType, CurType> {
 }
 
 export interface IDataSource extends IBaseSource<undefined, ERModel> {
+  transactions: ITransaction[];
+
   startTransaction(): Promise<ITransaction>;
-
-  commitTransaction(transaction: ITransaction): Promise<void>;
-
-  rollbackTransaction(transaction: ITransaction): Promise<void>;
 
   getEntitySource(): IEntitySource;
 
