@@ -1,7 +1,7 @@
 import { SemCategory } from "gdmn-nlp";
 import { IEntityAdapter } from "../rdbadapter";
 import { IEntity } from "../serialize";
-import { IBaseSemOptions, ILName } from "../types";
+import { IBaseSemOptions, IEntitySource, ILName, ITransaction } from "../types";
 import { Attribute } from "./Attribute";
 export interface IAttributes {
     [name: string]: Attribute;
@@ -11,6 +11,7 @@ export interface IEntityOptions extends IBaseSemOptions<IEntityAdapter> {
     isAbstract?: boolean;
 }
 export declare class Entity {
+    private _source?;
     private readonly _parent?;
     private readonly _name;
     private readonly _lName;
@@ -32,14 +33,21 @@ export declare class Entity {
     readonly ownAttributes: IAttributes;
     readonly semCategories: SemCategory[];
     readonly isTree: boolean;
-    addUnique(value: Attribute[]): void;
-    hasAttribute(name: string): boolean;
-    hasOwnAttribute(name: string): boolean;
+    initDataSource(source?: IEntitySource): Promise<void>;
+    attributesBySemCategory(cat: SemCategory): Attribute[];
     attribute(name: string): Attribute | never;
     ownAttribute(name: string): Attribute | never;
-    attributesBySemCategory(cat: SemCategory): Attribute[];
-    add<T extends Attribute>(attribute: T): T | never;
+    hasAttribute(name: string): boolean;
+    hasOwnAttribute(name: string): boolean;
     hasAncestor(a: Entity): boolean;
+    add<T extends Attribute>(attribute: T): T | never;
+    remove(attribute: Attribute): void;
+    addUnique(value: Attribute[]): void;
+    removeUnique(value: Attribute[]): void;
+    addAttrUnique(transaction: ITransaction, attrs: Attribute[]): Promise<void>;
+    removeAttrUnique(transaction: ITransaction, attrs: Attribute[]): Promise<void>;
+    create<T extends Attribute>(transaction: ITransaction, attribute: T): Promise<T>;
+    delete(transaction: ITransaction, attribute: Attribute): Promise<void>;
     serialize(): IEntity;
     inspect(): string[];
 }

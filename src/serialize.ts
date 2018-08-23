@@ -88,6 +88,7 @@ export interface ISetAttribute extends IEntityAttribute {
   presLen: number;
 }
 
+// TODO unique
 export interface IEntity {
   parent?: string;
   name: string;

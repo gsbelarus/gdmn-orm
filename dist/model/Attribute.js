@@ -24,6 +24,12 @@ class Attribute {
     get semCategories() {
         return this._semCategories;
     }
+    async initDataSource(source) {
+        this._source = source;
+        if (this._source) {
+            await this._source.init(this);
+        }
+    }
     serialize() {
         return {
             name: this.name,

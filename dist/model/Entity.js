@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const gdmn_nlp_1 = require("gdmn-nlp");
 const rdbadapter_1 = require("../rdbadapter");
+const Attribute_1 = require("./Attribute");
 const ParentAttribute_1 = require("./link/ParentAttribute");
 class Entity {
     constructor(options) {
@@ -58,14 +59,14 @@ class Entity {
     get isTree() {
         return Object.values(this.attributes).some((attr) => ParentAttribute_1.ParentAttribute.isType(attr));
     }
-    addUnique(value) {
-        this._unique.push(value);
+    async initDataSource(source) {
+        this._source = source;
+        if (this._source) {
+            await this._source.init(this);
+        }
     }
-    hasAttribute(name) {
-        return !!this.attributes[name];
-    }
-    hasOwnAttribute(name) {
-        return !!this.ownAttributes[name];
+    attributesBySemCategory(cat) {
+        return Object.values(this._attributes).filter((attr) => attr.semCategories.some((c) => c === cat));
     }
     attribute(name) {
         const attribute = this.attributes[name];
@@ -81,20 +82,78 @@ class Entity {
         }
         return attribute;
     }
-    attributesBySemCategory(cat) {
-        return Object.values(this._attributes).filter((attr) => attr.semCategories.some((c) => c === cat));
+    hasAttribute(name) {
+        return !!this.attributes[name];
+    }
+    hasOwnAttribute(name) {
+        return !!this.ownAttributes[name];
+    }
+    hasAncestor(a) {
+        return this._parent ? (this._parent === a ? true : this._parent.hasAncestor(a)) : false;
     }
     add(attribute) {
-        if (this._attributes[attribute.name]) {
+        if (this.hasOwnAttribute(attribute.name)) {
             throw new Error(`Attribute ${attribute.name} of entity ${this._name} already exists`);
         }
-        if (!this._pk.length && !this._parent) {
+        if (!this._pk.length) {
             this._pk.push(attribute);
         }
         return this._attributes[attribute.name] = attribute;
     }
-    hasAncestor(a) {
-        return this._parent ? (this._parent === a ? true : this._parent.hasAncestor(a)) : false;
+    remove(attribute) {
+        if (!this.hasOwnAttribute(attribute.name)) {
+            throw new Error(`Attribute ${attribute.name} of entity ${this._name} not found`);
+        }
+        if (this._pk.length) {
+            this._pk.splice(this._pk.indexOf(attribute), 1);
+        }
+        delete this._attributes[attribute.name];
+    }
+    addUnique(value) {
+        this._unique.push(value);
+    }
+    removeUnique(value) {
+        this._unique.splice(this._unique.indexOf(value), 1);
+    }
+    async addAttrUnique(transaction, attrs) {
+        if (this._source) {
+            await this._source.addUnique(transaction, attrs);
+        }
+        this.addUnique(attrs);
+    }
+    async removeAttrUnique(transaction, attrs) {
+        if (this._source) {
+            await this._source.removeUnique(transaction, attrs);
+        }
+        this.removeUnique(attrs);
+    }
+    async create(transaction, source) {
+        if (source instanceof Attribute_1.Attribute) {
+            const attribute = this.add(source);
+            if (this._source) {
+                const attributeSource = this._source.getAttributeSource();
+                await attribute.initDataSource(attributeSource);
+                return await attributeSource.create(transaction, this, attribute);
+            }
+            return attribute;
+        }
+        else {
+            throw new Error("Unknown arg type");
+        }
+    }
+    async delete(transaction, source) {
+        if (source instanceof Attribute_1.Attribute) {
+            const attribute = source;
+            if (this._source) {
+                const attributeSource = this._source.getAttributeSource();
+                await attributeSource.delete(transaction, this, attribute);
+                await attribute.initDataSource(undefined);
+            }
+            this.remove(attribute);
+        }
+        else {
+            throw new Error("Unknown arg type");
+        }
     }
     serialize() {
         return {

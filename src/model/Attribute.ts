@@ -1,12 +1,14 @@
 import {semCategories2Str, SemCategory} from "gdmn-nlp";
 import {AttributeClasses, IAttribute} from "../serialize";
-import {IBaseSemOptions, ILName} from "../types";
+import {IAttributeSource, IBaseSemOptions, ILName} from "../types";
 
 export interface IAttributeOptions<Adapter> extends IBaseSemOptions<Adapter> {
   required?: boolean;
 }
 
 export abstract class Attribute<Adapter = any> {
+
+  protected _source?: IAttributeSource;
 
   protected _adapter?: Adapter;
 
@@ -41,6 +43,13 @@ export abstract class Attribute<Adapter = any> {
 
   get semCategories(): SemCategory[] {
     return this._semCategories;
+  }
+
+  public async initDataSource(source?: IAttributeSource): Promise<void> {
+    this._source = source;
+    if (this._source) {
+      await this._source.init(this);
+    }
   }
 
   public serialize(): IAttribute {

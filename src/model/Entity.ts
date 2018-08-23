@@ -1,7 +1,7 @@
 import {semCategories2Str, SemCategory} from "gdmn-nlp";
 import {IEntityAdapter, relationName2Adapter} from "../rdbadapter";
 import {IEntity} from "../serialize";
-import {IBaseSemOptions, ILName} from "../types";
+import {IBaseSemOptions, IEntitySource, ILName, ITransaction} from "../types";
 import {Attribute} from "./Attribute";
 import {ParentAttribute} from "./link/ParentAttribute";
 
@@ -15,6 +15,8 @@ export interface IEntityOptions extends IBaseSemOptions<IEntityAdapter> {
 }
 
 export class Entity {
+
+  private _source?: IEntitySource;
 
   private readonly _parent?: Entity;
   private readonly _name: string;
@@ -88,16 +90,15 @@ export class Entity {
     return Object.values(this.attributes).some((attr) => ParentAttribute.isType(attr));
   }
 
-  public addUnique(value: Attribute[]): void {
-    this._unique.push(value);
+  public async initDataSource(source?: IEntitySource): Promise<void> {
+    this._source = source;
+    if (this._source) {
+      await this._source.init(this);
+    }
   }
 
-  public hasAttribute(name: string): boolean {
-    return !!this.attributes[name];
-  }
-
-  public hasOwnAttribute(name: string): boolean {
-    return !!this.ownAttributes[name];
+  public attributesBySemCategory(cat: SemCategory): Attribute[] {
+    return Object.values(this._attributes).filter((attr) => attr.semCategories.some((c) => c === cat));
   }
 
   public attribute(name: string): Attribute | never {
@@ -116,24 +117,92 @@ export class Entity {
     return attribute;
   }
 
-  public attributesBySemCategory(cat: SemCategory): Attribute[] {
-    return Object.values(this._attributes).filter((attr) => attr.semCategories.some((c) => c === cat));
+  public hasAttribute(name: string): boolean {
+    return !!this.attributes[name];
+  }
+
+  public hasOwnAttribute(name: string): boolean {
+    return !!this.ownAttributes[name];
+  }
+
+  public hasAncestor(a: Entity): boolean {
+    return this._parent ? (this._parent === a ? true : this._parent.hasAncestor(a)) : false;
   }
 
   public add<T extends Attribute>(attribute: T): T | never {
-    if (this._attributes[attribute.name]) {
+    if (this.hasOwnAttribute(attribute.name)) {
       throw new Error(`Attribute ${attribute.name} of entity ${this._name} already exists`);
     }
 
-    if (!this._pk.length && !this._parent) {
+    if (!this._pk.length) {
       this._pk.push(attribute);
     }
 
     return this._attributes[attribute.name] = attribute;
   }
 
-  public hasAncestor(a: Entity): boolean {
-    return this._parent ? (this._parent === a ? true : this._parent.hasAncestor(a)) : false;
+  public remove(attribute: Attribute): void {
+    if (!this.hasOwnAttribute(attribute.name)) {
+      throw new Error(`Attribute ${attribute.name} of entity ${this._name} not found`);
+    }
+
+    if (this._pk.length) {
+      this._pk.splice(this._pk.indexOf(attribute), 1);
+    }
+
+    delete this._attributes[attribute.name];
+  }
+
+  public addUnique(value: Attribute[]): void {
+    this._unique.push(value);
+  }
+
+  public removeUnique(value: Attribute[]): void {
+    this._unique.splice(this._unique.indexOf(value), 1);
+  }
+
+  public async addAttrUnique(transaction: ITransaction, attrs: Attribute[]): Promise<void> {
+    if (this._source) {
+      await this._source.addUnique(transaction, attrs);
+    }
+    this.addUnique(attrs);
+  }
+
+  public async removeAttrUnique(transaction: ITransaction, attrs: Attribute[]): Promise<void> {
+    if (this._source) {
+      await this._source.removeUnique(transaction, attrs);
+    }
+    this.removeUnique(attrs);
+  }
+
+  public async create<T extends Attribute>(transaction: ITransaction, attribute: T): Promise<T>;
+  public async create(transaction: ITransaction, source: any): Promise<any> {
+    if (source instanceof Attribute) {
+      const attribute = this.add(source);
+      if (this._source) {
+        const attributeSource = this._source.getAttributeSource();
+        await attribute.initDataSource(attributeSource);
+        return await attributeSource.create(transaction, this, attribute);
+      }
+      return attribute;
+    } else {
+      throw new Error("Unknown arg type");
+    }
+  }
+
+  public async delete(transaction: ITransaction, attribute: Attribute): Promise<void>;
+  public async delete(transaction: ITransaction, source: any): Promise<any> {
+    if (source instanceof Attribute) {
+      const attribute = source;
+      if (this._source) {
+        const attributeSource = this._source.getAttributeSource();
+        await attributeSource.delete(transaction, this, attribute);
+        await attribute.initDataSource(undefined);
+      }
+      this.remove(attribute);
+    } else {
+      throw new Error("Unknown arg type");
+    }
   }
 
   public serialize(): IEntity {
