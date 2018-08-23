@@ -36,7 +36,7 @@ export interface IBaseSource<ParentType, CurType> {
     create<T extends CurType>(transaction: ITransaction, parent: ParentType, obj: T): Promise<T>;
     delete(transaction: ITransaction, parent: ParentType, obj: CurType): Promise<void>;
 }
-export interface IDataSource extends IBaseSource<undefined, ERModel> {
+export interface IDataSource extends IBaseSource<ERModel, ERModel> {
     transactions: ITransaction[];
     startTransaction(): Promise<ITransaction>;
     getEntitySource(): IEntitySource;
