@@ -117,13 +117,13 @@ class Entity {
     }
     async addAttrUnique(transaction, attrs) {
         if (this._source) {
-            await this._source.addUnique(transaction, attrs);
+            await this._source.addUnique(transaction, this, attrs);
         }
         this.addUnique(attrs);
     }
     async removeAttrUnique(transaction, attrs) {
         if (this._source) {
-            await this._source.removeUnique(transaction, attrs);
+            await this._source.removeUnique(transaction, this, attrs);
         }
         this.removeUnique(attrs);
     }

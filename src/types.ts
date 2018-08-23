@@ -67,9 +67,9 @@ export interface ISequenceSource extends IBaseCreatableSource<ERModel, Sequence>
 export interface IEntitySource extends IBaseCreatableSource<ERModel, Entity> {
   getAttributeSource(): IAttributeSource;
 
-  addUnique(transaction: ITransaction, attrs: Attribute[]): Promise<void>;
+  addUnique(transaction: ITransaction, entity: Entity, attrs: Attribute[]): Promise<void>;
 
-  removeUnique(transaction: ITransaction, attrs: Attribute[]): Promise<void>;
+  removeUnique(transaction: ITransaction, entity: Entity, attrs: Attribute[]): Promise<void>;
 }
 
 export interface IAttributeSource extends IBaseCreatableSource<Entity, Attribute> {

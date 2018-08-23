@@ -163,14 +163,14 @@ export class Entity {
 
   public async addAttrUnique(transaction: ITransaction, attrs: Attribute[]): Promise<void> {
     if (this._source) {
-      await this._source.addUnique(transaction, attrs);
+      await this._source.addUnique(transaction, this, attrs);
     }
     this.addUnique(attrs);
   }
 
   public async removeAttrUnique(transaction: ITransaction, attrs: Attribute[]): Promise<void> {
     if (this._source) {
-      await this._source.removeUnique(transaction, attrs);
+      await this._source.removeUnique(transaction, this, attrs);
     }
     this.removeUnique(attrs);
   }
