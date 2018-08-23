@@ -177,18 +177,6 @@ export class ERModel {
     return new DefaultTransaction();
   }
 
-  public async commitTransaction(transaction: ITransaction): Promise<void> {
-    this._checkTransaction(transaction);
-
-    await transaction.commit();
-  }
-
-  public async rollbackTransaction(transaction: ITransaction): Promise<void> {
-    this._checkTransaction(transaction);
-
-    await transaction.rollback();
-  }
-
   public serialize(): IERModel {
     return {entities: Object.values(this._entities).map((e) => e.serialize())};
   }

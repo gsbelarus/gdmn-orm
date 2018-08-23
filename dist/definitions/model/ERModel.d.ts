@@ -30,8 +30,6 @@ export declare class ERModel {
     delete(transaction: ITransaction, sequence: Sequence): Promise<void>;
     delete(transaction: ITransaction, entity: Entity): Promise<void>;
     startTransaction(): Promise<ITransaction>;
-    commitTransaction(transaction: ITransaction): Promise<void>;
-    rollbackTransaction(transaction: ITransaction): Promise<void>;
     serialize(): IERModel;
     inspect(): string[];
     private _checkTransaction;

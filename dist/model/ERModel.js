@@ -146,14 +146,6 @@ class ERModel {
         }
         return new DefaultTransaction_1.DefaultTransaction();
     }
-    async commitTransaction(transaction) {
-        this._checkTransaction(transaction);
-        await transaction.commit();
-    }
-    async rollbackTransaction(transaction) {
-        this._checkTransaction(transaction);
-        await transaction.rollback();
-    }
     serialize() {
         return { entities: Object.values(this._entities).map((e) => e.serialize()) };
     }
