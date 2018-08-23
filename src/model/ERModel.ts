@@ -31,6 +31,12 @@ export class ERModel {
     this._source = _source;
     if (this._source) {
       await this._source.init(this);
+      for (const entity of Object.values(this._entities)) {
+        await entity.initDataSource(this._source.getEntitySource());
+      }
+      for (const sequence of Object.values(this._sequencies)) {
+        await sequence.initDataSource(this._source.getSequenceSource());
+      }
     }
   }
 

@@ -60,7 +60,7 @@ export interface IDataSource extends IBaseSource<ERModel> {
   getSequenceSource(): ISequenceSource;
 }
 
-export interface ISequenceSource extends IBaseCreatableSource<ERModel, Sequence> {
+export interface ISequenceSource extends IBaseCreatableSource<ERModel, Sequence<any>> {
   // empty
 }
 

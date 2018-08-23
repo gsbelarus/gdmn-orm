@@ -43,7 +43,7 @@ export interface IDataSource extends IBaseSource<ERModel> {
     getEntitySource(): IEntitySource;
     getSequenceSource(): ISequenceSource;
 }
-export interface ISequenceSource extends IBaseCreatableSource<ERModel, Sequence> {
+export interface ISequenceSource extends IBaseCreatableSource<ERModel, Sequence<any>> {
 }
 export interface IEntitySource extends IBaseCreatableSource<ERModel, Entity> {
     getAttributeSource(): IAttributeSource;
