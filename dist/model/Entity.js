@@ -139,7 +139,9 @@ class Entity {
             if (this._source) {
                 const attributeSource = this._source.getAttributeSource();
                 await attribute.initDataSource(attributeSource);
-                return await attributeSource.create(transaction, this, attribute);
+                if (attributeSource) {
+                    return await attributeSource.create(transaction, this, attribute);
+                }
             }
             return attribute;
         }
@@ -153,7 +155,9 @@ class Entity {
             const attribute = source;
             if (this._source) {
                 const attributeSource = this._source.getAttributeSource();
-                await attributeSource.delete(transaction, this, attribute);
+                if (attributeSource) {
+                    await attributeSource.delete(transaction, this, attribute);
+                }
                 await attribute.initDataSource(undefined);
             }
             this.remove(attribute);

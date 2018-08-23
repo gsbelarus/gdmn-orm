@@ -115,7 +115,9 @@ export class ERModel {
       if (this._source) {
         const entitySource = this._source.getEntitySource();
         await entity.initDataSource(entitySource);
-        return await entitySource.create(transaction, this, entity);
+        if (entitySource) {
+          return await entitySource.create(transaction, this, entity);
+        }
       }
       return entity;
 
@@ -123,7 +125,10 @@ export class ERModel {
       const sequence = this.addSequence(source);
       if (this._source) {
         const sequenceSource = this._source.getSequenceSource();
-        return await sequenceSource.create(transaction, this, sequence);
+        if (sequenceSource) {
+          return await sequenceSource.create(transaction, this, sequence);
+        }
+        await sequence.initDataSource(undefined);
       }
       return source;
     } else {
@@ -140,7 +145,9 @@ export class ERModel {
       const entity = source;
       if (this._source) {
         const entitySource = this._source.getEntitySource();
-        await entitySource.delete(transaction, this, entity);
+        if (entitySource) {
+          await entitySource.delete(transaction, this, entity);
+        }
         await entity.initDataSource(undefined);
       }
       this.remove(entity);
@@ -149,7 +156,9 @@ export class ERModel {
       const sequence = source;
       if (this._source) {
         const sequenceSource = this._source.getSequenceSource();
-        await sequenceSource.delete(transaction, this, sequence);
+        if (sequenceSource) {
+          await sequenceSource.delete(transaction, this, sequence);
+        }
       }
       this.removeSequence(source);
     } else {

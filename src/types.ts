@@ -55,9 +55,9 @@ export interface IBaseCreatableSource<ParentType, CurType> extends IBaseSource<C
 export interface IDataSource extends IBaseSource<ERModel> {
   startTransaction(): Promise<ITransaction>;
 
-  getEntitySource(): IEntitySource;
+  getEntitySource(): IEntitySource | undefined;
 
-  getSequenceSource(): ISequenceSource;
+  getSequenceSource(): ISequenceSource | undefined;
 }
 
 export interface ISequenceSource extends IBaseCreatableSource<ERModel, Sequence<any>> {
@@ -65,7 +65,7 @@ export interface ISequenceSource extends IBaseCreatableSource<ERModel, Sequence<
 }
 
 export interface IEntitySource extends IBaseCreatableSource<ERModel, Entity> {
-  getAttributeSource(): IAttributeSource;
+  getAttributeSource(): IAttributeSource | undefined;
 
   addUnique(transaction: ITransaction, entity: Entity, attrs: Attribute[]): Promise<void>;
 
