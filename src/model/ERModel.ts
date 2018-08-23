@@ -102,6 +102,8 @@ export class ERModel {
   public async create(transaction: ITransaction, sequence: Sequence): Promise<Sequence>;
   public async create(transaction: ITransaction, entity: Entity): Promise<Entity>;
   public async create(transaction: ITransaction, source: any): Promise<any> {
+    this._checkTransaction(transaction);
+
     if (source instanceof Entity) {
       const entity = this.add(source);
       if (this._source) {
@@ -126,6 +128,8 @@ export class ERModel {
   public async delete(transaction: ITransaction, sequence: Sequence): Promise<void>;
   public async delete(transaction: ITransaction, entity: Entity): Promise<void>;
   public async delete(transaction: ITransaction, source: any): Promise<void> {
+    this._checkTransaction(transaction);
+
     if (source instanceof Entity) {
       const entity = source;
       if (this._source) {
@@ -155,10 +159,14 @@ export class ERModel {
   }
 
   public async commitTransaction(transaction: ITransaction): Promise<void> {
+    this._checkTransaction(transaction);
+
     await transaction.commit();
   }
 
   public async rollbackTransaction(transaction: ITransaction): Promise<void> {
+    this._checkTransaction(transaction);
+
     await transaction.rollback();
   }
 
@@ -170,5 +178,11 @@ export class ERModel {
     return Object.values(this._entities).reduce((p, e) => {
       return [...e.inspect(), ...p];
     }, [] as string[]);
+  }
+
+  private _checkTransaction(transaction: ITransaction): void | never {
+    if (transaction.finished) {
+      throw new Error("Transaction is finished");
+    }
   }
 }

@@ -76,6 +76,7 @@ class ERModel {
         }
     }
     async create(transaction, source) {
+        this._checkTransaction(transaction);
         if (source instanceof Entity_1.Entity) {
             const entity = this.add(source);
             if (this._source) {
@@ -98,6 +99,7 @@ class ERModel {
         }
     }
     async delete(transaction, source) {
+        this._checkTransaction(transaction);
         if (source instanceof Entity_1.Entity) {
             const entity = source;
             if (this._source) {
@@ -126,9 +128,11 @@ class ERModel {
         return new DefaultTransaction_1.DefaultTransaction();
     }
     async commitTransaction(transaction) {
+        this._checkTransaction(transaction);
         await transaction.commit();
     }
     async rollbackTransaction(transaction) {
+        this._checkTransaction(transaction);
         await transaction.rollback();
     }
     serialize() {
@@ -138,6 +142,11 @@ class ERModel {
         return Object.values(this._entities).reduce((p, e) => {
             return [...e.inspect(), ...p];
         }, []);
+    }
+    _checkTransaction(transaction) {
+        if (transaction.finished) {
+            throw new Error("Transaction is finished");
+        }
     }
 }
 exports.ERModel = ERModel;

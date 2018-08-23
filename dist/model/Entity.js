@@ -116,18 +116,21 @@ class Entity {
         this._unique.splice(this._unique.indexOf(value), 1);
     }
     async addAttrUnique(transaction, attrs) {
+        this._checkTransaction(transaction);
         if (this._source) {
             await this._source.addUnique(transaction, this, attrs);
         }
         this.addUnique(attrs);
     }
     async removeAttrUnique(transaction, attrs) {
+        this._checkTransaction(transaction);
         if (this._source) {
             await this._source.removeUnique(transaction, this, attrs);
         }
         this.removeUnique(attrs);
     }
     async create(transaction, source) {
+        this._checkTransaction(transaction);
         if (source instanceof Attribute_1.Attribute) {
             const attribute = this.add(source);
             if (this._source) {
@@ -142,6 +145,7 @@ class Entity {
         }
     }
     async delete(transaction, source) {
+        this._checkTransaction(transaction);
         if (source instanceof Attribute_1.Attribute) {
             const attribute = source;
             if (this._source) {
@@ -179,6 +183,11 @@ class Entity {
             result.splice(1, 0, `  categories: ${gdmn_nlp_1.semCategories2Str(this._semCategories)}`);
         }
         return result;
+    }
+    _checkTransaction(transaction) {
+        if (transaction.finished) {
+            throw new Error("Transaction is finished");
+        }
     }
 }
 exports.Entity = Entity;

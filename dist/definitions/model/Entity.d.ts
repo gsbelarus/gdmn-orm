@@ -50,4 +50,5 @@ export declare class Entity {
     delete(transaction: ITransaction, attribute: Attribute): Promise<void>;
     serialize(): IEntity;
     inspect(): string[];
+    private _checkTransaction;
 }

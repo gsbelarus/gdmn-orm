@@ -162,6 +162,8 @@ export class Entity {
   }
 
   public async addAttrUnique(transaction: ITransaction, attrs: Attribute[]): Promise<void> {
+    this._checkTransaction(transaction);
+
     if (this._source) {
       await this._source.addUnique(transaction, this, attrs);
     }
@@ -169,6 +171,8 @@ export class Entity {
   }
 
   public async removeAttrUnique(transaction: ITransaction, attrs: Attribute[]): Promise<void> {
+    this._checkTransaction(transaction);
+
     if (this._source) {
       await this._source.removeUnique(transaction, this, attrs);
     }
@@ -177,6 +181,8 @@ export class Entity {
 
   public async create<T extends Attribute>(transaction: ITransaction, attribute: T): Promise<T>;
   public async create(transaction: ITransaction, source: any): Promise<any> {
+    this._checkTransaction(transaction);
+
     if (source instanceof Attribute) {
       const attribute = this.add(source);
       if (this._source) {
@@ -192,6 +198,8 @@ export class Entity {
 
   public async delete(transaction: ITransaction, attribute: Attribute): Promise<void>;
   public async delete(transaction: ITransaction, source: any): Promise<any> {
+    this._checkTransaction(transaction);
+
     if (source instanceof Attribute) {
       const attribute = source;
       if (this._source) {
@@ -230,5 +238,11 @@ export class Entity {
       result.splice(1, 0, `  categories: ${semCategories2Str(this._semCategories)}`);
     }
     return result;
+  }
+
+  private _checkTransaction(transaction: ITransaction): void | never {
+    if (transaction.finished) {
+      throw new Error("Transaction is finished");
+    }
   }
 }

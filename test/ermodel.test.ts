@@ -18,7 +18,7 @@ describe("ERModel", async () => {
       }));
       // await entity.addAttrUnique(transaction, [testAttr]);
     } finally {
-      if (transaction.finished) {
+      if (!transaction.finished) {
         await erModel.commitTransaction(transaction);
       }
     }

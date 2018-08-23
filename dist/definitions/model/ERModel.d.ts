@@ -34,4 +34,5 @@ export declare class ERModel {
     rollbackTransaction(transaction: ITransaction): Promise<void>;
     serialize(): IERModel;
     inspect(): string[];
+    private _checkTransaction;
 }
