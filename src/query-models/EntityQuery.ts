@@ -2,6 +2,12 @@ import {ERModel} from "../model/ERModel";
 import {EntityLink, IEntityLinkInspector} from "./EntityLink";
 import {EntityQueryOptions, IEntityQueryOptionsInspector} from "./EntityQueryOptions";
 
+export interface IQueryResponse {
+  data: any[];
+  aliases: Array<{ alias: string, attribute: string, values: any }>;
+  info: any;
+}
+
 export interface IEntityQueryInspector {
   link: IEntityLinkInspector;
   options?: IEntityQueryOptionsInspector;

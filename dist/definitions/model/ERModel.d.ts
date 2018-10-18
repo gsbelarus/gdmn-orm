@@ -1,3 +1,4 @@
+import { IEntityQueryInspector, IQueryResponse } from "../query-models/EntityQuery";
 import { IERModel } from "../serialize";
 import { IDataSource, ITransaction } from "../types";
 import { Entity } from "./Entity";
@@ -14,7 +15,7 @@ export declare class ERModel {
     private _sequencies;
     readonly sequencies: ISequencies;
     readonly entities: IEntities;
-    initDataSource(_source?: IDataSource): Promise<void>;
+    initDataSource(source?: IDataSource): Promise<void>;
     entity(name: string): Entity | never;
     sequence(name: string): Sequence;
     hasEntity(name: string): boolean;
@@ -29,6 +30,7 @@ export declare class ERModel {
     create(transaction: ITransaction, entity: Entity): Promise<Entity>;
     delete(transaction: ITransaction, sequence: Sequence): Promise<void>;
     delete(transaction: ITransaction, entity: Entity): Promise<void>;
+    query(transaction: ITransaction, query: IEntityQueryInspector): Promise<IQueryResponse>;
     startTransaction(): Promise<ITransaction>;
     serialize(): IERModel;
     inspect(): string[];

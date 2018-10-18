@@ -3,6 +3,7 @@ import {Attribute} from "./model/Attribute";
 import {Entity} from "./model/Entity";
 import {ERModel} from "./model/ERModel";
 import {Sequence} from "./model/Sequence";
+import {EntityQuery, IQueryResponse} from "./query-models/EntityQuery";
 
 export interface ITName {
   name: string;
@@ -54,6 +55,8 @@ export interface IBaseCreatableSource<ParentType, CurType> extends IBaseSource<C
 
 export interface IDataSource extends IBaseSource<ERModel> {
   startTransaction(): Promise<ITransaction>;
+
+  query(transaction: ITransaction, query: EntityQuery): Promise<IQueryResponse>;
 
   getEntitySource(): IEntitySource | undefined;
 

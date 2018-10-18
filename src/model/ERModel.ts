@@ -1,3 +1,4 @@
+import {EntityQuery, IEntityQueryInspector, IQueryResponse} from "../query-models/EntityQuery";
 import {IERModel} from "../serialize";
 import {IDataSource, IEntitySource, ISequenceSource, ITransaction} from "../types";
 import {DefaultTransaction} from "./DefaultTransaction";
@@ -27,8 +28,8 @@ export class ERModel {
     return this._entities;
   }
 
-  public async initDataSource(_source?: IDataSource): Promise<void> {
-    this._source = _source;
+  public async initDataSource(source?: IDataSource): Promise<void> {
+    this._source = source;
     let entitySource: IEntitySource | undefined;
     let sequenceSource: ISequenceSource | undefined;
     if (this._source) {
@@ -164,10 +165,19 @@ export class ERModel {
           await sequenceSource.delete(transaction, this, sequence);
         }
       }
-      this.removeSequence(source);
+      this.removeSequence(sequence);
     } else {
       throw new Error("Unknown arg type");
     }
+  }
+
+  public async query(transaction: ITransaction, query: IEntityQueryInspector): Promise<IQueryResponse> {
+    this._checkTransaction(transaction);
+
+    if (!this._source) {
+      throw new Error("Need DataSource");
+    }
+    return await this._source.query(transaction, EntityQuery.inspectorToObject(this, query));
   }
 
   public async startTransaction(): Promise<ITransaction> {

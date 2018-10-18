@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const EntityQuery_1 = require("../query-models/EntityQuery");
 const DefaultTransaction_1 = require("./DefaultTransaction");
 const Entity_1 = require("./Entity");
 const Sequence_1 = require("./Sequence");
@@ -14,8 +15,8 @@ class ERModel {
     get entities() {
         return this._entities;
     }
-    async initDataSource(_source) {
-        this._source = _source;
+    async initDataSource(source) {
+        this._source = source;
         let entitySource;
         let sequenceSource;
         if (this._source) {
@@ -134,11 +135,18 @@ class ERModel {
                     await sequenceSource.delete(transaction, this, sequence);
                 }
             }
-            this.removeSequence(source);
+            this.removeSequence(sequence);
         }
         else {
             throw new Error("Unknown arg type");
         }
+    }
+    async query(transaction, query) {
+        this._checkTransaction(transaction);
+        if (!this._source) {
+            throw new Error("Need DataSource");
+        }
+        return await this._source.query(transaction, EntityQuery_1.EntityQuery.inspectorToObject(this, query));
     }
     async startTransaction() {
         if (this._source) {
