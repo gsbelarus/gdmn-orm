@@ -44,10 +44,10 @@ export declare class Entity {
     remove(attribute: Attribute): void;
     addUnique(value: Attribute[]): void;
     removeUnique(value: Attribute[]): void;
-    addAttrUnique(transaction: ITransaction, attrs: Attribute[]): Promise<void>;
-    removeAttrUnique(transaction: ITransaction, attrs: Attribute[]): Promise<void>;
-    create<T extends Attribute>(transaction: ITransaction, attribute: T): Promise<T>;
-    delete(transaction: ITransaction, attribute: Attribute): Promise<void>;
+    addAttrUnique(attrs: Attribute[], transaction?: ITransaction): Promise<void>;
+    removeAttrUnique(attrs: Attribute[], transaction?: ITransaction): Promise<void>;
+    create<T extends Attribute>(attribute: T, transaction?: ITransaction): Promise<T>;
+    delete(attribute: Attribute, transaction: ITransaction): Promise<void>;
     serialize(): IEntity;
     inspect(): string[];
     private _checkTransaction;

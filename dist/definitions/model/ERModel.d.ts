@@ -26,11 +26,11 @@ export declare class ERModel {
     removeSequence(sequence: Sequence): void;
     has(sequence: Sequence): boolean;
     has(entity: Entity): boolean;
-    create(transaction: ITransaction, sequence: Sequence): Promise<Sequence>;
-    create(transaction: ITransaction, entity: Entity): Promise<Entity>;
-    delete(transaction: ITransaction, sequence: Sequence): Promise<void>;
-    delete(transaction: ITransaction, entity: Entity): Promise<void>;
-    query(transaction: ITransaction, query: IEntityQueryInspector): Promise<IQueryResponse>;
+    create(sequence: Sequence, transaction?: ITransaction): Promise<Sequence>;
+    create(entity: Entity, transaction?: ITransaction): Promise<Entity>;
+    delete(sequence: Sequence, transaction?: ITransaction): Promise<void>;
+    delete(entity: Entity, transaction?: ITransaction): Promise<void>;
+    query(query: IEntityQueryInspector, transaction?: ITransaction): Promise<IQueryResponse>;
     startTransaction(): Promise<ITransaction>;
     serialize(): IERModel;
     inspect(): string[];

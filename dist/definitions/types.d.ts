@@ -36,12 +36,12 @@ export interface IBaseSource<CurType> {
     init(obj: CurType): Promise<CurType>;
 }
 export interface IBaseCreatableSource<ParentType, CurType> extends IBaseSource<CurType> {
-    create<T extends CurType>(transaction: ITransaction, parent: ParentType, obj: T): Promise<T>;
-    delete(transaction: ITransaction, parent: ParentType, obj: CurType): Promise<void>;
+    create<T extends CurType>(parent: ParentType, obj: T, transaction?: ITransaction): Promise<T>;
+    delete(parent: ParentType, obj: CurType, transaction?: ITransaction): Promise<void>;
 }
 export interface IDataSource extends IBaseSource<ERModel> {
     startTransaction(): Promise<ITransaction>;
-    query(transaction: ITransaction, query: EntityQuery): Promise<IQueryResponse>;
+    query(query: EntityQuery, transaction?: ITransaction): Promise<IQueryResponse>;
     getEntitySource(): IEntitySource | undefined;
     getSequenceSource(): ISequenceSource | undefined;
 }
@@ -49,8 +49,8 @@ export interface ISequenceSource extends IBaseCreatableSource<ERModel, Sequence<
 }
 export interface IEntitySource extends IBaseCreatableSource<ERModel, Entity> {
     getAttributeSource(): IAttributeSource | undefined;
-    addUnique(transaction: ITransaction, entity: Entity, attrs: Attribute[]): Promise<void>;
-    removeUnique(transaction: ITransaction, entity: Entity, attrs: Attribute[]): Promise<void>;
+    addUnique(entity: Entity, attrs: Attribute[], transaction?: ITransaction): Promise<void>;
+    removeUnique(entity: Entity, attrs: Attribute[], transaction?: ITransaction): Promise<void>;
 }
 export interface IAttributeSource extends IBaseCreatableSource<Entity, Attribute> {
 }

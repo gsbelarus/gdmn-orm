@@ -120,21 +120,21 @@ class Entity {
     removeUnique(value) {
         this._unique.splice(this._unique.indexOf(value), 1);
     }
-    async addAttrUnique(transaction, attrs) {
+    async addAttrUnique(attrs, transaction) {
         this._checkTransaction(transaction);
         if (this._source) {
-            await this._source.addUnique(transaction, this, attrs);
+            await this._source.addUnique(this, attrs, transaction);
         }
         this.addUnique(attrs);
     }
-    async removeAttrUnique(transaction, attrs) {
+    async removeAttrUnique(attrs, transaction) {
         this._checkTransaction(transaction);
         if (this._source) {
-            await this._source.removeUnique(transaction, this, attrs);
+            await this._source.removeUnique(this, attrs, transaction);
         }
         this.removeUnique(attrs);
     }
-    async create(transaction, source) {
+    async create(source, transaction) {
         this._checkTransaction(transaction);
         if (source instanceof Attribute_1.Attribute) {
             const attribute = this.add(source);
@@ -142,7 +142,7 @@ class Entity {
                 const attributeSource = this._source.getAttributeSource();
                 await attribute.initDataSource(attributeSource);
                 if (attributeSource) {
-                    return await attributeSource.create(transaction, this, attribute);
+                    return await attributeSource.create(this, attribute, transaction);
                 }
             }
             return attribute;
@@ -151,14 +151,14 @@ class Entity {
             throw new Error("Unknown arg type");
         }
     }
-    async delete(transaction, source) {
+    async delete(source, transaction) {
         this._checkTransaction(transaction);
         if (source instanceof Attribute_1.Attribute) {
             const attribute = source;
             if (this._source) {
                 const attributeSource = this._source.getAttributeSource();
                 if (attributeSource) {
-                    await attributeSource.delete(transaction, this, attribute);
+                    await attributeSource.delete(this, attribute, transaction);
                 }
                 await attribute.initDataSource(undefined);
             }
@@ -194,7 +194,7 @@ class Entity {
         return result;
     }
     _checkTransaction(transaction) {
-        if (transaction.finished) {
+        if (transaction && transaction.finished) {
             throw new Error("Transaction is finished");
         }
     }

@@ -10,13 +10,13 @@ describe("ERModel", async () => {
     const transaction = await erModel.startTransaction();
 
     try {
-      const entity = await erModel.create(transaction, new Entity({
+      const entity = await erModel.create(new Entity({
         name: "TEST", lName: {en: {name: "Test"}}
-      }));
-      const testAttr = await entity.create(transaction, new StringAttribute({
+      }), transaction);
+      const testAttr = await entity.create(new StringAttribute({
         name: "TEST_FIELD", lName: {en: {name: "Test field"}}
-      }));
-      // await entity.addAttrUnique(transaction, [testAttr]);
+      }), transaction);
+      // await entity.addAttrUnique([testAttr], transaction);
     } finally {
       if (!transaction.finished) {
         await transaction.commit();

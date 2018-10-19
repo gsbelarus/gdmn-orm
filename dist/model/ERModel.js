@@ -86,7 +86,7 @@ class ERModel {
             throw new Error("Unknown arg type");
         }
     }
-    async create(transaction, source) {
+    async create(source, transaction) {
         this._checkTransaction(transaction);
         if (source instanceof Entity_1.Entity) {
             const entity = this.add(source);
@@ -94,7 +94,7 @@ class ERModel {
                 const entitySource = this._source.getEntitySource();
                 await entity.initDataSource(entitySource);
                 if (entitySource) {
-                    return await entitySource.create(transaction, this, entity);
+                    return await entitySource.create(this, entity, transaction);
                 }
             }
             return entity;
@@ -104,7 +104,7 @@ class ERModel {
             if (this._source) {
                 const sequenceSource = this._source.getSequenceSource();
                 if (sequenceSource) {
-                    return await sequenceSource.create(transaction, this, sequence);
+                    return await sequenceSource.create(this, sequence, transaction);
                 }
                 await sequence.initDataSource(undefined);
             }
@@ -114,14 +114,14 @@ class ERModel {
             throw new Error("Unknown arg type");
         }
     }
-    async delete(transaction, source) {
+    async delete(source, transaction) {
         this._checkTransaction(transaction);
         if (source instanceof Entity_1.Entity) {
             const entity = source;
             if (this._source) {
                 const entitySource = this._source.getEntitySource();
                 if (entitySource) {
-                    await entitySource.delete(transaction, this, entity);
+                    await entitySource.delete(this, entity, transaction);
                 }
                 await entity.initDataSource(undefined);
             }
@@ -132,7 +132,7 @@ class ERModel {
             if (this._source) {
                 const sequenceSource = this._source.getSequenceSource();
                 if (sequenceSource) {
-                    await sequenceSource.delete(transaction, this, sequence);
+                    await sequenceSource.delete(this, sequence, transaction);
                 }
             }
             this.removeSequence(sequence);
@@ -141,12 +141,12 @@ class ERModel {
             throw new Error("Unknown arg type");
         }
     }
-    async query(transaction, query) {
+    async query(query, transaction) {
         this._checkTransaction(transaction);
         if (!this._source) {
             throw new Error("Need DataSource");
         }
-        return await this._source.query(transaction, EntityQuery_1.EntityQuery.inspectorToObject(this, query));
+        return await this._source.query(EntityQuery_1.EntityQuery.inspectorToObject(this, query), transaction);
     }
     async startTransaction() {
         if (this._source) {
@@ -163,7 +163,7 @@ class ERModel {
         }, []);
     }
     _checkTransaction(transaction) {
-        if (transaction.finished) {
+        if (transaction && transaction.finished) {
             throw new Error("Transaction is finished");
         }
     }

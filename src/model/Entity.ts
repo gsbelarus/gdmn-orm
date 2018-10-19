@@ -166,26 +166,26 @@ export class Entity {
     this._unique.splice(this._unique.indexOf(value), 1);
   }
 
-  public async addAttrUnique(transaction: ITransaction, attrs: Attribute[]): Promise<void> {
+  public async addAttrUnique(attrs: Attribute[], transaction?: ITransaction): Promise<void> {
     this._checkTransaction(transaction);
 
     if (this._source) {
-      await this._source.addUnique(transaction, this, attrs);
+      await this._source.addUnique(this, attrs, transaction);
     }
     this.addUnique(attrs);
   }
 
-  public async removeAttrUnique(transaction: ITransaction, attrs: Attribute[]): Promise<void> {
+  public async removeAttrUnique(attrs: Attribute[], transaction?: ITransaction): Promise<void> {
     this._checkTransaction(transaction);
 
     if (this._source) {
-      await this._source.removeUnique(transaction, this, attrs);
+      await this._source.removeUnique(this, attrs, transaction);
     }
     this.removeUnique(attrs);
   }
 
-  public async create<T extends Attribute>(transaction: ITransaction, attribute: T): Promise<T>;
-  public async create(transaction: ITransaction, source: any): Promise<any> {
+  public async create<T extends Attribute>(attribute: T, transaction?: ITransaction): Promise<T>;
+  public async create(source: any, transaction?: ITransaction): Promise<any> {
     this._checkTransaction(transaction);
 
     if (source instanceof Attribute) {
@@ -194,7 +194,7 @@ export class Entity {
         const attributeSource = this._source.getAttributeSource();
         await attribute.initDataSource(attributeSource);
         if (attributeSource) {
-          return await attributeSource.create(transaction, this, attribute);
+          return await attributeSource.create(this, attribute, transaction);
         }
       }
       return attribute;
@@ -203,8 +203,8 @@ export class Entity {
     }
   }
 
-  public async delete(transaction: ITransaction, attribute: Attribute): Promise<void>;
-  public async delete(transaction: ITransaction, source: any): Promise<any> {
+  public async delete(attribute: Attribute, transaction: ITransaction): Promise<void>;
+  public async delete(source: any, transaction: ITransaction): Promise<any> {
     this._checkTransaction(transaction);
 
     if (source instanceof Attribute) {
@@ -212,7 +212,7 @@ export class Entity {
       if (this._source) {
         const attributeSource = this._source.getAttributeSource();
         if (attributeSource) {
-          await attributeSource.delete(transaction, this, attribute);
+          await attributeSource.delete(this, attribute, transaction);
         }
         await attribute.initDataSource(undefined);
       }
@@ -249,8 +249,8 @@ export class Entity {
     return result;
   }
 
-  private _checkTransaction(transaction: ITransaction): void | never {
-    if (transaction.finished) {
+  private _checkTransaction(transaction?: ITransaction): void | never {
+    if (transaction && transaction.finished) {
       throw new Error("Transaction is finished");
     }
   }

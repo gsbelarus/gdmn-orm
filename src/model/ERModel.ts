@@ -110,9 +110,9 @@ export class ERModel {
     }
   }
 
-  public async create(transaction: ITransaction, sequence: Sequence): Promise<Sequence>;
-  public async create(transaction: ITransaction, entity: Entity): Promise<Entity>;
-  public async create(transaction: ITransaction, source: any): Promise<any> {
+  public async create(sequence: Sequence, transaction?: ITransaction): Promise<Sequence>;
+  public async create(entity: Entity, transaction?: ITransaction): Promise<Entity>;
+  public async create(source: any, transaction?: ITransaction): Promise<any> {
     this._checkTransaction(transaction);
 
     if (source instanceof Entity) {
@@ -121,7 +121,7 @@ export class ERModel {
         const entitySource = this._source.getEntitySource();
         await entity.initDataSource(entitySource);
         if (entitySource) {
-          return await entitySource.create(transaction, this, entity);
+          return await entitySource.create(this, entity, transaction);
         }
       }
       return entity;
@@ -131,7 +131,7 @@ export class ERModel {
       if (this._source) {
         const sequenceSource = this._source.getSequenceSource();
         if (sequenceSource) {
-          return await sequenceSource.create(transaction, this, sequence);
+          return await sequenceSource.create(this, sequence, transaction);
         }
         await sequence.initDataSource(undefined);
       }
@@ -141,9 +141,9 @@ export class ERModel {
     }
   }
 
-  public async delete(transaction: ITransaction, sequence: Sequence): Promise<void>;
-  public async delete(transaction: ITransaction, entity: Entity): Promise<void>;
-  public async delete(transaction: ITransaction, source: any): Promise<void> {
+  public async delete(sequence: Sequence, transaction?: ITransaction): Promise<void>;
+  public async delete(entity: Entity, transaction?: ITransaction): Promise<void>;
+  public async delete(source: any, transaction?: ITransaction): Promise<void> {
     this._checkTransaction(transaction);
 
     if (source instanceof Entity) {
@@ -151,7 +151,7 @@ export class ERModel {
       if (this._source) {
         const entitySource = this._source.getEntitySource();
         if (entitySource) {
-          await entitySource.delete(transaction, this, entity);
+          await entitySource.delete(this, entity, transaction);
         }
         await entity.initDataSource(undefined);
       }
@@ -162,7 +162,7 @@ export class ERModel {
       if (this._source) {
         const sequenceSource = this._source.getSequenceSource();
         if (sequenceSource) {
-          await sequenceSource.delete(transaction, this, sequence);
+          await sequenceSource.delete(this, sequence, transaction);
         }
       }
       this.removeSequence(sequence);
@@ -171,13 +171,13 @@ export class ERModel {
     }
   }
 
-  public async query(transaction: ITransaction, query: IEntityQueryInspector): Promise<IQueryResponse> {
+  public async query(query: IEntityQueryInspector, transaction?: ITransaction): Promise<IQueryResponse> {
     this._checkTransaction(transaction);
 
     if (!this._source) {
       throw new Error("Need DataSource");
     }
-    return await this._source.query(transaction, EntityQuery.inspectorToObject(this, query));
+    return await this._source.query(EntityQuery.inspectorToObject(this, query), transaction);
   }
 
   public async startTransaction(): Promise<ITransaction> {
@@ -197,8 +197,8 @@ export class ERModel {
     }, [] as string[]);
   }
 
-  private _checkTransaction(transaction: ITransaction): void | never {
-    if (transaction.finished) {
+  private _checkTransaction(transaction?: ITransaction): void | never {
+    if (transaction && transaction.finished) {
       throw new Error("Transaction is finished");
     }
   }
